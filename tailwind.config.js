@@ -1,3 +1,5 @@
+import defaultTheme from 'tailwindcss/defaultTheme'
+
 /** @type {import('tailwindcss').Config} */
 export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
@@ -31,9 +33,26 @@ export default {
 				900: '#123B53',
 				950: '#0D2B3C'
 			},
-      'aqua': {  DEFAULT: '#042626',  50: '#91F3F3',  100: '#7FF2F2',  200: '#5AEEEE',  300: '#35EAEA',  400: '#17DFDF',  500: '#14BABA',  600: '#109595',  700: '#0C7070',  800: '#084B4B',  900: '#042626',  950: '#010D0D'},
+			aqua: {
+				DEFAULT: '#042626',
+				50: '#91F3F3',
+				100: '#7FF2F2',
+				200: '#5AEEEE',
+				300: '#35EAEA',
+				400: '#17DFDF',
+				500: '#14BABA',
+				600: '#109595',
+				700: '#0C7070',
+				800: '#084B4B',
+				900: '#042626',
+				950: '#010D0D'
+			}
 		},
-		extend: {}
+		extend: {
+			fontFamily: {
+				sans: ['Roboto Slab', ...defaultTheme.fontFamily.sans]
+			}
+		}
 	},
-	plugins: [require('@tailwindcss/forms')]
+	plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')]
 };
