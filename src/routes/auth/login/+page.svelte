@@ -1,3 +1,25 @@
+<script lang="ts">
+   import type { PageData } from './$types'
+   import { superForm } from 'sveltekit-superforms/client'
+   import { page } from '$app/stores'
+   import { loginPostReq } from '$lib/validators/auth'
+
+   export let data: PageData
+
+   const { 
+      form, 
+      errors, 
+      message, 
+      enhance 
+   } = superForm(data.form, { 
+      validators: loginPostReq,
+      invalidateAll: true,
+      taintedMessage: null
+   })
+
+   $form.rurl = data.rurl || ''
+</script>
+
 <div class="dark:bg-gray-900 flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
 	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
 		<img
