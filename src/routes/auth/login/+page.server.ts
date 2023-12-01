@@ -3,6 +3,7 @@ import { error, redirect, json } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
 import { loginPostReq } from '$lib/validators/auth'
 import medusa from '$lib/server/medusa'
+import { sleep } from '$lib/utilities'
 
 export const load: PageServerLoad = async ({ locals, url }) => {
    let rurl = url.searchParams.get('rurl') || ''

@@ -5,48 +5,54 @@
 	import { loginPostReq } from '$lib/validators/auth';
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
+	import Spinner from '$lib/components/elements/Spinner.svelte';
 
 	export let data: PageData;
 	$: console.log($page);
 
-	const { form, errors, tainted, message, enhance } = superForm(data.form, {
-		onUpdated({ form }) {
-			if (form.message) {
-				if ($page.status === 200)
-					// Display the message using a toast library
-					addToast({
-						data: {
-							type: 'success',
-							title: 'Success',
-							description: "You've been logged in!"
-						}
-					});
-				if ($page.status === 401)
-					// Display the message using a toast library
-					addToast({
-						data: {
-							type: 'warning',
-							title: 'Warning',
-							description: form.message
-						}
-					});
-			}
-		},
-		onError({ result }) {
-			console.log(result)
-			// Display the message using a toast library
-			addToast({
-				data: {
-					type: 'error',
-					title: 'Error',
-					description: result.error.message
+	const { form, errors, tainted, message, submitting, delayed, timeout, enhance } = superForm(
+		data.form,
+		{
+			onUpdated({ form }) {
+				if (form.message) {
+					if ($page.status === 200)
+						// Display the message using a toast library
+						addToast({
+							data: {
+								type: 'success',
+								title: 'Success',
+								description: "You've been logged in!"
+							}
+						});
+					if ($page.status === 401)
+						// Display the message using a toast library
+						addToast({
+							data: {
+								type: 'warning',
+								title: 'Warning',
+								description: form.message
+							}
+						});
 				}
-			});
-		},
-		validators: loginPostReq,
-		invalidateAll: true,
-		taintedMessage: null
-	});
+			},
+			onError({ result }) {
+				console.log(result);
+				// Display the message using a toast library
+				addToast({
+					data: {
+						type: 'error',
+						title: 'Error',
+						description: result.error.message
+					}
+				});
+			},
+			validators: loginPostReq,
+			invalidateAll: true,
+			taintedMessage: null,
+			delayMs: 200,
+			timeoutMs: 8000
+		}
+	);
 
 	$form.rurl = data.rurl || '';
 </script>
@@ -129,7 +135,10 @@
 				{/if}
 			</div>
 			<div>
-				<button type="submit" class="flex w-full btn">Sign in</button>
+				<button type="submit" class="flex w-full btn"
+					>{#if $delayed}<Spinner /> &nbsp; Sign in{:else}Sign in
+					{/if}</button
+				>
 			</div>
 		</form>
 
