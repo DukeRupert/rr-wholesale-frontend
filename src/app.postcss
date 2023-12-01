@@ -1,0 +1,13 @@
+/* Write your global styles here, in PostCSS syntax */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+	.input {
+		@apply rounded-md dark:bg-white/5 dark:text-white dark:ring-white/10 border-0 py-1.5 pr-10 ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6;
+	}
+	.input:invalid {
+		@apply ring-red-300 placeholder:text-red-300 focus:ring-red-500;
+	}
+}

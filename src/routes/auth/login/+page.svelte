@@ -1,23 +1,21 @@
 <script lang="ts">
-   import type { PageData } from './$types'
-   import { superForm } from 'sveltekit-superforms/client'
-   import { page } from '$app/stores'
-   import { loginPostReq } from '$lib/validators/auth'
+	import type { PageData } from './$types';
+	import { superForm } from 'sveltekit-superforms/client';
+	import { page } from '$app/stores';
+	import { loginPostReq } from '$lib/validators/auth';
+	import { AlertCircle } from 'lucide-svelte';
 
-   export let data: PageData
+	export let data: PageData;
 
-   const { 
-      form, 
-      errors, 
-      message, 
-      enhance 
-   } = superForm(data.form, { 
-      validators: loginPostReq,
-      invalidateAll: true,
-      taintedMessage: null
-   })
+	const { form, errors, tainted, message, enhance } = superForm(data.form, {
+		validators: loginPostReq,
+		invalidateAll: true,
+		taintedMessage: null
+	});
 
-   $form.rurl = data.rurl || ''
+	$: console.log($errors)
+
+	$form.rurl = data.rurl || '';
 </script>
 
 <div class="dark:bg-gray-900 flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -33,21 +31,33 @@
 	</div>
 
 	<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-		<form class="space-y-6" action="#" method="POST">
+		<form use:enhance action="?/login" method="POST" class="space-y-6">
+			<input type="hidden" name="rurl" value={$form.rurl} />
 			<div>
 				<label for="email" class="block text-sm font-medium leading-6 text-white"
 					>Email address</label
 				>
-				<div class="mt-2">
+				<div class="relative mt-2 rounded-md shadow-sm">
 					<input
 						id="email"
 						name="email"
 						type="email"
 						autocomplete="email"
 						required
-						class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+						class="block w-full input"
+						aria-invalid={$form.email ? 'true' : undefined}
+						aria-describedby={$errors.email ? 'email-error' : undefined}
+						bind:value={$form.email}
 					/>
+					{#if $errors.email}
+						<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+							<AlertCircle class="h-5 w-5 text-red-500" />
+						</div>
+					{/if}
 				</div>
+				{#if $errors.email}
+					<p class="mt-2 text-sm text-red-600" id="email-error">{$errors.email}</p>
+				{/if}
 			</div>
 
 			<div>
@@ -68,7 +78,7 @@
 						type="password"
 						autocomplete="current-password"
 						required
-						class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+						class="block w-full input"
 					/>
 				</div>
 			</div>

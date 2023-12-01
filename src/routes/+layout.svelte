@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '../app.css';
+	import '../app.postcss';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;

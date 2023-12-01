@@ -8,9 +8,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
    let rurl = url.searchParams.get('rurl') || ''
    let code = url.searchParams.get('code') || ''
 
+   // If logged in, redirect to return url or home
    if (locals.user) { throw redirect(302, `/${rurl}`) }
 
-   const form = await superValidate(loginPostReq, { id: 'login' })
+   const form = await superValidate(loginPostReq)
 
    return {
       rurl,
@@ -32,7 +33,7 @@ export const actions: Actions = {
 
    logout: async ({ locals, cookies }) => {
       if (await medusa.logout(locals, cookies)) {
-         throw redirect(302, '/auth')
+         throw redirect(302, '/auth/login')
       }
       else throw error(500, 'server error')
    }
