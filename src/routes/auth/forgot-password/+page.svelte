@@ -31,7 +31,7 @@
 	</div>
 
 	<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-		<form use:enhance action="?/login" method="POST" class="space-y-6">
+		<form use:enhance action="?/forgot" method="POST" class="space-y-6">
 			<input type="hidden" name="rurl" value={$form.rurl} />
 			<div>
 				<label for="email" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
@@ -44,7 +44,7 @@
 						type="email"
 						autocomplete="email"
 						required
-						class="block w-full input"
+						class="block w-full input focus:ring-black"
 						aria-invalid={$form.email ? 'true' : undefined}
 						aria-describedby={$errors.email ? 'email-error' : undefined}
 						bind:value={$form.email}
@@ -59,54 +59,19 @@
 					<p class="mt-2 text-sm text-red-600" id="email-error">{$errors.email}</p>
 				{/if}
 			</div>
-
-			<div>
-				<div class="flex items-center justify-between">
-					<label for="password" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
-						>Password</label
-					>
-					<div class="text-sm">
-						<a href="/auth/forgot-password" class="font-semibold"
-							>Forgot password?</a
-						>
-					</div>
-				</div>
-				<div class="mt-2">
-					<input
-						id="password"
-						name="password"
-						type="password"
-						autocomplete="current-password"
-						required
-						class="block w-full input"
-						aria-invalid={$form.password? 'true' : undefined}
-						aria-describedby={$errors.password ? 'email-error' : undefined}
-						bind:value={$form.password}
-					/>
-					{#if $errors.password}
-						<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-							<AlertCircle class="h-5 w-5 text-red-500" />
-						</div>
-					{/if}
-				</div>
-				{#if $errors.password}
-					<p class="mt-2 text-sm text-red-600" id="email-error">{$errors.password}</p>
-				{/if}
-			</div>
-
 			<div>
 				<button
 					type="submit"
 					class="flex w-full btn"
-					>Sign in</button
+					>Send reset code</button
 				>
 			</div>
 		</form>
 
 		<p class="mt-10 text-center text-sm text-gray-400">
-			Not a member?
-			<a href="#" class="font-semibold leading-6"
-				>Contact our sales team.</a
+			Wrong page?
+			<a href="/auth/login" class="font-semibold leading-6"
+				>Return to login.</a
 			>
 		</p>
 	</div>
