@@ -7,7 +7,7 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				firebird: {
+				thunderbird: {
 					DEFAULT: '#D92344',
 					50: '#F5BFC9',
 					100: '#F2ADBA',
