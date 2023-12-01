@@ -4,16 +4,49 @@
 	import { page } from '$app/stores';
 	import { loginPostReq } from '$lib/validators/auth';
 	import { AlertCircle } from 'lucide-svelte';
+	import { addToast } from '$lib/components/toast/index.svelte';
 
 	export let data: PageData;
+	$: console.log($page);
 
 	const { form, errors, tainted, message, enhance } = superForm(data.form, {
+		onUpdated({ form }) {
+			if (form.message) {
+				if ($page.status === 200)
+					// Display the message using a toast library
+					addToast({
+						data: {
+							type: 'success',
+							title: 'Success',
+							description: "You've been logged in!"
+						}
+					});
+				if ($page.status === 401)
+					// Display the message using a toast library
+					addToast({
+						data: {
+							type: 'warning',
+							title: 'Warning',
+							description: form.message
+						}
+					});
+			}
+		},
+		onError({ result }) {
+			console.log(result)
+			// Display the message using a toast library
+			addToast({
+				data: {
+					type: 'error',
+					title: 'Error',
+					description: result.error.message
+				}
+			});
+		},
 		validators: loginPostReq,
 		invalidateAll: true,
 		taintedMessage: null
 	});
-
-	$: console.log($errors)
 
 	$form.rurl = data.rurl || '';
 </script>
@@ -25,7 +58,9 @@
 			src="https://rockabillyroasting.com/wp-content/uploads/2020/04/SmallRRCBadge.png"
 			alt="Rockabilly Roasting Co."
 		/>
-		<h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
+		<h2
+			class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white"
+		>
 			Sign in to your account
 		</h2>
 	</div>
@@ -62,13 +97,13 @@
 
 			<div>
 				<div class="flex items-center justify-between">
-					<label for="password" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
+					<label
+						for="password"
+						class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
 						>Password</label
 					>
 					<div class="text-sm">
-						<a href="/auth/forgot-password" class="font-semibold"
-							>Forgot password?</a
-						>
+						<a href="/auth/forgot-password" class="font-semibold">Forgot password?</a>
 					</div>
 				</div>
 				<div class="mt-2">
@@ -79,7 +114,7 @@
 						autocomplete="current-password"
 						required
 						class="block w-full input"
-						aria-invalid={$form.password? 'true' : undefined}
+						aria-invalid={$form.password ? 'true' : undefined}
 						aria-describedby={$errors.password ? 'email-error' : undefined}
 						bind:value={$form.password}
 					/>
@@ -93,21 +128,14 @@
 					<p class="mt-2 text-sm text-red-600" id="email-error">{$errors.password}</p>
 				{/if}
 			</div>
-
 			<div>
-				<button
-					type="submit"
-					class="flex w-full btn"
-					>Sign in</button
-				>
+				<button type="submit" class="flex w-full btn">Sign in</button>
 			</div>
 		</form>
 
 		<p class="mt-10 text-center text-sm text-gray-400">
 			Not a member?
-			<a href="#" class="font-semibold leading-6"
-				>Contact our sales team.</a
-			>
+			<a href="#" class="font-semibold leading-6">Contact our sales team.</a>
 		</p>
 	</div>
 </div>

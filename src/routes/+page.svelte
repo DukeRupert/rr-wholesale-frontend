@@ -13,4 +13,7 @@
 		<button use:melt={$trigger}>{$open ? 'Close' : 'Open'}</button>
 		<div use:melt={$content}>Obi-Wan says: Hello there!</div>
 	</div>
+	<form action="/auth/login?/logout" method="POST" class="mt-6">
+		<button type="submit" class="btn">Logout</button>
+	</form>
 </div>

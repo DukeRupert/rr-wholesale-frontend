@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from './$types'
-import { error, redirect } from '@sveltejs/kit'
+import { error, redirect, json } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
 import { loginPostReq } from '$lib/validators/auth'
 import medusa from '$lib/server/medusa'
