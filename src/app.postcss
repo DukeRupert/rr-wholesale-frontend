@@ -5,22 +5,22 @@
 
 @layer base {
 	a {
-		@apply text-thunderbird-500 dark:text-thunderbird-500
+		@apply text-thunderbird-500 dark:text-thunderbird-500;
 	}
-	a:hover{
-		@apply text-thunderbird-600 dark:text-thunderbird-400
+	a:hover {
+		@apply text-thunderbird-600 dark:text-thunderbird-400;
 	}
 }
 
 @layer components {
 	.input {
-		@apply rounded-md border-0 py-1.5 pr-10 ring-1 ring-gray-300 ring-inset focus:ring-2 focus:ring-inset focus:ring-black dark:focus:ring-gray-200 dark:bg-white/5 dark:text-white dark:ring-white/10 sm:text-sm sm:leading-6;
+		@apply rounded-md border-0 py-1.5 pr-10 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-black dark:bg-white/5 dark:text-white dark:ring-white/10 dark:focus:ring-gray-200 sm:text-sm sm:leading-6;
 	}
 	.btn {
-		@apply inline-block justify-center rounded-md border border-transparent bg-gray-900 dark:bg-gray-200 px-8 py-3 font-medium text-gray-100 dark:text-black transition duration-150 ease-out;
+		@apply inline-block justify-center rounded-md border border-transparent bg-gray-900 px-8 py-3 font-medium text-gray-100 transition duration-150 ease-out dark:bg-gray-200 dark:text-black;
 	}
 	.btn:hover {
-		@apply bg-black text-white dark:text-black dark:bg-gray-100;
+		@apply bg-black text-white dark:bg-gray-100 dark:text-black;
 	}
 	.btn:focus-visible {
 		@apply outline outline-2 outline-offset-2 outline-black dark:outline-gray-100;
