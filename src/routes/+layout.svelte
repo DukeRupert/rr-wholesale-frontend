@@ -6,7 +6,7 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 
 	export let data: PageData;
-	const nakedPaths = ['/auth', '/checkout', '/sitemap.xml'];
+	const nakedPaths = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/checkout', '/sitemap.xml'];
 	$: naked = nakedPaths.includes($page.url.pathname);
 	$: user = data?.user;
 	$: cart = data?.cart;

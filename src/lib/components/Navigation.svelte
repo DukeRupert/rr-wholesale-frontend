@@ -71,7 +71,7 @@
 
 						<!-- Logo (lg-) -->
 						<a
-							href="#"
+							href="/"
 							class="lg:hidden transform hover:scale-105 transition-all duration-150 ease-in-out"
 						>
 							<span class="sr-only">Your Company</span>
@@ -81,12 +81,13 @@
 						<div class="flex flex-1 items-center justify-end">
 							<div class="flex items-center lg:ml-8">
 								<div class="flex space-x-8">
-									<div class="flex">
+									<div class="hidden lg:flex">
 										<Account {user} />
+										<span class="mx-4 h-6 w-px bg-gray-200 lg:mx-6" aria-hidden="true"></span>
 									</div>
 								</div>
 
-								<span class="mx-4 h-6 w-px bg-gray-200 lg:mx-6" aria-hidden="true"></span>
+								
 
 								<Cart bind:cart bind:count />
 							</div>

@@ -1,8 +1,16 @@
 <script lang="ts">
+	import Avatar from './elements/Avatar.svelte';
 	import { User } from 'lucide-svelte';
-	import { createDropdownMenu } from '@melt-ui/svelte';
+	import { createDropdownMenu, createAvatar } from '@melt-ui/svelte';
 	import { goto } from '$app/navigation';
-	export let user: any | null = null;
+	export let user: User | null = null;
+	console.log(user)
+	// Grab first letter of first and last name
+	$: initials = user?.first_name[0] + user?.last_name[0] || '';
+	let src = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+	let alt = user?.first_name + " " + user?.last_name + " " || 'Avatar';
+	let delayMs = 250;
+
 	const {
 		elements: { trigger, menu, item }
 	} = createDropdownMenu({
@@ -10,10 +18,21 @@
 		arrowSize: 0,
 		preventScroll: false
 	});
+
+	// Melt Avatar
+	// https://www.melt-ui.com/docs/builders/avatar
+	const {
+		elements: { image, fallback }
+	} = createAvatar({
+		src: src,
+		delayMs: delayMs
+	});
+
 	const logout = async () => {
+		console.log('logout');
 		const formData = new FormData(); // The POST request fails without a body
-		const res = await fetch('/auth?/logout', { method: 'POST', body: formData });
-		if (res.ok) goto('/auth');
+		const res = await fetch('/auth/login?/logout', { method: 'POST', body: formData });
+		if (res.ok) goto('/auth/login');
 	};
 </script>
 
@@ -23,13 +42,14 @@
 		{...$trigger}
 		use:trigger
 		aria-label="Open account menu"
-		class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white rounded-md transition-colors duration-150 ease-in"
+		class="group -m-2 flex items-center h-12 w-auto {src ? "p-1" : "p-2"} bg-white hover:bg-black text-gray-400 hover:text-white rounded-md transition-colors duration-150 ease-in"
 	>
 		<span class="sr-only">View account</span>
-		<User class="h-6 w-6 flex-shrink-0" />
+		<!-- <User class="h-6 w-6 flex-shrink-0" /> -->
+		<Avatar {src} {initials} />
 	</button>
 {:else}
-	<a href="/auth">
+	<a href="/auth/login">
 		<button
 			type="button"
 			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white rounded-md transition-colors duration-150 ease-in"

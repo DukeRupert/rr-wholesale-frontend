@@ -11,14 +11,13 @@
 -->
 
 <script lang="ts">
+	import { User } from 'lucide-svelte';
 	import { createAvatar, melt } from '@melt-ui/svelte';
 
 	export let src: string = '';
 	export let alt: string = 'Avatar';
 	export let delayMs: number = 0;
-	export let initials: string = 'LW';
-	export let bg: string = 'bg-neutral-200';
-	export let size: number = 12;
+	export let initials: string = '';
 
 	// Melt Avatar
 	// https://www.melt-ui.com/docs/builders/avatar
@@ -30,7 +29,9 @@
 	});
 </script>
 
-<div class="relative flex h-{size} w-{size} h- items-center justify-center rounded-full {bg}">
-	<img class="h-full w-full rounded-full" use:melt={$image} {alt} />
-	<span use:melt={$fallback} class="text-3xl font-medium text-gray-500">{initials}</span>
-</div>
+<img class="h-full w-full rounded-full" use:melt={$image} {alt} />
+{#if initials}
+<span use:melt={$fallback} >{initials}</span>
+{:else}
+<User class="h-6 w-6 flex-shrink-0" />
+{/if}

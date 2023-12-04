@@ -8,7 +8,6 @@
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 
 	export let data: PageData;
-	$: console.log($page);
 
 	const { form, errors, tainted, message, submitting, delayed, timeout, enhance } = superForm(
 		data.form,
