@@ -4,7 +4,7 @@
 	import { createDropdownMenu, createAvatar } from '@melt-ui/svelte';
 	import { goto } from '$app/navigation';
 	export let user: User | null = null;
-	console.log(user)
+	
 	// Grab first letter of first and last name
 	$: initials = user?.first_name[0] + user?.last_name[0] || '';
 	let src = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
