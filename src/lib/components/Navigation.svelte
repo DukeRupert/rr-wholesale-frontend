@@ -9,7 +9,7 @@
 
 	// Control whether the banner is displayed
 	const banner = {
-		is_live: true,
+		is_live: false,
 		message: 'Free delivery on orders over $100'
 	};
 </script>

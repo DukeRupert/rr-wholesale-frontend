@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { ProductDTO } from '@medusajs/types';
+	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
+	import { addToast } from './toast/index.svelte';
 	export let products: ProductDTO[] = [];
 	console.log(products);
 </script>
@@ -93,6 +96,21 @@
 							<td class="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
 								<form
 									action="/cart?/add"
+									use:enhance={({ formData }) => {
+										const quantity = formData.get('quantity');
+										return async ({ result }) => {
+											if (result.type === 'success') {
+												addToast({
+													data: {
+														type: 'success',
+														title: 'Success',
+														description: `${quantity} ${variant.title} added to cart`
+													}
+												});
+												await invalidateAll();
+											}
+										};
+									}}
 									method="post"
 									class="ml-auto flex flex-col space-y-2 w-28 md:w-40"
 								>
