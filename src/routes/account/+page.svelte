@@ -5,7 +5,7 @@
 	import Pagination from '$lib/components/elements/Pagination.svelte';
 	import { quadOut, quadIn } from 'svelte/easing';
 	import { flip, type FlipParams } from 'svelte/animate';
-	import { fade, type FadeParams, fly, type FlyParams } from 'svelte/transition';
+	import { fly, type FlyParams } from 'svelte/transition';
 
 	export let data: PageData;
 	//console.log(data.user)
