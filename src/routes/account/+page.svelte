@@ -3,6 +3,7 @@
    import { enhance } from '$app/forms'
    import { invalidateAll } from '$app/navigation'
    import Pagination from '$lib/components/elements/Pagination.svelte'
+   import AddressCard from '$lib/components/elements/AddressCard.svelte'
 
    export let data: PageData
 //console.log(data.user)
@@ -243,6 +244,11 @@
             No addresses saved
             {/each}
          </div>
+         <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+         {#each shipping_addresses as address}
+         <AddressCard {address} />
+         {/each}
+         </ul>
       {/if}
       
       <!-- Orders -->
