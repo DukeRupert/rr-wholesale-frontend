@@ -5,7 +5,6 @@
 	import { formatPrice } from '$lib/utilities';
 	import { addToast } from './toast/index.svelte';
 	export let products: ProductDTO[] = [];
-	console.log(products);
 </script>
 
 <div class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

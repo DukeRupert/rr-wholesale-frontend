@@ -3,7 +3,9 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Pagination from '$lib/components/elements/Pagination.svelte';
-	import AddressCard from '$lib/components/elements/AddressCard.svelte';
+	import { quadOut, quadIn } from 'svelte/easing';
+	import { flip, type FlipParams } from 'svelte/animate';
+	import { fade, type FadeParams, fly, type FlyParams } from 'svelte/transition';
 
 	export let data: PageData;
 	//console.log(data.user)
@@ -16,10 +18,29 @@
 	let editInfo = false;
 	let editAddress = false;
 	let changePassword = false;
+
+	const flipParams: FlipParams = {
+		duration: 250,
+		easing: quadOut
+	};
+
+	const flyInParams: FlyParams = {
+		x: -50,
+		duration: 250,
+		delay: 100,
+		easing: quadOut
+	};
 </script>
 
 <div class="max-w-screen-2xl dark:bg-gray-900 mx-auto py-6 px-6 md:px-8 sm:px-6">
-	<h1 class="text-2xl font-semibold dark:text-white mb-8 sm:mb-12 text-center">Your Account</h1>
+	<div class="max-w-5xl mx-auto mb-12 text-center">
+		<h1
+			class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight text-center"
+		>
+			Your Account
+		</h1>
+	</div>
+
 	<div class="max-w-screen-lg mx-auto">
 		<!-- Contact Information -->
 		<div class="border-b border-gray-200 dark:border-gray-600 px-4 py-5 sm:px-6">
@@ -45,6 +66,7 @@
 		</div>
 		{#if editInfo}
 			<form
+				in:fly={flyInParams}
 				action="?/editInfo"
 				method="POST"
 				use:enhance={async ({ cancel }) => {
@@ -62,54 +84,41 @@
 					};
 				}}
 			>
-				<div class="mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+				<div class="mt-5 mb-8 max-w-lg grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
 					<div class="sm:col-span-6">
-						<label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label
+						<label for="first_name" class="block text-sm font-medium text-gray-700"
+							>First Name</label
 						>
 						<input
 							type="text"
 							value={first_name}
-							name="firstName"
+							name="first_name"
 							required
-							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+							class="block w-full input"
 						/>
 					</div>
 					<div class="sm:col-span-6">
-						<label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+						<label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
 						<input
 							type="text"
 							value={last_name}
-							name="lastName"
+							name="last_name"
 							required
-							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+							class="block w-full input"
 						/>
 					</div>
 					<div class="sm:col-span-7">
 						<label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-						<input
-							type="text"
-							value={email}
-							name="email"
-							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
-						/>
+						<input type="text" value={email} name="email" class="block w-full input" />
 					</div>
 					<div class="sm:col-span-5">
 						<label for="last_name" class="block text-sm font-medium text-gray-700"
 							>Phone (optional)</label
 						>
-						<input
-							type="text"
-							value={phone}
-							name="phone"
-							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
-						/>
+						<input type="text" value={phone} name="phone" class="block w-full input" />
 					</div>
 					<div class="sm:col-span-6">
-						<button
-							disabled={processing}
-							type="submit"
-							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-thunderbird-600 hover:bg-thunderbird-700"
-						>
+						<button disabled={processing} type="submit" class="mt-6 w-full btn">
 							{#if processing}
 								Processing...
 							{:else}
@@ -117,22 +126,11 @@
 							{/if}
 						</button>
 					</div>
-					<div class="sm:col-span-6">
-						<button
-							hidden={processing}
-							on:click|preventDefault={() => {
-								editInfo = false;
-							}}
-							type="button"
-							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600"
-						>
-							Cancel
-						</button>
-					</div>
 				</div>
 			</form>
 		{:else if changePassword}
 			<form
+				in:fly={flyInParams}
 				action="?/changePassword"
 				method="POST"
 				use:enhance={async ({ cancel }) => {
@@ -150,7 +148,7 @@
 					};
 				}}
 			>
-				<div class="mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+				<div class="max-w-lg mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
 					<div class="sm:col-span-6">
 						<label for="currentPassword" class="block text-sm font-medium text-gray-700"
 							>Current Password</label
@@ -160,7 +158,7 @@
 							type="password"
 							autocomplete="current-password"
 							required
-							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+							class="block w-full input"
 						/>
 					</div>
 					<div class="sm:col-span-6"></div>
@@ -173,7 +171,7 @@
 							type="password"
 							autocomplete="new-password"
 							required
-							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+							class="block w-full input"
 						/>
 					</div>
 					<div class="sm:col-span-6">
@@ -185,15 +183,11 @@
 							type="password"
 							autocomplete="new-password"
 							required
-							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+							class="block w-full input"
 						/>
 					</div>
 					<div class="sm:col-span-6">
-						<button
-							disabled={processing}
-							type="submit"
-							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-thunderbird-600 hover:bg-thunderbird-700"
-						>
+						<button disabled={processing} type="submit" class="mt-6 w-full btn">
 							{#if processing}
 								Processing...
 							{:else}
@@ -208,7 +202,7 @@
 								changePassword = false;
 							}}
 							type="button"
-							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600"
+							class="mt-6 w-full btn btn-secondary"
 						>
 							Cancel
 						</button>
@@ -228,13 +222,14 @@
 				on:click={() => {
 					changePassword = true;
 				}}
-				class="text-thunderbird-600 hover:text-thunderbird-500 mb-8 sm:mb-12 mt-3"
-				>Change Password</button
+				class="text-thunderbird-600 hover:text-thunderbird-500 mt-3">Change Password</button
 			>
 		{/if}
 
 		<!-- Addresses -->
-		<div class="border-b border-gray-200 dark:border-gray-600 px-4 py-5 sm:px-6">
+		<div
+			class="border-b border-gray-200 dark:border-gray-600 px-4 py-5 sm:px-6 mt-8 sm:mt-12 lg:mt-20"
+		>
 			<div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
 				<div class="ml-4 mt-2">
 					<h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -246,7 +241,7 @@
 						type="button"
 						on:click={() => (editAddress = !editAddress)}
 						class="relative inline-flex btn px-3 py-2 text-sm font-semibold"
-						>{#if editInfo}
+						>{#if editAddress}
 							Cancel
 						{:else}
 							Add
@@ -257,6 +252,7 @@
 		</div>
 		{#if editAddress}
 			<form
+				in:fly={flyInParams}
 				action="?/addAddress"
 				method="POST"
 				use:enhance={async ({ cancel }) => {
@@ -274,39 +270,46 @@
 					};
 				}}
 			>
-				<div class="max-w-md mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+				<div class="max-w-lg mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
 					<div class="sm:col-span-6">
-						<label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label
+						<label for="first_name" class="block text-sm font-medium text-gray-700"
+							>First Name</label
 						>
-						<input type="text" name="firstName" required class="block w-full input" />
+						<input type="text" name="first_name" required class="block w-full input" />
 					</div>
 					<div class="sm:col-span-6">
-						<label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
-						<input type="text" name="lastName" required class="block w-full input" />
+						<label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
+						<input type="text" name="last_name" required class="block w-full input" />
 					</div>
 					<div class="sm:col-span-12">
-						<label for="address1" class="block text-sm font-medium text-gray-700"
+						<label for="company" class="block text-sm font-medium text-gray-700">Company</label>
+						<input type="text" name="company" class="block w-full input" />
+					</div>
+					<div class="sm:col-span-12">
+						<label for="address_1" class="block text-sm font-medium text-gray-700"
 							>Address Line 1</label
 						>
-						<input type="text" name="address1" required class="block w-full input" />
+						<input type="text" name="address_1" required class="block w-full input" />
 					</div>
 					<div class="sm:col-span-12">
-						<label for="address2" class="block text-sm font-medium text-gray-700"
+						<label for="address_2" class="block text-sm font-medium text-gray-700"
 							>Address Line 2</label
 						>
-						<input type="text" name="address2" class="block w-full input" />
+						<input type="text" name="address_2" class="block w-full input" />
 					</div>
 					<div class="sm:col-span-8">
 						<label for="city" class="block text-sm font-medium text-gray-700">City</label>
 						<input type="text" name="city" required class="block w-full input" />
 					</div>
 					<div class="sm:col-span-4">
-						<label for="state" class="block text-sm font-medium text-gray-700">State</label>
-						<input type="text" name="state" required class="block w-full input" />
+						<label for="province" class="block text-sm font-medium text-gray-700">State</label>
+						<input type="text" name="province" required class="block w-full input" />
 					</div>
 					<div class="sm:col-span-4">
-						<label for="zip" class="block text-sm font-medium text-gray-700">Zip</label>
-						<input type="text" name="zip" required class="block w-full input" />
+						<label for="postal_code" class="block text-sm font-medium text-gray-700"
+							>Postal Code</label
+						>
+						<input type="text" name="postal_code" required class="block w-full input" />
 					</div>
 					<div class="sm:col-span-8">
 						<label for="last_name" class="block text-sm font-medium text-gray-700"
@@ -342,27 +345,40 @@
 				role="list"
 				class="mt-3 mb-8 sm:mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
 			>
-				{#each shipping_addresses as address}
-					<li class="col-span-1 divide-y divide-gray-200 dark:divide-gray-900 rounded-lg bg-white dark:bg-gray-800 shadow">
-						<div class="flex flex-col w-full justify-between p-6">
-							<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-								{address.first_name}
-								{address.last_name}
-							</p>
-							{#if address.company}
-								<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">{address.company}</p>
-							{/if}
-							<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">{address.address_1}</p>
-							{#if address.address_2}
-								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">{address.address_2}</p>
-							{/if}
-							<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-								{address.city}, {address.province}
-								{address.postal_code}
-							</p>
-							{#if address.phone}
-								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">{address.phone}</p>
-							{/if}
+				{#each shipping_addresses as address, i (address.id)}
+					<li
+						animate:flip={flipParams}
+						class="col-span-1 flex flex-col divide-y divide-gray-200 dark:divide-gray-900 rounded-lg bg-white dark:bg-gray-800 shadow"
+					>
+						<div class="grow flex flex-col w-full justify-between p-6">
+							<div>
+								<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+									{address.first_name}
+									{address.last_name}
+								</p>
+								{#if address.company}
+									<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+										{address.company}
+									</p>
+								{/if}
+								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+									{address.address_1}
+								</p>
+								{#if address.address_2}
+									<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+										{address.address_2}
+									</p>
+								{/if}
+								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+									{address.city}, {address.province}
+									{address.postal_code}
+								</p>
+								{#if address.phone}
+									<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+										{address.phone}
+									</p>
+								{/if}
+							</div>
 						</div>
 						<div>
 							<div class="-mt-px flex divide-x divide-gray-200 dark:divide-gray-900">
@@ -434,10 +450,16 @@
 		{/if}
 
 		<!-- Orders -->
-		{#if orders?.length}
-			<div class="flex items-center border-b border-gray-500 dark:border-gray-600 pb-3">
-				<h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Orders</h2>
+		<div
+			class="border-b border-gray-200 dark:border-gray-600 px-4 py-5 sm:px-6 mt-8 sm:mt-12 lg:mt-20"
+		>
+			<div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+				<div class="ml-4 mt-2">
+					<h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Orders</h3>
+				</div>
 			</div>
+		</div>
+		{#if orders?.length}
 			{#each orders as order, i}
 				{#if i >= currentPage * opp - opp && i < currentPage * opp}
 					<div class="sm:flex sm:flex-wrap my-3 justify-between dark:text-gray-200">
