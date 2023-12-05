@@ -1,4 +1,4 @@
-interface User {
+export interface User {
   id: string;
   created_at: string;
   updated_at: string;
@@ -14,7 +14,7 @@ interface User {
   shipping_addresses: Shippingaddress[];
 }
 
-interface Shippingaddress {
+export interface Shippingaddress {
   id: string;
   created_at: string;
   updated_at: string;
@@ -33,7 +33,7 @@ interface Shippingaddress {
   metadata?: any;
 }
 
-interface Order {
+export interface Order {
   object: string;
   id: string;
   created_at: string;
@@ -60,7 +60,7 @@ interface Order {
   items: Item[];
 }
 
-interface Item {
+export interface Item {
   id: string;
   created_at: string;
   updated_at: string;
@@ -87,9 +87,9 @@ interface Item {
   metadata: Metadata2;
 }
 
-interface Metadata2 {
+export interface Metadata2 {
 }
 
-interface Metadata {
+export interface Metadata {
   stripe_id: string;
 }

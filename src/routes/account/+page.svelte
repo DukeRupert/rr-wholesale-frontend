@@ -1,284 +1,471 @@
 <script lang="ts">
-   import type { PageData } from './$types'
-   import { enhance } from '$app/forms'
-   import { invalidateAll } from '$app/navigation'
-   import Pagination from '$lib/components/elements/Pagination.svelte'
-   import AddressCard from '$lib/components/elements/AddressCard.svelte'
+	import type { PageData } from './$types';
+	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import Pagination from '$lib/components/elements/Pagination.svelte';
+	import AddressCard from '$lib/components/elements/AddressCard.svelte';
 
-   export let data: PageData
-//console.log(data.user)
-   $: ({ id, email, first_name, last_name, phone, billing_address_id, shipping_addresses, orders } = data.user)
-   $: orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-   $: currentPage = data?.currentPage || 1
-   let opp = 10 // orders per page
-   let processing = false
-   let editInfo = false
-   let editAddress = false
-   let changePassword = false
+	export let data: PageData;
+	//console.log(data.user)
+	$: ({ id, email, first_name, last_name, phone, billing_address_id, shipping_addresses, orders } =
+		data.user);
+	$: orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+	$: currentPage = data?.currentPage || 1;
+	let opp = 10; // orders per page
+	let processing = false;
+	let editInfo = false;
+	let editAddress = false;
+	let changePassword = false;
 </script>
 
-<div class="max-w-screen-2xl mx-auto py-6 px-6 md:px-8 sm:px-6">
-   <h1 class="text-2xl font-semibold mb-8 sm:mb-12 text-center">Your Account</h1>
-   <div class="max-w-screen-lg mx-auto">
-   
-      <!-- Contact Information -->
-      <div class="flex items-center border-b border-gray-500 pb-3">
-         <h2 class="text-xl font-semibold text-gray-900">Contact Information</h2>
-         <button type="button" on:click={() => editInfo = !editInfo} class="ml-6 font-medium text-thunderbird-600 hover:text-thunderbird-500">
-            {#if editInfo}
-               Cancel
-            {:else}
-               Edit
-            {/if}
-         </button>
-      </div>
-      {#if editInfo}
-         <form action="?/editInfo" method="POST" use:enhance={ async ({ cancel }) => {
-            if (processing) cancel()
-            processing = true
-            return async ({ form, result }) => {
-               if (result.status === 200) {
-                  await invalidateAll()
-                  form.reset()
-                  editInfo = false
-               } else {
-                  console.log('failed')
-               }
-               processing = false 
-            }
-         }}>
-            <div class="mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
-               <div class="sm:col-span-6">
-                  <label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
-                  <input type="text" value={first_name} name="firstName" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-6">
-                  <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
-                  <input type="text" value={last_name} name="lastName" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-7">
-                  <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                  <input type="text" value={email} name="email" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-5">
-                  <label for="last_name" class="block text-sm font-medium text-gray-700">Phone (optional)</label>
-                  <input type="text" value={phone} name="phone" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-6">
-                  <button disabled={processing} type="submit" class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-thunderbird-600 hover:bg-thunderbird-700">
-                     {#if processing}
-                        Processing...
-                     {:else}
-                        Save
-                     {/if}
-                  </button>
-               </div>
-               <div class="sm:col-span-6">
-                  <button hidden={processing} on:click|preventDefault={() => { editInfo = false }} type="button" class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600">
-                     Cancel
-                  </button>
-               </div>
-            </div>
-         </form>
-      {:else if (changePassword)}
-         <form action="?/changePassword" method="POST" use:enhance={ async ({ cancel }) => {
-            if (processing) cancel()
-            processing = true
-            return async ({ form, result }) => {
-               if (result.status === 200) {
-                  await invalidateAll()
-                  form.reset()
-                  changePassword = false
-               } else {
-                  console.log('failed')
-               }
-               processing = false 
-            }
-         }}>
-            <div class="mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
-               <div class="sm:col-span-6">
-                  <label for="currentPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
-                  <input name="currentPassword" type="password" autocomplete="current-password" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-6">
-               </div>
-               <div class="sm:col-span-6">
-                  <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
-                  <input name="newPassword" type="password" autocomplete="new-password" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-6">
-                  <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                  <input name="confirmPassword" type="password" autocomplete="new-password" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-6">
-                  <button disabled={processing} type="submit" class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-thunderbird-600 hover:bg-thunderbird-700">
-                     {#if processing}
-                        Processing...
-                     {:else}
-                        Save
-                     {/if}
-                  </button>
-               </div>
-               <div class="sm:col-span-6">
-                  <button hidden={processing} on:click|preventDefault={() => { changePassword = false }} type="button" class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600">
-                     Cancel
-                  </button>
-               </div>
-            </div>
-         </form>
-      {:else}
-         <p class="mt-3">{first_name} {last_name}</p>
-         <p>{email}</p>
-         {#if phone}
-         <p>{phone}</p>
-         {/if}
-         <button on:click={() => { changePassword = true } } class="text-thunderbird-600 hover:text-thunderbird-500 mb-8 sm:mb-12 mt-3 ">Change Password</button>
-      {/if}
-   
-      <!-- Addresses -->
-      <div class="flex items-center border-b border-gray-500 pb-3">
-         <h2 class="text-xl font-semibold text-gray-900">Addresses</h2>
-         <button type="button" on:click={() => editAddress = !editAddress} class="ml-6 font-medium text-thunderbird-600 hover:text-thunderbird-500">
-            {#if editAddress}
-               Cancel
-            {:else}
-               Add
-            {/if}
-         </button>
-      </div>
-      {#if editAddress}
-         <form action="?/addAddress" method="POST" use:enhance={ async ({ cancel }) => {
-            if (processing) cancel()
-            processing = true
-            return async ({ form, result }) => {
-               if (result.status === 200) {
-                  form.reset()
-                  await invalidateAll()
-                  editAddress = false
-               } else {
-                  console.log('failed')
-               }
-               processing = false 
-            }
-         }}>
-            <div class="mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
-               <div class="sm:col-span-6">
-                  <label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
-                  <input type="text" name="firstName" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-6">
-                  <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
-                  <input type="text" name="lastName" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-12">
-                  <label for="address1" class="block text-sm font-medium text-gray-700">Address Line 1</label>
-                  <input type="text" name="address1" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-12">
-                  <label for="address2" class="block text-sm font-medium text-gray-700">Address Line 2</label>
-                  <input type="text" name="address2" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-8">
-                  <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-                  <input type="text" name="city" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-4">
-                  <label for="state" class="block text-sm font-medium text-gray-700">State</label>
-                  <input type="text" name="state" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-4">
-                  <label for="zip" class="block text-sm font-medium text-gray-700">Zip</label>
-                  <input type="text" name="zip" required="required" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-8">
-                  <label for="last_name" class="block text-sm font-medium text-gray-700">Phone (optional)</label>
-                  <input type="text" name="phone" class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500" />
-               </div>
-               <div class="sm:col-span-6">
-                  <button disabled={processing} type="submit" class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-thunderbird-600 hover:bg-thunderbird-700">
-                     {#if processing}
-                        Processing...
-                     {:else}
-                        Save
-                     {/if}
-                  </button>
-               </div>
-               <div class="sm:col-span-6">
-                  <button hidden={processing} on:click|preventDefault={() => { editAddress = false }} type="button" class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600">
-                     Cancel
-                  </button>
-               </div>
-            </div>
-         </form>
-      {:else}
-         <div class="flex flex-wrap mt-3 mb-8 sm:mb-12">
-            {#each shipping_addresses as address}
-            <div class="border rounded-md p-4 mr-3 mb-2">
-               <p>{address.first_name} {address.last_name}</p>
-               <p>{address.address_1}</p>
-               {#if address.address_2}
-                  <p>{address.address_2}</p>
-               {/if}
-               <p>{address.city}, {address.province}</p>
-               <p>{address.postal_code}</p>
-               {#if address.phone}
-                  <p>{address.phone}</p>
-               {/if}
-               <div class="mt-3">
-                  <button class="text-thunderbird-600 hover:text-thunderbird-500 pr-2">Edit</button>
-                  <form class="inline" action="?/deleteAddress" method="POST"use:enhance={ async ({ cancel }) => {
-                     return async ({ result }) => {
-                        if (result.status === 200) {
-                           await invalidateAll()                
-                        } else {
-                           console.log('failed')
-                        }
-                        processing = false 
-                     }}}>
-                     <button type="submit" class="text-thunderbird-600 hover:text-thunderbird-500 pl-2">Delete</button>
-                     <input type="hidden" name="addressId" value={address.id} />
-                  </form>
-               </div>
-            </div>
-            {:else}
-            No addresses saved
-            {/each}
-         </div>
-         <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-         {#each shipping_addresses as address}
-         <AddressCard {address} />
-         {/each}
-         </ul>
-      {/if}
-      
-      <!-- Orders -->
-      {#if orders?.length}
-         <div class="flex items-center border-b border-gray-500 pb-3">
-            <h2 class="text-xl font-semibold text-gray-900">Orders</h2>
-         </div>
-         {#each orders as order, i}
-            {#if i >= currentPage * opp - opp && i < currentPage * opp}
-               <div class="sm:flex sm:flex-wrap my-3 justify-between">
-                  <div class="mr-2 block sm:inline">
-                     {new Date(order.created_at).toLocaleDateString('us-EN', {month: 'long', day: 'numeric', year: 'numeric'})}
-                  </div>
-                  <div class="mr-2 block sm:inline">
-                     Order Num: {order.display_id}
-                  </div>
-                  <div class="mr-2 block sm:inline">
-                     {order.fulfillment_status === 'fulfilled' ? 'Shipped' : 'Pending'}
-                  </div>
-                  <div>
-                     <a href={`/account/order/${order.id}`} class="text-thunderbird-600 hover:text-thunderbird-500 mr-3">View / Track</a>
-                  </div>
-               </div>
-            {/if}
-         {/each}
-         <Pagination bind:currentPage={currentPage} itemCount={orders.length} itemsPerPage={opp}/>
-      {:else}
-         <div class="my-3">
-            No orders yet
-         </div>
-      {/if}
-   </div>
+<div class="max-w-screen-2xl dark:bg-gray-900 mx-auto py-6 px-6 md:px-8 sm:px-6">
+	<h1 class="text-2xl font-semibold dark:text-white mb-8 sm:mb-12 text-center">Your Account</h1>
+	<div class="max-w-screen-lg mx-auto">
+		<!-- Contact Information -->
+		<div class="border-b border-gray-200 dark:border-gray-600 px-4 py-5 sm:px-6">
+			<div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+				<div class="ml-4 mt-2">
+					<h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
+						Contact Information
+					</h3>
+				</div>
+				<div class="ml-4 mt-2 flex-shrink-0">
+					<button
+						type="button"
+						on:click={() => (editInfo = !editInfo)}
+						class="relative inline-flex btn px-3 py-2 text-sm font-semibold"
+						>{#if editInfo}
+							Cancel
+						{:else}
+							Edit
+						{/if}</button
+					>
+				</div>
+			</div>
+		</div>
+		{#if editInfo}
+			<form
+				action="?/editInfo"
+				method="POST"
+				use:enhance={async ({ cancel }) => {
+					if (processing) cancel();
+					processing = true;
+					return async ({ formElement, result }) => {
+						if (result.status === 200) {
+							await invalidateAll();
+							formElement.reset();
+							editInfo = false;
+						} else {
+							console.log('failed');
+						}
+						processing = false;
+					};
+				}}
+			>
+				<div class="mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+					<div class="sm:col-span-6">
+						<label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label
+						>
+						<input
+							type="text"
+							value={first_name}
+							name="firstName"
+							required
+							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+						/>
+					</div>
+					<div class="sm:col-span-6">
+						<label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+						<input
+							type="text"
+							value={last_name}
+							name="lastName"
+							required
+							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+						/>
+					</div>
+					<div class="sm:col-span-7">
+						<label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+						<input
+							type="text"
+							value={email}
+							name="email"
+							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+						/>
+					</div>
+					<div class="sm:col-span-5">
+						<label for="last_name" class="block text-sm font-medium text-gray-700"
+							>Phone (optional)</label
+						>
+						<input
+							type="text"
+							value={phone}
+							name="phone"
+							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+						/>
+					</div>
+					<div class="sm:col-span-6">
+						<button
+							disabled={processing}
+							type="submit"
+							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-thunderbird-600 hover:bg-thunderbird-700"
+						>
+							{#if processing}
+								Processing...
+							{:else}
+								Save
+							{/if}
+						</button>
+					</div>
+					<div class="sm:col-span-6">
+						<button
+							hidden={processing}
+							on:click|preventDefault={() => {
+								editInfo = false;
+							}}
+							type="button"
+							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600"
+						>
+							Cancel
+						</button>
+					</div>
+				</div>
+			</form>
+		{:else if changePassword}
+			<form
+				action="?/changePassword"
+				method="POST"
+				use:enhance={async ({ cancel }) => {
+					if (processing) cancel();
+					processing = true;
+					return async ({ form, result }) => {
+						if (result.status === 200) {
+							await invalidateAll();
+							form.reset();
+							changePassword = false;
+						} else {
+							console.log('failed');
+						}
+						processing = false;
+					};
+				}}
+			>
+				<div class="mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+					<div class="sm:col-span-6">
+						<label for="currentPassword" class="block text-sm font-medium text-gray-700"
+							>Current Password</label
+						>
+						<input
+							name="currentPassword"
+							type="password"
+							autocomplete="current-password"
+							required
+							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+						/>
+					</div>
+					<div class="sm:col-span-6"></div>
+					<div class="sm:col-span-6">
+						<label for="newPassword" class="block text-sm font-medium text-gray-700"
+							>New Password</label
+						>
+						<input
+							name="newPassword"
+							type="password"
+							autocomplete="new-password"
+							required
+							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+						/>
+					</div>
+					<div class="sm:col-span-6">
+						<label for="confirmPassword" class="block text-sm font-medium text-gray-700"
+							>Confirm New Password</label
+						>
+						<input
+							name="confirmPassword"
+							type="password"
+							autocomplete="new-password"
+							required
+							class="block w-full rounded-md border-gray-300 px-3 py-3 placeholder-gray-500 focus:border-thunderbird-500 focus:ring-thunderbird-500"
+						/>
+					</div>
+					<div class="sm:col-span-6">
+						<button
+							disabled={processing}
+							type="submit"
+							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-thunderbird-600 hover:bg-thunderbird-700"
+						>
+							{#if processing}
+								Processing...
+							{:else}
+								Save
+							{/if}
+						</button>
+					</div>
+					<div class="sm:col-span-6">
+						<button
+							hidden={processing}
+							on:click|preventDefault={() => {
+								changePassword = false;
+							}}
+							type="button"
+							class="mt-6 w-full items-center justify-center rounded-md border border-transparent px-5 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600"
+						>
+							Cancel
+						</button>
+					</div>
+				</div>
+			</form>
+		{:else}
+			<h3 class="mt-3 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
+				{first_name}
+				{last_name}
+			</h3>
+			<p class="text-sm text-gray-500 dark:text-gray-400">{email}</p>
+			{#if phone}
+				<p>{phone}</p>
+			{/if}
+			<button
+				on:click={() => {
+					changePassword = true;
+				}}
+				class="text-thunderbird-600 hover:text-thunderbird-500 mb-8 sm:mb-12 mt-3"
+				>Change Password</button
+			>
+		{/if}
+
+		<!-- Addresses -->
+		<div class="border-b border-gray-200 dark:border-gray-600 px-4 py-5 sm:px-6">
+			<div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+				<div class="ml-4 mt-2">
+					<h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
+						Address Information
+					</h3>
+				</div>
+				<div class="ml-4 mt-2 flex-shrink-0">
+					<button
+						type="button"
+						on:click={() => (editAddress = !editAddress)}
+						class="relative inline-flex btn px-3 py-2 text-sm font-semibold"
+						>{#if editInfo}
+							Cancel
+						{:else}
+							Add
+						{/if}</button
+					>
+				</div>
+			</div>
+		</div>
+		{#if editAddress}
+			<form
+				action="?/addAddress"
+				method="POST"
+				use:enhance={async ({ cancel }) => {
+					if (processing) cancel();
+					processing = true;
+					return async ({ formElement, result }) => {
+						if (result.status === 200) {
+							formElement.reset();
+							await invalidateAll();
+							editAddress = false;
+						} else {
+							console.log('failed');
+						}
+						processing = false;
+					};
+				}}
+			>
+				<div class="max-w-md mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+					<div class="sm:col-span-6">
+						<label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label
+						>
+						<input type="text" name="firstName" required class="block w-full input" />
+					</div>
+					<div class="sm:col-span-6">
+						<label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+						<input type="text" name="lastName" required class="block w-full input" />
+					</div>
+					<div class="sm:col-span-12">
+						<label for="address1" class="block text-sm font-medium text-gray-700"
+							>Address Line 1</label
+						>
+						<input type="text" name="address1" required class="block w-full input" />
+					</div>
+					<div class="sm:col-span-12">
+						<label for="address2" class="block text-sm font-medium text-gray-700"
+							>Address Line 2</label
+						>
+						<input type="text" name="address2" class="block w-full input" />
+					</div>
+					<div class="sm:col-span-8">
+						<label for="city" class="block text-sm font-medium text-gray-700">City</label>
+						<input type="text" name="city" required class="block w-full input" />
+					</div>
+					<div class="sm:col-span-4">
+						<label for="state" class="block text-sm font-medium text-gray-700">State</label>
+						<input type="text" name="state" required class="block w-full input" />
+					</div>
+					<div class="sm:col-span-4">
+						<label for="zip" class="block text-sm font-medium text-gray-700">Zip</label>
+						<input type="text" name="zip" required class="block w-full input" />
+					</div>
+					<div class="sm:col-span-8">
+						<label for="last_name" class="block text-sm font-medium text-gray-700"
+							>Phone (optional)</label
+						>
+						<input type="text" name="phone" class="block w-full input" />
+					</div>
+					<div class="sm:col-span-6">
+						<button disabled={processing} type="submit" class="mt-6 w-full btn">
+							{#if processing}
+								Processing...
+							{:else}
+								Save
+							{/if}
+						</button>
+					</div>
+					<div class="sm:col-span-6">
+						<button
+							hidden={processing}
+							on:click|preventDefault={() => {
+								editAddress = false;
+							}}
+							type="button"
+							class="mt-6 w-full btn btn-secondary"
+						>
+							Cancel
+						</button>
+					</div>
+				</div>
+			</form>
+		{:else if shipping_addresses.length > 0}
+			<ul
+				role="list"
+				class="mt-3 mb-8 sm:mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+			>
+				{#each shipping_addresses as address}
+					<li class="col-span-1 divide-y divide-gray-200 dark:divide-gray-900 rounded-lg bg-white dark:bg-gray-800 shadow">
+						<div class="flex flex-col w-full justify-between p-6">
+							<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+								{address.first_name}
+								{address.last_name}
+							</p>
+							{#if address.company}
+								<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">{address.company}</p>
+							{/if}
+							<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">{address.address_1}</p>
+							{#if address.address_2}
+								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">{address.address_2}</p>
+							{/if}
+							<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+								{address.city}, {address.province}
+								{address.postal_code}
+							</p>
+							{#if address.phone}
+								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">{address.phone}</p>
+							{/if}
+						</div>
+						<div>
+							<div class="-mt-px flex divide-x divide-gray-200 dark:divide-gray-900">
+								<form
+									class="-ml-px flex w-0 flex-1"
+									action="?/deleteAddress"
+									method="POST"
+									use:enhance={async ({ cancel }) => {
+										return async ({ result }) => {
+											if (result.status === 200) {
+												await invalidateAll();
+											} else {
+												console.log('failed');
+											}
+											processing = false;
+										};
+									}}
+								>
+									<button
+										type="submit"
+										class="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-thunderbird-600 dark:hover:text-thunderbird-500 capitalize"
+									>
+										delete
+									</button>
+									<input type="hidden" name="addressId" value={address.id} />
+								</form>
+							</div>
+						</div>
+					</li>
+				{/each}
+			</ul>
+			<!-- <div class="border rounded-md p-4 mr-3 mb-2">
+						<h3>{address.first_name} {address.last_name}</h3>
+						<p>{address.address_1}</p>
+						{#if address.address_2}
+							<p>{address.address_2}</p>
+						{/if}
+						<p>{address.city}, {address.province}</p>
+						<p>{address.postal_code}</p>
+						{#if address.phone}
+							<p>{address.phone}</p>
+						{/if}
+						<div class="mt-3">
+							<button class="text-thunderbird-600 hover:text-thunderbird-500 pr-2">Edit</button>
+							<form
+								class="inline"
+								action="?/deleteAddress"
+								method="POST"
+								use:enhance={async ({ cancel }) => {
+									return async ({ result }) => {
+										if (result.status === 200) {
+											await invalidateAll();
+										} else {
+											console.log('failed');
+										}
+										processing = false;
+									};
+								}}
+							>
+								<button type="submit" class="text-thunderbird-600 hover:text-thunderbird-500 pl-2"
+									>Delete</button
+								>
+								<input type="hidden" name="addressId" value={address.id} />
+							</form>
+						</div>
+					</div> -->
+		{:else}
+			No addresses saved
+		{/if}
+
+		<!-- Orders -->
+		{#if orders?.length}
+			<div class="flex items-center border-b border-gray-500 dark:border-gray-600 pb-3">
+				<h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Orders</h2>
+			</div>
+			{#each orders as order, i}
+				{#if i >= currentPage * opp - opp && i < currentPage * opp}
+					<div class="sm:flex sm:flex-wrap my-3 justify-between dark:text-gray-200">
+						<div class="mr-2 block sm:inline">
+							{new Date(order.created_at).toLocaleDateString('us-EN', {
+								month: 'long',
+								day: 'numeric',
+								year: 'numeric'
+							})}
+						</div>
+						<div class="mr-2 block sm:inline">
+							Order Num: {order.display_id}
+						</div>
+						<div class="mr-2 block sm:inline">
+							{order.fulfillment_status === 'fulfilled' ? 'Shipped' : 'Pending'}
+						</div>
+						<div>
+							<a
+								href={`/account/order/${order.id}`}
+								class="text-thunderbird-600 hover:text-thunderbird-500 mr-3">View / Track</a
+							>
+						</div>
+					</div>
+				{/if}
+			{/each}
+			<Pagination bind:currentPage itemCount={orders.length} itemsPerPage={opp} />
+		{:else}
+			<div class="my-3">No orders yet</div>
+		{/if}
+	</div>
 </div>

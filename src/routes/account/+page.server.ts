@@ -1,6 +1,9 @@
 import type { PageServerLoad, Actions } from './$types'
 import { fail, redirect } from '@sveltejs/kit'
 import medusa from '$lib/server/medusa'
+import { superValidate, message } from 'sveltekit-superforms/server'
+import { addShippingAddress } from '$lib/validators/account'
+import type { Address } from '@dukerupert/sveltekit-medusa-client'
 
 export const load: PageServerLoad = async function ({ url, locals }) {
    if (!locals.user) throw redirect(307, '/auth')
@@ -26,25 +29,13 @@ export const actions: Actions = {
    },
 
    addAddress: async ({ request, locals }) => {
-      const data = await request.formData()
-      const first_name = data.get('firstName') as string
-      const last_name = data.get('lastName') as string
-      const address_1 = data.get('address1') as string
-      const address_2 = data.get('address2') as string
-      const city = data.get('city') as string
-      const country_code = 'us'
-      const province = data.get('state') as string
-      const postal_code = data.get('zip') as string
-      const phone = data.get('phone') as string
-      if (!first_name || !last_name || !address_1 || !city || !province || !postal_code) {
-         console.log(first_name, last_name, address_1, city, province, postal_code)
-         return fail(400, { first_name, missing: true })
-      }
-      const success = await medusa.addShippingAddress(locals, { first_name, last_name, address_1, address_2, city, country_code, province, postal_code, phone })
-      return { success  }
-   },
-
-   editAddress: async ({ request, locals }) => {
+      console.log('Add Address action');
+		const form = await superValidate(request, addShippingAddress);
+      if (!form.valid) return message(form, 'Invalid address', { status: 400 })
+      const address = form.data as Address
+      const success = await medusa.addShippingAddress(locals, address) as boolean
+      if (!success) return message(form, 'Something went wrong', { status: 500 })
+      return { success }
    },
 
    deleteAddress: async ({ request, locals }) => {
