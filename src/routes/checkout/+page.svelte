@@ -6,11 +6,9 @@
 	import { addShippingAddressSchema } from '$lib/validators/account';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import { page } from '$app/stores';
-	import { enhance } from '$app/forms';
 	import { formatPrice } from '$lib/utilities';
 	import { company } from '$lib/constants';
 	import { goto } from '$app/navigation';
-	import Address from '$lib/components/Address.svelte';
 	import { onMount } from 'svelte';
 
 	export let data: PageData;
@@ -22,7 +20,6 @@
 	let clientSecret: string;
 	let shippingOptions: any[];
 	let shippingOptionId: string;
-	let addressContainer: any;
 	let order: any;
 
 	let orderSummaryOpen = false;
@@ -32,13 +29,7 @@
 	let errorMessage = '';
 
 	// Track progress through form
-	let isShippingAddressSelected = false;
-	let isShippingOptionSelected = false;
-	let isBillingAddressSelected = false;
-	$: readyToCheckout =
-		isShippingAddressSelected && isShippingOptionSelected && isBillingAddressSelected;
-
-	$: console.log(readyToCheckout);
+	
 
 	// Shipping address
 	const {
@@ -103,17 +94,6 @@
 		timeoutMs: TIMEOUT_MS
 	});
 
-	const toggleOrderSummary = () => {
-		let orderSummary = document.getElementById('order-summary') as HTMLElement;
-		if (orderSummaryOpen) {
-			orderSummary.classList.add('hidden');
-			orderSummaryOpen = false;
-		} else {
-			orderSummary.classList.remove('hidden');
-			orderSummaryOpen = true;
-		}
-	};
-
 	let contacts = [];
 	if (user.shipping_addresses) {
 		for (let address of user.shipping_addresses) {
@@ -131,55 +111,12 @@
 		}
 	}
 
-	let addressOptions = {
-		contacts: contacts
-	};
-
 	const splitName = (name = '') => {
 		const [firstName, ...lastName] = name.split(' ').filter(Boolean);
 		return {
 			firstName: firstName,
 			lastName: lastName.join(' ')
 		};
-	};
-
-	const saveAddress = async (value) => {
-		let address = {
-			first_name: value.firstName,
-			last_name: value.lastName,
-			address_1: value.address.line1,
-			address_2: value.address.line2,
-			city: value.address.city,
-			province: value.address.state,
-			postal_code: value.address.postal_code,
-			country_code: value.address.country.toLowerCase()
-		};
-		let newAddress = true;
-
-		for (let existing of user.shipping_addresses) {
-			if (JSON.stringify(address) === JSON.stringify(existing)) {
-				newAddress = false;
-			}
-		}
-
-		address.phone = value.phone; // add after to not break the comparison above
-		if (newAddress) {
-			let success = await fetch('/checkout/save-address', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(address)
-			})
-				.then((res) => res.ok)
-				.catch(() => false);
-			if (!success) return false;
-		}
-		return await fetch('/checkout/shipping-address', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(address)
-		})
-			.then((res) => res.json())
-			.catch(() => false);
 	};
 
 	const saveShippingOption = async (id: string) => {
@@ -221,8 +158,6 @@
 		await startCheckout();
 	});
 </script>
-
-<!-- <SEO title="Checkout" description="Checkout page for {PUBLIC_SITE_NAME}" /> -->
 
 {#if errorMessage}
 	<p>{errorMessage}</p>

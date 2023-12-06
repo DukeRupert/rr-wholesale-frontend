@@ -24,6 +24,14 @@
 	let loading = false;
 	let errorMessage = '';
 
+	// Track progress through form
+	let createNewAddress = false;
+	let isShippingAddressSelected = false;
+	let isShippingOptionSelected = false;
+	let isBillingAddressSelected = false;
+	$: readyToCheckout =
+		isShippingAddressSelected && isShippingOptionSelected && isBillingAddressSelected;
+
 	const toggleOrderSummary = () => {
 		let orderSummary = document.getElementById('order-summary') as HTMLElement;
 		if (orderSummaryOpen) {
@@ -137,8 +145,6 @@
 			console.log(err);
 		}
 	};
-
-	
 </script>
 
 <!-- <SEO title="Checkout" description="Checkout page for {PUBLIC_SITE_NAME}" /> -->
@@ -242,14 +248,94 @@
 				class="py-16 lg:col-start-1 lg:row-start-1 lg:mx-auto lg:w-full lg:max-w-lg lg:pb-24 lg:pt-0"
 			>
 				<h2 id="payment-and-shipping-heading" class="sr-only">Payment and shipping details</h2>
-
-				<form>
-					<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
+				<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
 						<div class="mt-10">
 							<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
+				{#if (!isShippingAddressSelected && !createNewAddress)}
+				<ul role="list" class="mt-3 mb-8 sm:mb-12 grid grid-cols-1 gap-6 lg:grid-cols-12">
+					{#each user.shipping_addresses as address, i (address.id)}
+						<li
+							class="col-span-1 lg:col-span-6 flex flex-col divide-y divide-gray-200 dark:divide-gray-900 rounded-lg bg-white dark:bg-gray-800 shadow"
+						>
+							<div class="grow flex flex-col w-full justify-between p-6">
+								<div>
+									<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+										{address.first_name}
+										{address.last_name}
+									</p>
+									{#if address.company}
+										<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+											{address.company}
+										</p>
+									{/if}
+									<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+										{address.address_1}
+									</p>
+									{#if address.address_2}
+										<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+											{address.address_2}
+										</p>
+									{/if}
+									<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+										{address.city}, {address.province}
+										{address.postal_code}
+									</p>
+									{#if address.phone}
+										<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+											{address.phone}
+										</p>
+									{/if}
+								</div>
+							</div>
+							<div>
+								<div class="-mt-px flex divide-x divide-gray-200 dark:divide-gray-900">
+									<form
+										class="-ml-px flex w-0 flex-1"
+										action="?/deleteAddress"
+										method="POST"
+										use:enhance={async ({ cancel }) => {
+											return async ({ result }) => {
+												if (result.status === 200) {
+													await invalidateAll();
+												} else {
+													console.log('failed');
+												}
+												processing = false;
+											};
+										}}
+									>
+										<button
+											type="submit"
+											class="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-thunderbird-600 dark:hover:text-thunderbird-500 capitalize"
+										>
+											select
+										</button>
+										<input type="hidden" name="addressId" value={address.id} />
+									</form>
+								</div>
+							</div>
+						</li>
+					{/each}
+				</ul>
+				<div class="mt-6 text-center text-sm">
+						<p>
+							or
+							<button
+								on:click={() => createNewAddress = true}								
+								class="font-medium text-thunderbird-600 hover:text-thunderbird-500"
+							>
+								Create new address
+								<span aria-hidden="true"> &rarr;</span>
+							</button>
+						</p>
+					</div>
+				{/if}
+				{#if createNewAddress}
+				<form>
+					
 
 							<div class="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-12">
-                                <div class="sm:col-span-6">
+								<div class="sm:col-span-6">
 									<label for="first_name" class="block text-sm font-medium text-gray-700"
 										>First name</label
 									>
@@ -263,7 +349,7 @@
 										/>
 									</div>
 								</div>
-                                <div class="sm:col-span-6">
+								<div class="sm:col-span-6">
 									<label for="last_name" class="block text-sm font-medium text-gray-700"
 										>Last name</label
 									>
@@ -277,7 +363,7 @@
 										/>
 									</div>
 								</div>
-                                <div class="sm:col-span-12">
+								<div class="sm:col-span-12">
 									<label for="company" class="block text-sm font-medium text-gray-700"
 										>Company</label
 									>
@@ -349,7 +435,7 @@
 									</div>
 								</div>
 							</div>
-						</div>
+						
 
 						<div class="mt-10">
 							<h3 class="text-lg font-medium text-gray-900">Billing information</h3>
@@ -373,8 +459,11 @@
 						<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
 							<button type="submit" class="btn">Pay now</button>
 						</div>
-					</div>
+					
 				</form>
+				{/if}
+					
+				</div>
 			</section>
 		</div>
 	</div>
