@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { company } from '$lib/constants';
 	import { page } from '$app/stores';
-    import { goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { X, Menu } from 'lucide-svelte';
 	import { createCollapsible, melt } from '@melt-ui/svelte';
 	import { slide, type SlideParams } from 'svelte/transition';
@@ -51,19 +51,23 @@
 
 <nav class="bg-white shadow">
 	<div use:melt={$root} class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-		<div class="flex h-16 justify-between">
+		<div class="flex h-16 lg:h-24 justify-between">
 			<div class="flex">
 				<div class="flex flex-shrink-0 items-center">
-					<a href="/">
+					<a
+						href="/"
+						class="rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-thunderbird-500"
+					>
 						<span class="sr-only">{company.name}</span>
-						<img class="h-12 w-auto" src={company.logo.src} alt={company.logo.alt} />
+						<img class="h-12 lg:h-20 w-auto" src={company.logo.src} alt={company.logo.alt} />
 					</a>
 				</div>
 				<div class="hidden sm:ml-6 sm:flex sm:space-x-8">
 					{#each links as { label, href }}
 						<a
 							{href}
-							class="inline-flex items-center border-b-2 {path === href
+							class="inline-flex items-center border-b-2 focus:outline-none focus:ring-2 focus:ring-inset-2 focus:ring-thunderbird-500 {path ===
+							href
 								? 'border-thunderbird-500 text-gray-900'
 								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} px-1 pt-1 text-sm font-medium"
 							>{label}</a

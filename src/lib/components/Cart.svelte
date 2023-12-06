@@ -8,7 +8,7 @@
 	import type { Cart } from '$lib/types/cart';
 	export let cart: Cart | null;
 	export let count: number | null;
-	
+
 	$: cart = cart;
 	$: items = cart?.items || [];
 	$: total = cart?.subtotal;
@@ -23,7 +23,7 @@
 		<button
 			{...$close}
 			use:close
-			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white rounded-md transition-colors duration-150 ease-in"
+			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"
 		>
 			<span class="sr-only">Close cart</span>
 			<ShoppingCart class="h-6 w-6 flex-shrink-0" />
@@ -38,7 +38,7 @@
 		<button
 			{...$trigger}
 			use:trigger
-			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white rounded-md transition-colors duration-150 ease-in"
+			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"
 		>
 			<span class="sr-only">View cart</span>
 			<ShoppingCart class="h-6 w-6 flex-shrink-0" />

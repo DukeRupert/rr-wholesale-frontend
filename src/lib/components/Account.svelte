@@ -46,7 +46,7 @@
 		aria-label="Open account menu"
 		class="group -m-2 flex items-center h-12 w-auto {src
 			? 'p-1'
-			: 'p-2'} bg-white hover:bg-black text-gray-400 hover:text-white rounded-md transition-colors duration-150 ease-in"
+			: 'p-2'} bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"
 	>
 		<span class="sr-only">View account</span>
 		<!-- <User class="h-6 w-6 flex-shrink-0" /> -->
@@ -56,7 +56,7 @@
 	<a href="/auth/login">
 		<button
 			type="button"
-			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white rounded-md transition-colors duration-150 ease-in"
+			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"
 		>
 			<span class="sr-only">Sign In</span>
 			<UserIcon class="h-6 w-6 flex-shrink-0" />
