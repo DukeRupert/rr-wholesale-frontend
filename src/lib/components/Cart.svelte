@@ -5,8 +5,10 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
-	export let cart: any;
-	export let count: number;
+	import type { Cart } from '$lib/types/cart';
+	export let cart: Cart | null;
+	export let count: number | null;
+	
 	$: cart = cart;
 	$: items = cart?.items || [];
 	$: total = cart?.subtotal;

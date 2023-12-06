@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import Toaster from '$lib/components/toast/index.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
+	import NavBar from '$lib/components/NavBar.svelte';
 
 	export let data: PageData;
 	const nakedPaths = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/checkout', '/sitemap.xml'];
@@ -17,6 +18,7 @@
 {#if naked}
 	<slot />
 {:else}
-	<Navigation bind:user bind:cart bind:count />
+	<NavBar bind:user bind:cart bind:count />
+	<!-- <Navigation bind:user bind:cart bind:count /> -->
 	<slot />
 {/if}
