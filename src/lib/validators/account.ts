@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-export const editUser = z.object({
-	first_name: z.string(),
-	last_name: z.string(),
+export const editUserSchema = z.object({
+	first_name: z.string().max(30),
+	last_name: z.string().max(30),
 	email: z.string().email(),
 	phone: z.string().optional()
 });
 
-export const addShippingAddress = z.object({
+export const addShippingAddressSchema = z.object({
 	first_name: z.string(),
 	last_name: z.string(),
 	address_1: z.string(),
@@ -20,17 +20,13 @@ export const addShippingAddress = z.object({
 	company: z.string().optional()
 });
 
-export const changePassword = z
+export const changePasswordSchema = z
 	.object({
-		currentPassword: z.string().min(6),
 		newPassword: z.string().min(6),
 		confirmPassword: z.string().min(6)
 	})
-	.superRefine(({ newPassword, confirmPassword }, ctx) => {
-		if (newPassword !== confirmPassword) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: 'The passwords did not match'
-			});
-		}
-	});
+	.refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"], // path of error
+  });
+	
