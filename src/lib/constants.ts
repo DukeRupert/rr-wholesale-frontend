@@ -14,3 +14,6 @@ export let company = {
 		google_map: 'https://maps.app.goo.gl/QnEkXxKYWSn3MVL38'
 	}
 };
+
+export const DELAY_MS = 200;
+export const TIMEOUT_MS = 8000;

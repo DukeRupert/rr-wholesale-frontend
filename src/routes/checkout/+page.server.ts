@@ -4,14 +4,21 @@ import medusa from '$lib/server/medusa';
 import { z } from 'zod';
 import { superValidate, message } from 'sveltekit-superforms/server';
 import { updateShippingAddressReq } from '$lib/validators/checkout';
+import { addShippingAddressSchema } from '$lib/validators/account';
 import { POST } from './shipping-address/+server';
 
 export const load: PageServerLoad = async function ({ locals }) {
 	if (!locals.user) throw redirect(302, '/auth?rurl=checkout');
 
+	const shippingAddressForm = await superValidate(
+		locals.user.shipping_addresses[0],
+		addShippingAddressSchema
+	);
+
 	return {
 		user: locals.user,
-		cart: locals.cart
+		cart: locals.cart,
+		shippingAddressForm
 	};
 };
 
