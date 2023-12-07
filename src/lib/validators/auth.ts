@@ -8,6 +8,14 @@ export const loginPostReq = z.object({
    rurl: z.string()
 })
 
+export const loginSchema = z.object({
+   email: z.string().email().refine((val) => val.length > 0, {
+      message: 'Email is required'
+   }),
+   password: z.string().min(6),
+   rurl: z.string()
+})
+
 export const registerPostReq = z.object({
    email: z.string().email().refine((val) => val.length > 0, {
       message: 'Email is required'
@@ -49,3 +57,5 @@ export const resetPostReq = z.object({
       })
    }
 })
+
+export type LoginSchema = typeof loginSchema
