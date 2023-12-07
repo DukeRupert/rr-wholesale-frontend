@@ -9,6 +9,7 @@
 	import { formatPrice } from '$lib/utilities';
 	import { company } from '$lib/constants';
 	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 
 	export let data: PageData;
@@ -439,7 +440,21 @@
 						</div>
 					</form>
 				{/if}
-				<form action="?/completeCart" method="POST">
+				<form
+					action="?/completeCart"
+					method="POST"
+					use:enhance={async ({ cancel }) => {
+						if (processing) cancel();
+						processing = true;
+
+						return async ({ result }) => {
+							if (result.status === 200) {
+								success = true;
+								order = result.data.order;
+							}
+						};
+					}}
+				>
 					<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
 						<button type="submit" class="btn">Pay now</button>
 					</div>
