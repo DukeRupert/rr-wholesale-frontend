@@ -29,7 +29,6 @@
 	let errorMessage = '';
 
 	// Track progress through form
-	
 
 	// Shipping address
 	const {
@@ -137,17 +136,17 @@
 			cart = data.cart;
 			clientSecret = data.cart.payment_session.data.client_secret;
 			shippingOptions = data.shippingOptions;
-			for (let shippingOption of shippingOptions) {
-				if (shippingOption.name === 'Free Shipping') {
-					shippingOptionId = shippingOption.id;
-					cart = await saveShippingOption(shippingOptionId);
-					break;
-				}
-			}
-			if (!shippingOptionId) {
-				shippingOptionId = shippingOptions[0].id;
-				cart = await saveShippingOption(shippingOptionId);
-			}
+			// for (let shippingOption of shippingOptions) {
+			// 	if (shippingOption.name === 'Free Shipping') {
+			// 		shippingOptionId = shippingOption.id;
+			// 		cart = await saveShippingOption(shippingOptionId);
+			// 		break;
+			// 	}
+			// }
+			// if (!shippingOptionId) {
+			// 	shippingOptionId = shippingOptions[0].id;
+			// 	cart = await saveShippingOption(shippingOptionId);
+			// }
 			loading = false;
 		} catch (err) {
 			console.log(err);
@@ -259,183 +258,190 @@
 			>
 				<h2 id="payment-and-shipping-heading" class="sr-only">Payment and shipping details</h2>
 
-				<form>
-					<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
-						<div class="mt-10">
-							<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
+				{#if !cart?.shipping_address_id}
+					<form>
+						<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
+							<div class="mt-10">
+								<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
 
-							<div class="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-12">
-								<div class="sm:col-span-6">
-									<label for="first_name" class="label">First Name</label>
-									<div class="relative mt-2">
-										<input
-											type="text"
-											name="first_name"
-											required
-											class="block w-full input"
-											aria-invalid={$shippingAddressFormErrors.first_name ? 'true' : undefined}
-											bind:value={$shippingAddressForm.first_name}
-											{...$shippingAddressFormConstraints.first_name}
-										/>
-										{#if $shippingAddressFormErrors.first_name}
-											<div
-												class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-											>
-												<AlertCircle class="h-5 w-5 text-red-500" />
-											</div>
-										{/if}
+								<div class="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-12">
+									<div class="sm:col-span-6">
+										<label for="first_name" class="label">First Name</label>
+										<div class="relative mt-2">
+											<input
+												type="text"
+												name="first_name"
+												required
+												class="block w-full input"
+												aria-invalid={$shippingAddressFormErrors.first_name ? 'true' : undefined}
+												bind:value={$shippingAddressForm.first_name}
+												{...$shippingAddressFormConstraints.first_name}
+											/>
+											{#if $shippingAddressFormErrors.first_name}
+												<div
+													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+												>
+													<AlertCircle class="h-5 w-5 text-red-500" />
+												</div>
+											{/if}
+										</div>
 									</div>
-								</div>
-								<div class="sm:col-span-6">
-									<label for="last_name" class="label">Last Name</label>
-									<div class="relative mt-2">
-										<input
-											type="text"
-											name="last_name"
-											required
-											class="block w-full input"
-											aria-invalid={$shippingAddressFormErrors.last_name ? 'true' : undefined}
-											bind:value={$shippingAddressForm.last_name}
-											{...$shippingAddressFormConstraints.last_name}
-										/>
-										{#if $shippingAddressFormErrors.last_name}
-											<div
-												class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-											>
-												<AlertCircle class="h-5 w-5 text-red-500" />
-											</div>
-										{/if}
+									<div class="sm:col-span-6">
+										<label for="last_name" class="label">Last Name</label>
+										<div class="relative mt-2">
+											<input
+												type="text"
+												name="last_name"
+												required
+												class="block w-full input"
+												aria-invalid={$shippingAddressFormErrors.last_name ? 'true' : undefined}
+												bind:value={$shippingAddressForm.last_name}
+												{...$shippingAddressFormConstraints.last_name}
+											/>
+											{#if $shippingAddressFormErrors.last_name}
+												<div
+													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+												>
+													<AlertCircle class="h-5 w-5 text-red-500" />
+												</div>
+											{/if}
+										</div>
 									</div>
-								</div>
-								<div class="sm:col-span-12">
-									<label for="company" class="label">Company</label>
-									<div class="relative mt-2">
-										<input
-											type="text"
-											name="company"
-											class="block w-full input"
-											aria-invalid={$shippingAddressFormErrors.company ? 'true' : undefined}
-											bind:value={$shippingAddressForm.company}
-											{...$shippingAddressFormConstraints.company}
-										/>
-										{#if $shippingAddressFormErrors.company}
-											<div
-												class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-											>
-												<AlertCircle class="h-5 w-5 text-red-500" />
-											</div>
-										{/if}
+									<div class="sm:col-span-12">
+										<label for="company" class="label">Company</label>
+										<div class="relative mt-2">
+											<input
+												type="text"
+												name="company"
+												class="block w-full input"
+												aria-invalid={$shippingAddressFormErrors.company ? 'true' : undefined}
+												bind:value={$shippingAddressForm.company}
+												{...$shippingAddressFormConstraints.company}
+											/>
+											{#if $shippingAddressFormErrors.company}
+												<div
+													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+												>
+													<AlertCircle class="h-5 w-5 text-red-500" />
+												</div>
+											{/if}
+										</div>
 									</div>
-								</div>
-								<div class="sm:col-span-12">
-									<label for="address_1" class="label">Address Line 1</label>
-									<div class="relative mt-2">
-										<input
-											type="text"
-											name="address_1"
-											required
-											class="block w-full input"
-											aria-invalid={$shippingAddressFormErrors.address_1 ? 'true' : undefined}
-											bind:value={$shippingAddressForm.address_1}
-											{...$shippingAddressFormConstraints.address_1}
-										/>
-										{#if $shippingAddressFormErrors.address_1}
-											<div
-												class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-											>
-												<AlertCircle class="h-5 w-5 text-red-500" />
-											</div>
-										{/if}
+									<div class="sm:col-span-12">
+										<label for="address_1" class="label">Address Line 1</label>
+										<div class="relative mt-2">
+											<input
+												type="text"
+												name="address_1"
+												required
+												class="block w-full input"
+												aria-invalid={$shippingAddressFormErrors.address_1 ? 'true' : undefined}
+												bind:value={$shippingAddressForm.address_1}
+												{...$shippingAddressFormConstraints.address_1}
+											/>
+											{#if $shippingAddressFormErrors.address_1}
+												<div
+													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+												>
+													<AlertCircle class="h-5 w-5 text-red-500" />
+												</div>
+											{/if}
+										</div>
 									</div>
-								</div>
-								<div class="sm:col-span-4">
-									<label for="city" class="label">City</label>
-									<div class="relative mt-2">
-										<input
-											type="text"
-											name="city"
-											required
-											class="block w-full input"
-											aria-invalid={$shippingAddressFormErrors.city ? 'true' : undefined}
-											bind:value={$shippingAddressForm.city}
-											{...$shippingAddressFormConstraints.city}
-										/>
-										{#if $shippingAddressFormErrors.city}
-											<div
-												class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-											>
-												<AlertCircle class="h-5 w-5 text-red-500" />
-											</div>
-										{/if}
+									<div class="sm:col-span-4">
+										<label for="city" class="label">City</label>
+										<div class="relative mt-2">
+											<input
+												type="text"
+												name="city"
+												required
+												class="block w-full input"
+												aria-invalid={$shippingAddressFormErrors.city ? 'true' : undefined}
+												bind:value={$shippingAddressForm.city}
+												{...$shippingAddressFormConstraints.city}
+											/>
+											{#if $shippingAddressFormErrors.city}
+												<div
+													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+												>
+													<AlertCircle class="h-5 w-5 text-red-500" />
+												</div>
+											{/if}
+										</div>
 									</div>
-								</div>
-								<div class="sm:col-span-4">
-									<label for="province" class="label">State</label>
-									<div class="relative mt-2">
-										<input
-											type="text"
-											name="province"
-											required
-											class="block w-full input"
-											aria-invalid={$shippingAddressFormErrors.province ? 'true' : undefined}
-											bind:value={$shippingAddressForm.province}
-											{...$shippingAddressFormConstraints.province}
-										/>
-										{#if $shippingAddressFormErrors.province}
-											<div
-												class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-											>
-												<AlertCircle class="h-5 w-5 text-red-500" />
-											</div>
-										{/if}
+									<div class="sm:col-span-4">
+										<label for="province" class="label">State</label>
+										<div class="relative mt-2">
+											<input
+												type="text"
+												name="province"
+												required
+												class="block w-full input"
+												aria-invalid={$shippingAddressFormErrors.province ? 'true' : undefined}
+												bind:value={$shippingAddressForm.province}
+												{...$shippingAddressFormConstraints.province}
+											/>
+											{#if $shippingAddressFormErrors.province}
+												<div
+													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+												>
+													<AlertCircle class="h-5 w-5 text-red-500" />
+												</div>
+											{/if}
+										</div>
 									</div>
-								</div>
-								<div class="sm:col-span-4">
-									<label for="postal_code" class="label">Postal Code</label>
-									<div class="relative mt-2">
-										<input
-											type="text"
-											name="postal_code"
-											required
-											class="block w-full input"
-											aria-invalid={$shippingAddressFormErrors.postal_code ? 'true' : undefined}
-											bind:value={$shippingAddressForm.postal_code}
-											{...$shippingAddressFormConstraints.postal_code}
-										/>
-										{#if $shippingAddressFormErrors.postal_code}
-											<div
-												class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-											>
-												<AlertCircle class="h-5 w-5 text-red-500" />
-											</div>
-										{/if}
+									<div class="sm:col-span-4">
+										<label for="postal_code" class="label">Postal Code</label>
+										<div class="relative mt-2">
+											<input
+												type="text"
+												name="postal_code"
+												required
+												class="block w-full input"
+												aria-invalid={$shippingAddressFormErrors.postal_code ? 'true' : undefined}
+												bind:value={$shippingAddressForm.postal_code}
+												{...$shippingAddressFormConstraints.postal_code}
+											/>
+											{#if $shippingAddressFormErrors.postal_code}
+												<div
+													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+												>
+													<AlertCircle class="h-5 w-5 text-red-500" />
+												</div>
+											{/if}
+										</div>
 									</div>
 								</div>
 							</div>
-						</div>
 
-						<div class="mt-10">
-							<h3 class="text-lg font-medium text-gray-900">Billing information</h3>
+							<div class="mt-10">
+								<h3 class="text-lg font-medium text-gray-900">Billing information</h3>
 
-							<div class="mt-6 flex items-center">
-								<input
-									id="same-as-shipping"
-									name="same-as-shipping"
-									type="checkbox"
-									checked
-									class="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
-								/>
-								<div class="ml-2">
-									<label for="same-as-shipping" class="text-sm font-medium text-gray-900"
-										>Same as shipping information</label
-									>
+								<div class="mt-6 flex items-center">
+									<input
+										id="same-as-shipping"
+										name="same-as-shipping"
+										type="checkbox"
+										checked
+										class="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+									/>
+									<div class="ml-2">
+										<label for="same-as-shipping" class="text-sm font-medium text-gray-900"
+											>Same as shipping information</label
+										>
+									</div>
 								</div>
 							</div>
-						</div>
 
-						<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
-							<button type="submit" disabled={!readyToCheckout} class="btn">Pay now</button>
+							<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
+								<button type="submit" class="btn">Pay now</button>
+							</div>
 						</div>
+					</form>
+				{/if}
+				<form action="?/completeCart" method="POST">
+					<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
+						<button type="submit" class="btn">Pay now</button>
 					</div>
 				</form>
 			</section>
