@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DELAY_MS, TIMEOUT_MS } from '$lib/constants';
-	import { updateShippingAddressSchema } from '$lib/validators/checkout';
-	import type { UpdateShippingAddressSchema } from '$lib/validators/checkout';
+	import { updateBillingAddressSchema } from '$lib/validators/checkout';
+	import type { UpdateBillingAddressSchema } from '$lib/validators/checkout';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { page } from '$app/stores';
@@ -10,11 +10,10 @@
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 	import { createEventDispatcher } from 'svelte';
 
-
-	export let data: SuperValidated<UpdateShippingAddressSchema>;
+	export let data: SuperValidated<UpdateBillingAddressSchema>;
 	export let processing: boolean;
 
-	const dispatch = createEventDispatcher()
+	const dispatch = createEventDispatcher();
 
 	const { form, errors, constraints, tainted, message, submitting, delayed, timeout, enhance } =
 		superForm(data, {
@@ -65,7 +64,7 @@
 				// Wrap things up
 				processing = false; // end process
 			},
-			validators: updateShippingAddressSchema,
+			validators: updateBillingAddressSchema,
 			invalidateAll: true,
 			taintedMessage: null,
 			delayMs: DELAY_MS,
@@ -213,7 +212,7 @@
 			>{#if processing}<Spinner />{:else}Confirm{/if}</button
 		>
 		<button
-			on:click|preventDefault={() => dispatch("cancel")}
+			on:click|preventDefault={() => dispatch('cancel')}
 			type="button"
 			class="btn btn-secondary">Cancel</button
 		>

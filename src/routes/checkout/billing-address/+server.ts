@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 import medusa from '$lib/server/medusa';
 import { error, json } from '@sveltejs/kit';
-import { superValidate, message } from 'sveltekit-superforms/server';
+import { superValidate } from 'sveltekit-superforms/server';
 import { updateShippingAddressSchema } from '$lib/validators/checkout';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.cartid || !address) {
 		throw error(400, 'Bad format');
 	}
-	const cart = await medusa.updateCartShippingAddress(locals, address);
+	const cart = await medusa.updateCartBillingAddress(locals, address);
 	if (cart) return json(cart);
 	else throw error(500, 'server error');
 };
