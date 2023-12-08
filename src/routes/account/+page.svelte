@@ -17,6 +17,7 @@
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 
 	export let data: PageData;
+	console.log(data.user)
 
 	$: ({ email, first_name, last_name, phone, shipping_addresses } = data.user);
 	let processing = false;

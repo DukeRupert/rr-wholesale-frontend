@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { company } from '$lib/constants';
-	import { page } from '$app/stores';
+	import { page, navigating } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { X, Menu } from 'lucide-svelte';
+	import { Menu } from 'lucide-svelte';
 	import { createCollapsible, melt } from '@melt-ui/svelte';
 	import { slide, type SlideParams } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
 	import Cart from './Cart.svelte';
 	import Account from './Account.svelte';
-	import SideBar from './Sidebar.svelte';
 	import type { User } from '$lib/types/user';
 	import type { Cart as ShoppingCart } from '$lib/types/cart';
 	export let user: User | null;
@@ -47,6 +46,9 @@
 		const res = await fetch('/auth/login?/logout', { method: 'POST', body: formData });
 		if (res.ok) goto('/auth/login');
 	};
+
+	// Close the mobile menu when navigation
+	$: if($navigating) open.set(false)
 </script>
 
 <nav class="bg-white shadow">

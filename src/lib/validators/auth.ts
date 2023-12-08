@@ -16,12 +16,12 @@ export const loginSchema = z.object({
    rurl: z.string()
 })
 
-export const registerPostReq = z.object({
+export const registerSchema = z.object({
    email: z.string().email().refine((val) => val.length > 0, {
       message: 'Email is required'
    }),
-   firstName: z.string().min(1),
-   lastName: z.string().min(1),
+   first_name: z.string().min(1),
+   last_name: z.string().min(1),
    password: z.string().min(6),
    passwordConfirm: z.string().min(6),
    rurl: z.string()
@@ -59,3 +59,4 @@ export const resetPostReq = z.object({
 })
 
 export type LoginSchema = typeof loginSchema
+export type RegisterSchema = typeof registerSchema

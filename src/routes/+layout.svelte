@@ -7,7 +7,7 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 
 	export let data: PageData;
-	const nakedPaths = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/checkout', '/sitemap.xml'];
+	const nakedPaths = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/checkout', '/sitemap.xml'];
 	$: naked = nakedPaths.includes($page.url.pathname);
 	$: user = data?.user;
 	$: cart = data?.cart;

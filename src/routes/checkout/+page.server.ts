@@ -2,13 +2,13 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
 import { superValidate, message } from 'sveltekit-superforms/server';
-import { updateShippingAddressReq } from '$lib/validators/checkout';
+import { updateShippingAddressSchema } from '$lib/validators/checkout';
 import { addShippingAddressSchema } from '$lib/validators/account';
 
 export const load: PageServerLoad = async function ({ locals }) {
 	if (!locals.user) throw redirect(302, '/auth?rurl=checkout');
 
-	const shippingAddressForm = await superValidate(addShippingAddressSchema);
+	const shippingAddressForm = await superValidate(updateShippingAddressSchema);
 
 	return {
 		user: locals.user,
@@ -36,18 +36,31 @@ export const actions: Actions = {
 		}
 	},
 	updateShippingAddress: async ({ request, locals, fetch }) => {
-		const form = await superValidate(request, updateShippingAddressReq);
-		if (!form.valid) return message(form, 'This address is invalid.', { status: 400 }); // this shouldn't happen because of client-side validation
-		const address = form.data;
+		console.log(' Update shipping address')
+		const shippingAddressForm = await superValidate(request, updateShippingAddressSchema);
+		if (!shippingAddressForm.valid) return message(shippingAddressForm, 'This address is invalid.', { status: 400 }); // this shouldn't happen because of client-side validation
+		const address = shippingAddressForm.data;
 		if (!locals.cartid || !address) {
-			return message(form, 'Bad request', { status: 400 });
+			return message(shippingAddressForm, 'Bad request', { status: 400 });
 		}
-		const response = await fetch('/api/checkout/shipping-address', {
-			method: 'POST',
-			body: JSON.stringify({ address, locals })
-		});
-		const cart = await response.json();
-		if (cart) return { success: true, cart: cart };
-		else return fail(500, { success: false });
+		console.log('Calling medusa')
+		const cart = await medusa.updateCartShippingAddress(locals, address);
+
+		// try {
+		// 	console.log('Add address to user list of shipping_addresses')
+		// 	const success = (await medusa.addShippingAddress(locals, address)) as boolean;
+		// 	console.log(success)
+		// } catch (error) {
+		// 	console.log(error)
+		// }
+
+		if (cart) {
+			console.log('Cart received')
+			locals.cart = cart;
+			return { cart, shippingAddressForm }
+		}
+			
+		return fail(500, { cart, shippingAddressForm })
+		
 	}
 };

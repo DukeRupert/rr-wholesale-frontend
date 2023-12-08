@@ -78,7 +78,7 @@
 							<td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
 								{variant.inventory_quantity}
 							</td>
-							<td class="px-3 py-4 text-sm text-gray-500">
+							<td class="px-3 py-4 text-sm text-gray-500 capitalize">
 								<ul>
 									{#each variant.options as option}
 										<li>

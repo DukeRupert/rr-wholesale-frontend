@@ -1,22 +1,21 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { AlertCircle } from 'lucide-svelte';
-	import { DELAY_MS, TIMEOUT_MS } from '$lib/constants';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { addShippingAddressSchema } from '$lib/validators/account';
-	import { addToast } from '$lib/components/toast/index.svelte';
-	import { page } from '$app/stores';
+
+	import ShippingAddressForm from './ShippingAddressForm.svelte';
+
 	import { formatPrice } from '$lib/utilities';
 	import { company } from '$lib/constants';
-	import { goto } from '$app/navigation';
+	import type { Shippingaddress } from '$lib/types/user';
+
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
+	import AddressCard from '$lib/components/cards/AddressCard.svelte';
 
 	export let data: PageData;
-	let user = data.user;
-	let cart = data.cart;
+	$:({ user, cart} = data)
 	$: items = cart?.items || [];
 	$: console.log(cart);
+	$: console.log(user)
 
 	let clientSecret: string;
 	let shippingOptions: any[];
@@ -30,86 +29,18 @@
 	let errorMessage = '';
 
 	// Track progress through form
-
-	// Shipping address
-	const {
-		form: shippingAddressForm,
-		errors: shippingAddressFormErrors,
-		constraints: shippingAddressFormConstraints,
-		delayed: shippingAddressFormDelayed,
-		enhance: shippingAddressFormEnhance,
-		validate: shippingAddressFormValidate
-	} = superForm(data.shippingAddressForm, {
-		onSubmit({ cancel }) {
-			if (processing) cancel(); // silly fast clickers
-			processing = true; // start process
-		},
-		onUpdated({ form }) {
-			if (form.message) {
-				// Something went wrong
-				if ($page.status === 400)
-					addToast({
-						data: {
-							type: 'warning',
-							title: 'Warning',
-							description: form.message
-						}
-					});
-				if ($page.status === 500)
-					addToast({
-						data: {
-							type: 'error',
-							title: 'Error',
-							description: form.message
-						}
-					});
-			} else {
-				// Success
-				addToast({
-					data: {
-						type: 'success',
-						title: 'Success',
-						description: 'Contact information updated.'
-					}
-				});
-			}
-			// Wrap things up
-			processing = false; // end process
-		},
-		onError({ result }) {
-			addToast({
-				data: {
-					type: 'error',
-					title: 'Error',
-					description: result.error.message
-				}
-			});
-			// Wrap things up
-			processing = false; // end process
-		},
-		validators: addShippingAddressSchema,
-		invalidateAll: true,
-		taintedMessage: null,
-		delayMs: DELAY_MS,
-		timeoutMs: TIMEOUT_MS
-	});
-
-	let contacts = [];
-	if (user.shipping_addresses) {
-		for (let address of user.shipping_addresses) {
-			contacts.push({
-				name: address.first_name + ' ' + address.last_name,
-				address: {
-					line1: address.address_1,
-					line2: address.address_2,
-					city: address.city,
-					state: address.province,
-					postal_code: address.postal_code,
-					country: address.country_code.toUpperCase()
-				}
-			});
+	function filterAddresses(opt: Shippingaddress[], id: string) {
+		let options: Shippingaddress[] = []
+		if (user.shipping_addresses && user.shipping_addresses.length > 1) {
+			options = user.shipping_addresses.filter((el) => el.id !== id)
 		}
+		return options
 	}
+	// Shipping address logic
+	$: currentAddress = cart?.shipping_address ?? {};
+	$: shipping_address_options = filterAddresses(user.shipping_addresses, cart?.shipping_address?.id ?? '')
+
+	let isUpdatingAddress = false;
 
 	const splitName = (name = '') => {
 		const [firstName, ...lastName] = name.split(' ').filter(Boolean);
@@ -258,164 +189,21 @@
 				class="py-16 lg:col-start-1 lg:row-start-1 lg:mx-auto lg:w-full lg:max-w-lg lg:pb-24 lg:pt-0"
 			>
 				<h2 id="payment-and-shipping-heading" class="sr-only">Payment and shipping details</h2>
-
-				{#if !cart?.shipping_address_id}
-					<form>
-						<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
-							<div class="mt-10">
-								<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
-
-								<div class="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-12">
-									<div class="sm:col-span-6">
-										<label for="first_name" class="label">First Name</label>
-										<div class="relative mt-2">
-											<input
-												type="text"
-												name="first_name"
-												required
-												class="block w-full input"
-												aria-invalid={$shippingAddressFormErrors.first_name ? 'true' : undefined}
-												bind:value={$shippingAddressForm.first_name}
-												{...$shippingAddressFormConstraints.first_name}
-											/>
-											{#if $shippingAddressFormErrors.first_name}
-												<div
-													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-												>
-													<AlertCircle class="h-5 w-5 text-red-500" />
-												</div>
-											{/if}
-										</div>
-									</div>
-									<div class="sm:col-span-6">
-										<label for="last_name" class="label">Last Name</label>
-										<div class="relative mt-2">
-											<input
-												type="text"
-												name="last_name"
-												required
-												class="block w-full input"
-												aria-invalid={$shippingAddressFormErrors.last_name ? 'true' : undefined}
-												bind:value={$shippingAddressForm.last_name}
-												{...$shippingAddressFormConstraints.last_name}
-											/>
-											{#if $shippingAddressFormErrors.last_name}
-												<div
-													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-												>
-													<AlertCircle class="h-5 w-5 text-red-500" />
-												</div>
-											{/if}
-										</div>
-									</div>
-									<div class="sm:col-span-12">
-										<label for="company" class="label">Company</label>
-										<div class="relative mt-2">
-											<input
-												type="text"
-												name="company"
-												class="block w-full input"
-												aria-invalid={$shippingAddressFormErrors.company ? 'true' : undefined}
-												bind:value={$shippingAddressForm.company}
-												{...$shippingAddressFormConstraints.company}
-											/>
-											{#if $shippingAddressFormErrors.company}
-												<div
-													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-												>
-													<AlertCircle class="h-5 w-5 text-red-500" />
-												</div>
-											{/if}
-										</div>
-									</div>
-									<div class="sm:col-span-12">
-										<label for="address_1" class="label">Address Line 1</label>
-										<div class="relative mt-2">
-											<input
-												type="text"
-												name="address_1"
-												required
-												class="block w-full input"
-												aria-invalid={$shippingAddressFormErrors.address_1 ? 'true' : undefined}
-												bind:value={$shippingAddressForm.address_1}
-												{...$shippingAddressFormConstraints.address_1}
-											/>
-											{#if $shippingAddressFormErrors.address_1}
-												<div
-													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-												>
-													<AlertCircle class="h-5 w-5 text-red-500" />
-												</div>
-											{/if}
-										</div>
-									</div>
-									<div class="sm:col-span-4">
-										<label for="city" class="label">City</label>
-										<div class="relative mt-2">
-											<input
-												type="text"
-												name="city"
-												required
-												class="block w-full input"
-												aria-invalid={$shippingAddressFormErrors.city ? 'true' : undefined}
-												bind:value={$shippingAddressForm.city}
-												{...$shippingAddressFormConstraints.city}
-											/>
-											{#if $shippingAddressFormErrors.city}
-												<div
-													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-												>
-													<AlertCircle class="h-5 w-5 text-red-500" />
-												</div>
-											{/if}
-										</div>
-									</div>
-									<div class="sm:col-span-4">
-										<label for="province" class="label">State</label>
-										<div class="relative mt-2">
-											<input
-												type="text"
-												name="province"
-												required
-												class="block w-full input"
-												aria-invalid={$shippingAddressFormErrors.province ? 'true' : undefined}
-												bind:value={$shippingAddressForm.province}
-												{...$shippingAddressFormConstraints.province}
-											/>
-											{#if $shippingAddressFormErrors.province}
-												<div
-													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-												>
-													<AlertCircle class="h-5 w-5 text-red-500" />
-												</div>
-											{/if}
-										</div>
-									</div>
-									<div class="sm:col-span-4">
-										<label for="postal_code" class="label">Postal Code</label>
-										<div class="relative mt-2">
-											<input
-												type="text"
-												name="postal_code"
-												required
-												class="block w-full input"
-												aria-invalid={$shippingAddressFormErrors.postal_code ? 'true' : undefined}
-												bind:value={$shippingAddressForm.postal_code}
-												{...$shippingAddressFormConstraints.postal_code}
-											/>
-											{#if $shippingAddressFormErrors.postal_code}
-												<div
-													class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-												>
-													<AlertCircle class="h-5 w-5 text-red-500" />
-												</div>
-											{/if}
-										</div>
-									</div>
-								</div>
+				<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
+					<div class="mt-10">
+						<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
+						{#if currentAddress && currentAddress?.address_1 && !isUpdatingAddress}
+							<div class="mt-6">
+								<AddressCard data={currentAddress} />
 							</div>
+							<button on:click={() => isUpdatingAddress = true} class="mt-6 text-sm text-thunderbird-500">Change address?</button>
+						{:else}
+							<ShippingAddressForm data={data.shippingAddressForm} shipping_addresses={shipping_address_options} bind:processing bind:isUpdatingAddress />
+						{/if}
+					</div>
+					<div class="mt-10">
 
-							<div class="mt-10">
+						
 								<h3 class="text-lg font-medium text-gray-900">Billing information</h3>
 
 								<div class="mt-6 flex items-center">
@@ -432,14 +220,9 @@
 										>
 									</div>
 								</div>
-							</div>
-
-							<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
-								<button type="submit" class="btn">Pay now</button>
-							</div>
-						</div>
-					</form>
-				{/if}
+							
+					</div>
+				</div>
 				<form
 					action="?/completeCart"
 					method="POST"
