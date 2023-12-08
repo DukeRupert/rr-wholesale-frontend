@@ -9,11 +9,13 @@ export const load: PageServerLoad = async function ({ locals }) {
 	if (!locals.user) throw redirect(302, '/auth?rurl=checkout');
 
 	const shippingAddressForm = await superValidate(updateShippingAddressSchema);
+	const billingAddressForm = await superValidate(updateShippingAddressSchema)
 
 	return {
 		user: locals.user,
 		cart: locals.cart,
-		shippingAddressForm
+		shippingAddressForm,
+		billingAddressForm
 	};
 };
 
@@ -46,14 +48,6 @@ export const actions: Actions = {
 		console.log('Calling medusa')
 		const cart = await medusa.updateCartShippingAddress(locals, address);
 
-		// try {
-		// 	console.log('Add address to user list of shipping_addresses')
-		// 	const success = (await medusa.addShippingAddress(locals, address)) as boolean;
-		// 	console.log(success)
-		// } catch (error) {
-		// 	console.log(error)
-		// }
-
 		if (cart) {
 			console.log('Cart received')
 			locals.cart = cart;
@@ -61,6 +55,26 @@ export const actions: Actions = {
 		}
 			
 		return fail(500, { cart, shippingAddressForm })
+		
+	},
+	updateBillingAddress: async ({ request, locals, fetch }) => {
+		console.log(' Update billing address')
+		const billingAddressForm = await superValidate(request, updateShippingAddressSchema);
+		if (!billingAddressForm.valid) return message(billingAddressForm, 'This address is invalid.', { status: 400 }); // this shouldn't happen because of client-side validation
+		const address = billingAddressForm.data;
+		if (!locals.cartid || !address) {
+			return message(billingAddressForm, 'Bad request', { status: 400 });
+		}
+		console.log('Calling medusa')
+		const cart = await medusa.updateCartBillingAddress(locals, address);
+
+		if (cart) {
+			console.log('Cart received')
+			locals.cart = cart;
+			return { cart, billingAddressForm }
+		}
+			
+		return fail(500, { cart, billingAddressForm })
 		
 	}
 };

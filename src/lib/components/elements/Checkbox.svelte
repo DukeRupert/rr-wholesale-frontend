@@ -12,6 +12,7 @@
 <script lang="ts">
 	import { createCheckbox, melt } from '@melt-ui/svelte';
 	import { Check, Minus } from 'lucide-svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let name: string = 'checkbox';
 	export let label: string = '';
@@ -28,8 +29,14 @@
 		defaultChecked: defaultChecked,
 		disabled: disabled,
 		required: required,
-		name: name
+		name: name,
 	});
+
+	const dispatch = createEventDispatcher()
+
+	// Dispatch event when status changes
+	$: if($isChecked) dispatch('toggle', { isChecked: $isChecked})
+	$: if(!$isChecked) dispatch('toggle', { isChecked: $isChecked})
 </script>
 
 <button

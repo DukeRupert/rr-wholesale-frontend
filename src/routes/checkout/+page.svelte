@@ -1,21 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-
 	import ShippingAddressForm from './ShippingAddressForm.svelte';
-
+	import BillingAddressForm from './BillingAddressForm.svelte';
 	import { formatPrice } from '$lib/utilities';
 	import { company } from '$lib/constants';
 	import type { Shippingaddress } from '$lib/types/user';
-
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import AddressCard from '$lib/components/cards/AddressCard.svelte';
+	import Checkbox from '$lib/components/elements/Checkbox.svelte';
 
 	export let data: PageData;
-	$:({ user, cart} = data)
+	$: ({ user, cart } = data);
 	$: items = cart?.items || [];
 	$: console.log(cart);
-	$: console.log(user)
+	$: console.log(user);
 
 	let clientSecret: string;
 	let shippingOptions: any[];
@@ -30,17 +29,27 @@
 
 	// Track progress through form
 	function filterAddresses(opt: Shippingaddress[], id: string) {
-		let options: Shippingaddress[] = []
+		let options: Shippingaddress[] = [];
 		if (user.shipping_addresses && user.shipping_addresses.length > 1) {
-			options = user.shipping_addresses.filter((el) => el.id !== id)
+			options = user.shipping_addresses.filter((el) => el.id !== id);
 		}
-		return options
+		return options;
 	}
 	// Shipping address logic
 	$: currentAddress = cart?.shipping_address ?? {};
-	$: shipping_address_options = filterAddresses(user.shipping_addresses, cart?.shipping_address?.id ?? '')
-
+	$: shipping_address_options = filterAddresses(
+		user.shipping_addresses,
+		cart?.shipping_address?.id ?? ''
+	);
 	let isUpdatingAddress = false;
+
+	// Billing address logic
+	$: currentBillingAddress = cart?.billing_address ?? {};
+	let same_as_shipping = true;
+	let changeBillingAddress = false;
+	const handleBillingEvent = (e: any): void => {
+		same_as_shipping = !same_as_shipping;
+	};
 
 	const splitName = (name = '') => {
 		const [firstName, ...lastName] = name.split(' ').filter(Boolean);
@@ -196,31 +205,49 @@
 							<div class="mt-6">
 								<AddressCard data={currentAddress} />
 							</div>
-							<button on:click={() => isUpdatingAddress = true} class="mt-6 text-sm text-thunderbird-500">Change address?</button>
+							<button
+								on:click={() => (isUpdatingAddress = true)}
+								class="mt-6 text-sm text-thunderbird-500">Change address?</button
+							>
 						{:else}
-							<ShippingAddressForm data={data.shippingAddressForm} shipping_addresses={shipping_address_options} bind:processing bind:isUpdatingAddress />
+							<ShippingAddressForm
+								data={data.shippingAddressForm}
+								shipping_addresses={shipping_address_options}
+								bind:processing
+								bind:isUpdatingAddress
+							/>
 						{/if}
 					</div>
 					<div class="mt-10">
+						<h3 class="text-lg font-medium text-gray-900">Billing information</h3>
 
-						
-								<h3 class="text-lg font-medium text-gray-900">Billing information</h3>
-
-								<div class="mt-6 flex items-center">
-									<input
-										id="same-as-shipping"
-										name="same-as-shipping"
-										type="checkbox"
-										checked
-										class="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
-									/>
-									<div class="ml-2">
-										<label for="same-as-shipping" class="text-sm font-medium text-gray-900"
-											>Same as shipping information</label
-										>
-									</div>
+						{#if currentBillingAddress && currentBillingAddress?.address_1}
+							<div class="mt-6">
+								<AddressCard data={currentBillingAddress} />
+							</div>
+							<button
+								on:click={() => {
+									changeBillingAddress = true;
+									same_as_shipping = false;
+								}}
+								class="mt-6 text-sm text-thunderbird-500">Change address?</button
+							>
+						{:else if !same_as_shipping}
+							<BillingAddressForm
+								data={data.billingAddressForm}
+								bind:processing
+								on:cancel={handleBillingEvent}
+							/>
+						{:else}
+							<div class="mt-6 flex items-center">
+								<Checkbox name="same-as-shipping" defaultChecked on:toggle={handleBillingEvent} />
+								<div class="ml-2">
+									<label for="same-as-shipping" class="text-sm font-medium text-gray-900"
+										>Same as shipping information</label
+									>
 								</div>
-							
+							</div>
+						{/if}
 					</div>
 				</div>
 				<form
