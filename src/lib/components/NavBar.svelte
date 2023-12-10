@@ -48,7 +48,7 @@
 	};
 
 	// Close the mobile menu when navigation
-	$: if($navigating) open.set(false)
+	$: if ($navigating) open.set(false);
 </script>
 
 <nav class="bg-white shadow">
@@ -82,12 +82,12 @@
 				{#if user}
 					<Account {user} />
 				{/if}
+			</div>
+			<div class="-mr-2 flex items-center space-x-6 sm:hidden">
 				<!-- Cart menu -->
-				<div class="relative ml-3">
+				<div class="relative">
 					<Cart bind:cart bind:count />
 				</div>
-			</div>
-			<div class="-mr-2 flex items-center sm:hidden">
 				<!-- Mobile menu button -->
 				<button
 					use:melt={$trigger}
