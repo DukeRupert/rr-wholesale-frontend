@@ -77,30 +77,34 @@
 					{/each}
 				</div>
 			</div>
-			<div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-6">
-				<!-- Profile dropdown -->
-				{#if user}
-					<Account {user} />
-				{/if}
-			</div>
-			<div class="-mr-2 flex items-center space-x-6 sm:hidden">
-				<!-- Cart menu -->
-				<div class="relative">
-					<Cart bind:cart bind:count />
+			<div class="ml-6 flex items-center space-x-6">
+				<div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-6">
+					<!-- Profile dropdown -->
+					{#if user}
+						<Account {user} />
+					{/if}
 				</div>
-				<!-- Mobile menu button -->
-				<button
-					use:melt={$trigger}
-					type="button"
-					class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thunderbird-500"
-					aria-controls="mobile-menu"
-					aria-expanded="false"
-				>
-					<span class="absolute -inset-0.5"></span>
-					<span class="sr-only">Open main menu</span>
+				<div class="flex items-center">
+					<!-- Cart menu -->
+					<div class="relative">
+						<Cart bind:cart bind:count />
+					</div>
+				</div>
+				<div class="-mr-2 flex items-center space-x-6 sm:hidden">
+					<!-- Mobile menu button -->
+					<button
+						use:melt={$trigger}
+						type="button"
+						class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thunderbird-500"
+						aria-controls="mobile-menu"
+						aria-expanded="false"
+					>
+						<span class="absolute -inset-0.5"></span>
+						<span class="sr-only">Open main menu</span>
 
-					<Menu class="block h-6 w-6" />
-				</button>
+						<Menu class="block h-6 w-6" />
+					</button>
+				</div>
 			</div>
 		</div>
 
