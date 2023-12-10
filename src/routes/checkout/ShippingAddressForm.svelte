@@ -10,11 +10,14 @@
 	import Divider from '$lib/components/elements/Divider.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 	import type { Shippingaddress } from '$lib/types/user';
+	import { createEventDispatcher } from 'svelte';
 
 	export let data: SuperValidated<UpdateShippingAddressSchema>;
 	export let shipping_addresses: Shippingaddress[] = [];
 	export let processing: boolean;
 	export let isUpdatingAddress: boolean;
+
+	const dispatch = createEventDispatcher();
 
 	const { form, errors, constraints, tainted, message, submitting, delayed, timeout, enhance } =
 		superForm(data, {
@@ -42,6 +45,8 @@
 							}
 						});
 				} else {
+					// Send message to update shipping method options
+					dispatch('addressUpdated');
 					// Success
 					addToast({
 						data: {
@@ -72,7 +77,7 @@
 			delayMs: DELAY_MS,
 			timeoutMs: TIMEOUT_MS
 		});
-	
+
 	let showOptions = true;
 </script>
 
@@ -114,19 +119,16 @@
 				</div>
 				<div>
 					<div class="-mt-px flex divide-x divide-gray-200 dark:divide-gray-900">
-						
-							<button
-								type="submit"
-								on:click|preventDefault={ () => {
-									$form = address;
-									showOptions = false;
-								}}
-								class="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-thunderbird-600 dark:hover:text-thunderbird-500 capitalize"
-							>
-								select
-							</button>
-							
-						
+						<button
+							type="submit"
+							on:click|preventDefault={() => {
+								$form = address;
+								showOptions = false;
+							}}
+							class="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-thunderbird-600 dark:hover:text-thunderbird-500 capitalize"
+						>
+							select
+						</button>
 					</div>
 				</div>
 			</li>

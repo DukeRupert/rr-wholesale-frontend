@@ -1,55 +1,61 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import ShippingAddressForm from './ShippingAddressForm.svelte';
-	import BillingAddressForm from './BillingAddressForm.svelte';
 	import { formatPrice } from '$lib/utilities';
+	import ShippingSelect from '$lib/components/ShippingSelect.svelte';
 	import { company } from '$lib/constants';
-	import type { Shippingaddress } from '$lib/types/user';
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import AddressCard from '$lib/components/cards/AddressCard.svelte';
-	import Checkbox from '$lib/components/elements/Checkbox.svelte';
+	import { TruckIcon } from 'lucide-svelte';
+	import type { ShippingOption } from '$lib/types/cart';
 
 	export let data: PageData;
-	$: ({ user, cart } = data);
-	$: items = cart?.items || [];
+	$: ({ user, cart, shippingAddressForm } = data);
+	$: ({ shipping_addresses } = user);
 	$: console.log(cart);
-	$: console.log(user);
+	$: items = cart?.items || [];
 
-	let clientSecret: string;
-	let shippingOptions: any[];
-	let shippingOptionId: string;
+	// Shipping Address
+
+	// Shipping Method
+	let shippingOptions: ShippingOption[] = [];
+	let isShippingMethodSelected = false;
+
+	async function fetchShippingOptions() {
+		console.log('fetching shipping options');
+		try {
+			shippingOptions = await fetch('/checkout/get-shipping-options').then((res) => res.json());
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
+	async function selectShippingOption(id: string) {
+		console.log(`Selecting shipping option: ${id}`);
+		try {
+			cart = await fetch('/checkout/select-shipping-option', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ option_id: id })
+			}).then((res) => res.json());
+			if (cart) isShippingMethodSelected = true;
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
 	let order: any;
-
 	let orderSummaryOpen = false;
 	let success = false;
 	let processing = false;
-	let loading = true;
 	let errorMessage = '';
 
-	// Track progress through form
-	function filterAddresses(opt: Shippingaddress[], id: string) {
-		let options: Shippingaddress[] = [];
-		if (user.shipping_addresses && user.shipping_addresses.length > 1) {
-			options = user.shipping_addresses.filter((el) => el.id !== id);
-		}
-		return options;
-	}
 	// Shipping address logic
-	$: currentAddress = cart?.shipping_address ?? {};
-	$: shipping_address_options = filterAddresses(
-		user.shipping_addresses,
-		cart?.shipping_address?.id ?? ''
-	);
-	let isUpdatingAddress = false;
 
-	// Billing address logic
-	$: currentBillingAddress = cart?.billing_address ?? {};
-	let same_as_shipping = true;
-	let changeBillingAddress = false;
-	const handleBillingEvent = (e: any): void => {
-		same_as_shipping = !same_as_shipping;
-	};
+	let isUpdatingAddress = false;
 
 	const splitName = (name = '') => {
 		const [firstName, ...lastName] = name.split(' ').filter(Boolean);
@@ -59,44 +65,13 @@
 		};
 	};
 
-	const saveShippingOption = async (id: string) => {
-		if (!shippingOptionId) return false;
-		return await fetch('/checkout/shipping-option', {
-			method: 'POST',
-			body: JSON.stringify({ option_id: id })
-		})
-			.then((res) => res.json())
-			.catch(() => false);
-	};
+	async function handleShippingOptionClick(e) {
+		console.log('Option selected');
+		const shippingOptionId = e.detail.id;
+		await selectShippingOption(shippingOptionId);
+	}
 
-	const startCheckout = async () => {
-		console.log('Start checkout');
-		try {
-			let response = await fetch('/checkout/initialize');
-			const data = await response.json();
-			cart = data.cart;
-			clientSecret = data.cart.payment_session.data.client_secret;
-			shippingOptions = data.shippingOptions;
-			// for (let shippingOption of shippingOptions) {
-			// 	if (shippingOption.name === 'Free Shipping') {
-			// 		shippingOptionId = shippingOption.id;
-			// 		cart = await saveShippingOption(shippingOptionId);
-			// 		break;
-			// 	}
-			// }
-			// if (!shippingOptionId) {
-			// 	shippingOptionId = shippingOptions[0].id;
-			// 	cart = await saveShippingOption(shippingOptionId);
-			// }
-			loading = false;
-		} catch (err) {
-			console.log(err);
-		}
-	};
-
-	onMount(async () => {
-		await startCheckout();
-	});
+	onMount(async () => {});
 </script>
 
 {#if errorMessage}
@@ -123,7 +98,7 @@
 	</main>
 {:else if !cart?.items}
 	<p>Your cart is empty.</p>
-{:else if !loading}
+{:else}
 	<div class="bg-white">
 		<!-- Background color split screen for large screens -->
 		<div class="fixed left-0 top-0 hidden h-full w-1/2 bg-white lg:block" aria-hidden="true"></div>
@@ -201,9 +176,9 @@
 				<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
 					<div class="mt-10">
 						<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
-						{#if currentAddress && currentAddress?.address_1 && !isUpdatingAddress}
+						{#if cart.shipping_address && !isUpdatingAddress}
 							<div class="mt-6">
-								<AddressCard data={currentAddress} />
+								<AddressCard data={cart.shipping_address} />
 							</div>
 							<button
 								on:click={() => (isUpdatingAddress = true)}
@@ -211,44 +186,24 @@
 							>
 						{:else}
 							<ShippingAddressForm
-								data={data.shippingAddressForm}
-								shipping_addresses={shipping_address_options}
+								data={shippingAddressForm}
+								{shipping_addresses}
 								bind:processing
 								bind:isUpdatingAddress
+								on:addressUpdated={fetchShippingOptions}
 							/>
 						{/if}
 					</div>
-					<div class="mt-10">
-						<h3 class="text-lg font-medium text-gray-900">Billing information</h3>
+					{#if shippingOptions.length > 0}
+						<div class="mt-10">
+							<div class="flex items-center space-x-2">
+								<TruckIcon class="block h-6 w-6 text-gray-500 dark:text-gray-400" />
+								<h3 class="text-lg font-medium text-gray-900">Shipping Method</h3>
+							</div>
 
-						{#if currentBillingAddress && currentBillingAddress?.address_1}
-							<div class="mt-6">
-								<AddressCard data={currentBillingAddress} />
-							</div>
-							<button
-								on:click={() => {
-									changeBillingAddress = true;
-									same_as_shipping = false;
-								}}
-								class="mt-6 text-sm text-thunderbird-500">Change address?</button
-							>
-						{:else if !same_as_shipping}
-							<BillingAddressForm
-								data={data.billingAddressForm}
-								bind:processing
-								on:cancel={handleBillingEvent}
-							/>
-						{:else}
-							<div class="mt-6 flex items-center">
-								<Checkbox name="same-as-shipping" defaultChecked on:toggle={handleBillingEvent} />
-								<div class="ml-2">
-									<label for="same-as-shipping" class="text-sm font-medium text-gray-900"
-										>Same as shipping information</label
-									>
-								</div>
-							</div>
-						{/if}
-					</div>
+							<ShippingSelect data={shippingOptions} on:select={handleShippingOptionClick} />
+						</div>
+					{/if}
 				</div>
 				<form
 					action="?/completeCart"
@@ -266,7 +221,11 @@
 					}}
 				>
 					<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
-						<button type="submit" class="btn">Pay now</button>
+						<button
+							type="submit"
+							disabled={!isShippingMethodSelected}
+							class="btn disabled:bg-gray-500">Pay now</button
+						>
 					</div>
 				</form>
 			</section>

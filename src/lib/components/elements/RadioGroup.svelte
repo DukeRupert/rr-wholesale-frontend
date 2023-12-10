@@ -24,7 +24,7 @@
 </script>
 
 <div>
-	<label class="text-base font-semibold text-gray-900">{label}</label>
+	<label class="text-lg font-medium text-gray-900">{label}</label>
 	<p class="text-sm text-gray-500">{description}</p>
 	<fieldset class="mt-4">
 		<legend class="sr-only">{label}</legend>
