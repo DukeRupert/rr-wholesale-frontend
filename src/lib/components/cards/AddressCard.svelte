@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Shippingaddress } from '$lib/types/user';
+	import type { ShippingAddress } from '$lib/types/user';
 
-	export let data: Shippingaddress;
+	export let data: ShippingAddress;
 </script>
 
 <div>

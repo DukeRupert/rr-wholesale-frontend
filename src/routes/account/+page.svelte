@@ -3,7 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { superForm } from 'sveltekit-superforms/client';
 	import {
-		addShippingAddressSchema,
+		shippingAddressSchema,
 		changePasswordSchema,
 		editUserSchema
 	} from '$lib/validators/account';
@@ -209,7 +209,7 @@
 			// Wrap things up
 			processing = false; // end process
 		},
-		validators: addShippingAddressSchema,
+		validators: shippingAddressSchema,
 		invalidateAll: true,
 		taintedMessage: null,
 		delayMs: delayMs,

@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
 import type { Cart, ShippingOption } from '$lib/types/cart';
-import { updateShippingAddressSchema } from '$lib/validators/checkout';
+import { shippingAddressSchema } from '$lib/validators/account';
 import { z } from 'zod';
 
 export const GET: RequestHandler = async ({ request, locals }) => {
@@ -21,7 +21,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 	// If user has an associated shipping address then update the cart with it
 	if (locals.user?.shipping_addresses && locals.user.shipping_addresses.length > 0) {
 		console.log('Checking for valid shipping address');
-		const isValid = updateShippingAddressSchema.safeParse(locals.user.shipping_addresses[0]);
+		const isValid = shippingAddressSchema.safeParse(locals.user.shipping_addresses[0]);
 		if (isValid.success) {
 			console.log('Setting shipping address as default');
 			const { first_name, last_name, company, address_1, address_2, city, province, postal_code } =

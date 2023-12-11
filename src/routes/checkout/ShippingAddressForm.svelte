@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { DELAY_MS, TIMEOUT_MS } from '$lib/constants';
-	import { updateShippingAddressSchema } from '$lib/validators/checkout';
-	import type { UpdateShippingAddressSchema } from '$lib/validators/checkout';
+	import { shippingAddressSchema, type ShippingAddressSchema } from '$lib/validators/account';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { page } from '$app/stores';
@@ -9,11 +8,11 @@
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Divider from '$lib/components/elements/Divider.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
-	import type { Shippingaddress } from '$lib/types/user';
+	import type { ShippingAddress } from '$lib/types/user';
 	import { createEventDispatcher } from 'svelte';
 
-	export let data: SuperValidated<UpdateShippingAddressSchema>;
-	export let shipping_addresses: Shippingaddress[] = [];
+	export let data: SuperValidated<ShippingAddressSchema>;
+	export let shipping_addresses: ShippingAddress[] = [];
 	export let processing: boolean;
 	export let isUpdatingAddress: boolean;
 
@@ -71,7 +70,7 @@
 				// Wrap things up
 				processing = false; // end process
 			},
-			validators: updateShippingAddressSchema,
+			validators: shippingAddressSchema,
 			invalidateAll: true,
 			taintedMessage: null,
 			delayMs: DELAY_MS,

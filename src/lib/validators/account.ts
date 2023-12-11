@@ -7,17 +7,17 @@ export const editUserSchema = z.object({
 	phone: z.string().optional()
 });
 
-export const addShippingAddressSchema = z.object({
+export const shippingAddressSchema = z.object({
 	first_name: z.string(),
 	last_name: z.string(),
+	company: z.string().optional(),
 	address_1: z.string(),
-	address_2: z.string().optional().default(''),
+	address_2: z.string().optional(),
 	city: z.string(),
-	province: z.string().optional(),
-	postal_code: z.string(),
-	country_code: z.string().toLowerCase().default('us'),
+	province: z.string(),
 	phone: z.string().optional(),
-	company: z.string().optional().default('')
+	postal_code: z.string(),
+	country_code: z.string().toLowerCase().default('us')
 });
 
 export const changePasswordSchema = z
@@ -29,3 +29,5 @@ export const changePasswordSchema = z
 		message: "Passwords don't match",
 		path: ['confirmPassword'] // path of error
 	});
+
+export type ShippingAddressSchema = typeof shippingAddressSchema;

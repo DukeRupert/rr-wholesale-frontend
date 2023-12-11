@@ -2,7 +2,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
 import { superValidate, message } from 'sveltekit-superforms/server';
-import { editUserSchema, changePasswordSchema, addShippingAddressSchema } from '$lib/validators/account';
+import { editUserSchema, changePasswordSchema, shippingAddressSchema } from '$lib/validators/account';
 import type { Address, Customer } from '@dukerupert/sveltekit-medusa-client';
 
 export const load: PageServerLoad = async function ({ url, locals }) {
@@ -11,7 +11,7 @@ export const load: PageServerLoad = async function ({ url, locals }) {
 	// Setup forms
 	const editUserForm = await superValidate(locals.user, editUserSchema)
 	const changePasswordForm = await superValidate(changePasswordSchema)
-	const addAddressForm = await superValidate(addShippingAddressSchema)
+	const addAddressForm = await superValidate(shippingAddressSchema)
 
 	return {
 		user: locals.user,
@@ -35,7 +35,7 @@ export const actions: Actions = {
 
 	addAddress: async ({ request, locals }) => {
 		console.log('Add Address action');
-		const addAddressForm = await superValidate(request, addShippingAddressSchema);
+		const addAddressForm = await superValidate(request, shippingAddressSchema);
 		if (!addAddressForm.valid) return message(addAddressForm, 'Invalid address', { status: 400 });
 		const address = addAddressForm.data as Address;
 		const success = (await medusa.addShippingAddress(locals, address)) as boolean;

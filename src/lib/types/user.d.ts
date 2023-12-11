@@ -11,16 +11,16 @@ export interface User {
   has_account: boolean;
   metadata: Metadata;
   orders: Order[];
-  shipping_addresses: Shippingaddress[];
+  shipping_addresses: ShippingAddress[];
 }
 
-export interface Shippingaddress {
+export interface ShippingAddress {
   id: string;
   created_at: string;
   updated_at: string;
   deleted_at?: any;
   customer_id: string;
-  company?: any;
+  company?: string;
   first_name: string;
   last_name: string;
   address_1: string;
