@@ -20,11 +20,11 @@ export interface ShippingAddress {
   updated_at: string;
   deleted_at?: any;
   customer_id: string;
-  company?: string;
+  company: string;
   first_name: string;
   last_name: string;
   address_1: string;
-  address_2?: any;
+  address_2: any;
   city: string;
   country_code: string;
   province: string;

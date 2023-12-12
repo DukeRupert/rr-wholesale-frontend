@@ -7,11 +7,11 @@
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import AddressCard from '$lib/components/cards/AddressCard.svelte';
-	import { TruckIcon } from 'lucide-svelte';
+	import { TruckIcon, HomeIcon } from 'lucide-svelte';
 	import type { ShippingOption } from '$lib/types/cart';
 
 	export let data: PageData;
-	$: ({ user, cart, shippingAddressForm } = data);
+	$: ({ user, cart, shippingOptions, shippingAddressForm } = data);
 	$: ({ shipping_addresses } = user);
 	$: console.log(cart);
 	$: items = cart?.items || [];
@@ -19,7 +19,6 @@
 	// Shipping Address
 
 	// Shipping Method
-	let shippingOptions: ShippingOption[] = [];
 	let isShippingMethodSelected = false;
 
 	async function fetchShippingOptions() {
@@ -175,13 +174,16 @@
 				<h2 id="payment-and-shipping-heading" class="sr-only">Payment and shipping details</h2>
 				<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
 					<div class="mt-10">
-						<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
-						{#if cart.shipping_address && !isUpdatingAddress}
+						<div class="flex items-center space-x-2">
+							<HomeIcon class="block h-5 w-5 text-gray-500 dark:text-gray-400" />
+							<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
+						</div>
+						{#if cart.shipping_address && cart.shipping_address?.address_1 && !isUpdatingAddress}
 							<div class="mt-6">
 								<AddressCard data={cart.shipping_address} />
 							</div>
 							<button
-								on:click={() => (isUpdatingAddress = true)}
+								on:click|preventDefault={() => (isUpdatingAddress = true)}
 								class="mt-6 text-sm text-thunderbird-500">Change address?</button
 							>
 						{:else}
@@ -194,7 +196,7 @@
 							/>
 						{/if}
 					</div>
-					{#if shippingOptions.length > 0}
+					
 						<div class="mt-10">
 							<div class="flex items-center space-x-2">
 								<TruckIcon class="block h-6 w-6 text-gray-500 dark:text-gray-400" />
@@ -202,32 +204,33 @@
 							</div>
 
 							<ShippingSelect data={shippingOptions} on:select={handleShippingOptionClick} />
+							{#if !isShippingMethodSelected}
+								<p class="ml-2 mt-2 text-sm text-gray-500 dark:text-gray-400">Please select a shipping method.</p>
+							{/if}
 						</div>
-					{/if}
-				</div>
-				<form
-					action="?/completeCart"
-					method="POST"
-					use:enhance={async ({ cancel }) => {
-						if (processing) cancel();
-						processing = true;
+					
+					
+						<form
+							action="?/completeCart"
+							method="POST"
+							use:enhance={async ({ cancel }) => {
+								if (processing) cancel();
+								processing = true;
 
-						return async ({ result }) => {
-							if (result.status === 200) {
-								success = true;
-								order = result.data.order;
-							}
-						};
-					}}
-				>
-					<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
-						<button
-							type="submit"
-							disabled={!isShippingMethodSelected}
-							class="btn disabled:bg-gray-500">Pay now</button
+								return async ({ result }) => {
+									if (result.status === 200) {
+										success = true;
+										order = result.data.order;
+									}
+								};
+							}}
 						>
-					</div>
-				</form>
+							<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
+								<button type="submit" disabled={!isShippingMethodSelected} class="btn disabled:opacity-80 disabled:pointer-events-none">Confirm order</button>
+							</div>
+						</form>
+					
+				</div>
 			</section>
 		</div>
 	</div>

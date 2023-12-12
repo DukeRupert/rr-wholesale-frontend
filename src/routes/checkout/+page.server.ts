@@ -23,28 +23,31 @@ export const load: PageServerLoad = async function ({ locals }) {
 	}
 
 	// If user has an associated shipping address then update the cart with it
-	// if (locals.user?.shipping_addresses && locals.user.shipping_addresses.length > 0) {
-	// 	console.log('Checking for valid shipping address');
-	// 	const isValid = updateShippingAddressSchema.safeParse(locals.user.shipping_addresses[0]);
-	// 	if (isValid.success) {
-	// 		console.log('Setting shipping address as default');
-	// 		const { first_name, last_name, company, address_1, address_2, city, province, postal_code } =
-	// 			isValid.data;
-	// 		const defaultAddress = {
-	// 			first_name,
-	// 			last_name,
-	// 			company,
-	// 			address_1,
-	// 			address_2,
-	// 			city,
-	// 			province,
-	// 			postal_code,
-	// 			country_code: 'us'
-	// 		};
-	// 		console.log(defaultAddress);
-	// 		cart = (await medusa.updateCartShippingAddress(locals, defaultAddress)) as Cart;
-	// 	}
-	// }
+	console.log('Checking for valid shipping address');
+	if (locals.user?.shipping_addresses && locals.user.shipping_addresses.length > 0) {
+		console.log('Found saved address. Setting index 0 as cart shipping address');
+		const saved_address = locals.user.shipping_addresses[0]
+		console.log(saved_address)
+		const isValid = shippingAddressSchema.safeParse(saved_address);
+		if(!isValid.success) console.log(isValid.error)
+		if (isValid.success) {
+			console.log('Setting shipping address as default');
+			const { first_name, last_name, company, address_1, address_2, city, province, postal_code } =
+				isValid.data;
+			const defaultAddress = {
+				first_name,
+				last_name,
+				company,
+				address_1,
+				address_2,
+				city,
+				province,
+				postal_code,
+				country_code: 'us'
+			};
+			cart = (await medusa.updateCartShippingAddress(locals, defaultAddress)) as Cart;
+		}
+	}
 
 	// Get shipping options
 	console.log('Fetching shipping options');

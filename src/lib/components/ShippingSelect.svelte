@@ -12,7 +12,13 @@
 		helpers: { isChecked }
 	} = createRadioGroup({});
 
-	const dispatch = createEventDispatcher();
+	interface CustomEvent {
+		select: {
+			id: string;
+		};
+	}
+
+	const dispatch = createEventDispatcher<CustomEvent>();
 
 	function handleClick(e) {
 		dispatch('select', { id: e.target.id });
@@ -28,12 +34,12 @@
 					use:melt={$item(option.id)}
 					on:m-click={handleClick}
 					on:m-keydown={handleClick}
-					class="h-4 w-4 border-gray-300 border-2 rounded-full text-indigo-600 ring-indigo-600 focus:ring-2 focus:ring-space-2"
+					class="h-4 w-4 border-gray-300 border-2 rounded-full text-thunderbird-600 ring-thunderbird-600 focus:ring-2 focus:ring-space-2"
 					id={option.id}
 					aria-labelledby="{option}-label"
 				>
 					{#if $isChecked(option.id)}
-						<div class="h-3 w-3 rounded-full bg-indigo-600" />
+						<div class="h-3 w-3 rounded-full bg-thunderbird-600" />
 					{/if}
 				</button>
 				<label

@@ -10,12 +10,12 @@ export const editUserSchema = z.object({
 export const shippingAddressSchema = z.object({
 	first_name: z.string(),
 	last_name: z.string(),
-	company: z.string().optional(),
+	company: z.string().optional().default(''),
 	address_1: z.string(),
-	address_2: z.string().optional(),
+	address_2: z.string().optional().default(''),
 	city: z.string(),
 	province: z.string(),
-	phone: z.string().optional(),
+	phone: z.string().optional().default(''),
 	postal_code: z.string(),
 	country_code: z.string().toLowerCase().default('us')
 });

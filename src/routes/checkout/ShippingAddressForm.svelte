@@ -4,6 +4,8 @@
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { page } from '$app/stores';
+	import { fly, type FlyParams } from 'svelte/transition';
+	import { quadOut, quadIn } from 'svelte/easing';
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Divider from '$lib/components/elements/Divider.svelte';
@@ -78,12 +80,31 @@
 		});
 
 	let showOptions = true;
+
+	// Animation settings
+	const duration = 150;
+	const flyIn: FlyParams = {
+		x: 100,
+		duration: duration,
+		easing: quadOut
+	};
+
+	const flyOut: FlyParams = {
+		x: -100,
+		duration: duration,
+		easing: quadIn
+	};
 </script>
 
 {#if shipping_addresses.length > 0 && showOptions}
-	<ul role="list" class="mt-3 mb-8 sm:mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+	<ul
+
+		role="list"
+		class="mt-3 mb-8 sm:mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+	>
 		{#each shipping_addresses as address, i (address.id)}
 			<li
+
 				class="col-span-1 flex flex-col divide-y divide-gray-200 dark:divide-gray-900 rounded-lg bg-white dark:bg-gray-800 shadow"
 			>
 				<div class="grow flex flex-col w-full justify-between p-6">
@@ -133,9 +154,16 @@
 			</li>
 		{/each}
 	</ul>
+	<Divider />
 {/if}
-<Divider />
-<form id="addressForm" use:enhance action="?/updateShippingAddress" method="POST">
+<form
+	in:fly={flyIn}
+	out:fly={flyOut}
+	id="addressForm"
+	use:enhance
+	action="?/updateShippingAddress"
+	method="POST"
+>
 	<div class="mt-8 sm:mt-12 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-12">
 		<div class="sm:col-span-6">
 			<label for="first_name" class="label">First Name</label>
