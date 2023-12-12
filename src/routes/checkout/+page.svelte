@@ -96,7 +96,7 @@
 
 					<dl>
 						<dt class="text-sm font-medium">Amount due</dt>
-						<dd class="mt-1 text-3xl font-bold tracking-tight text-white">$232.00</dd>
+						<dd class="mt-1 text-3xl font-bold tracking-tight text-white">{formatPrice(cart.total)}</dd>
 					</dl>
 
 					<ul role="list" class="divide-y divide-white divide-opacity-10 text-sm font-medium">
