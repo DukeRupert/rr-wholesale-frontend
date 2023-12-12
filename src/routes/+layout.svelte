@@ -27,7 +27,7 @@
 {:else}
 	<NavBar bind:user bind:cart bind:count />
 	<!-- <Navigation bind:user bind:cart bind:count /> -->
-	<main class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+	<main class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:pb-24">
 		<slot />
 	</main>
 {/if}
