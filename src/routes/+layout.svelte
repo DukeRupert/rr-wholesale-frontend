@@ -13,6 +13,7 @@
 		'/auth/forgot-password',
 		'/auth/reset-password',
 		'/checkout',
+		'/dev',
 		'/sitemap.xml'
 	];
 	$: naked = nakedPaths.includes($page.url.pathname);

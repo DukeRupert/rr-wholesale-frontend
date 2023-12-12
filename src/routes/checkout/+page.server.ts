@@ -1,6 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import type { Cart, ShippingOption } from '$lib/types/cart';
-import type { Order } from '$lib/types/user';
+import type { OrderSummary } from '$lib/types/order';
 import { fail, redirect, error } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
 import { superValidate, message } from 'sveltekit-superforms/server';
@@ -68,7 +68,7 @@ export const load: PageServerLoad = async function ({ locals }) {
 
 export const actions: Actions = {
 	completeCart: async ({ locals, cookies }) => {
-		const order = await medusa.completeCart(locals) as Order;
+		const order = await medusa.completeCart(locals) as OrderSummary;
 
 		if (order) {
 			//remove cookie first because customer has already paid for the cart
@@ -84,7 +84,7 @@ export const actions: Actions = {
 			locals.cart = null;
 			return { success: true, order: order };
 		} else {
-			return fail(400, { success: false, order: {} });
+			return fail(400, { success: false });
 		}
 	},
 	updateShippingAddress: async ({ request, locals, fetch }) => {
