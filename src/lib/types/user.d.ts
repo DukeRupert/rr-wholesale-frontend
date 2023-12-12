@@ -88,8 +88,9 @@ export interface Item {
 }
 
 export interface Metadata2 {
+    handle?: string;
 }
 
 export interface Metadata {
-  stripe_id: string;
+  stripe_id?: string;
 }
