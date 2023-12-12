@@ -5,10 +5,8 @@
 	import ShippingSelect from '$lib/components/ShippingSelect.svelte';
 	import { company } from '$lib/constants';
 	import { enhance } from '$app/forms';
-	import { onMount } from 'svelte';
 	import AddressCard from '$lib/components/cards/AddressCard.svelte';
 	import { TruckIcon, HomeIcon } from 'lucide-svelte';
-	import type { ShippingOption } from '$lib/types/cart';
 
 	export let data: PageData;
 	$: ({ user, cart, shippingOptions, shippingAddressForm } = data);
@@ -16,11 +14,21 @@
 	$: console.log(cart);
 	$: items = cart?.items || [];
 
-	// Shipping Address
+	let order: any; // Order data
+	let success = false; // Order confirmed
+	let processing = false;
+
+	// Shipping address logic
+	let isUpdatingAddress = false;
+
+	async function handleShippingOptionClick(e) {
+		console.log('Option selected');
+		const shippingOptionId = e.detail.id;
+		await selectShippingOption(shippingOptionId);
+	}
 
 	// Shipping Method
 	let isShippingMethodSelected = false;
-
 	async function fetchShippingOptions() {
 		console.log('fetching shipping options');
 		try {
@@ -29,7 +37,6 @@
 			console.log(err);
 		}
 	}
-
 	async function selectShippingOption(id: string) {
 		console.log(`Selecting shipping option: ${id}`);
 		try {
@@ -45,37 +52,9 @@
 			console.log(err);
 		}
 	}
-
-	let order: any;
-	let orderSummaryOpen = false;
-	let success = false;
-	let processing = false;
-	let errorMessage = '';
-
-	// Shipping address logic
-
-	let isUpdatingAddress = false;
-
-	const splitName = (name = '') => {
-		const [firstName, ...lastName] = name.split(' ').filter(Boolean);
-		return {
-			firstName: firstName,
-			lastName: lastName.join(' ')
-		};
-	};
-
-	async function handleShippingOptionClick(e) {
-		console.log('Option selected');
-		const shippingOptionId = e.detail.id;
-		await selectShippingOption(shippingOptionId);
-	}
-
-	onMount(async () => {});
 </script>
 
-{#if errorMessage}
-	<p>{errorMessage}</p>
-{:else if success}
+{#if success}
 	<main class="lg:flex lg:min-h-full lg:flex-row-reverse lg:max-h-screen lg:overflow-hidden">
 		<section class="flex-auto px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-4 lg:pt-0">
 			<div class="mx-auto max-w-lg">
@@ -219,8 +198,8 @@
 
 								return async ({ result }) => {
 									if (result.status === 200) {
-										success = true;
 										order = result.data.order;
+										success = true;
 									}
 								};
 							}}
