@@ -2,35 +2,37 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
 import { superValidate, message } from 'sveltekit-superforms/server';
-import { editUserSchema, changePasswordSchema, shippingAddressSchema } from '$lib/validators/account';
+import { updateUserSchema, changePasswordSchema, shippingAddressSchema } from '$lib/validators/account';
+import { registerSchema } from '$lib/validators/auth';
 import type { Address, Customer } from '@dukerupert/sveltekit-medusa-client';
 
 export const load: PageServerLoad = async function ({ url, locals }) {
 	if (!locals.user) throw redirect(307, '/auth');
 
 	// Setup forms
-	const editUserForm = await superValidate(locals.user, editUserSchema)
+	const updateUserForm = await superValidate(locals.user, updateUserSchema)
 	const changePasswordForm = await superValidate(changePasswordSchema)
 	const addAddressForm = await superValidate(shippingAddressSchema)
 
 	return {
 		user: locals.user,
 		currentPage: parseInt(url.searchParams?.get('page') as string) || 1,
-		editUserForm,
+		updateUserForm,
 		changePasswordForm,
 		addAddressForm
 	};
 };
 
 export const actions: Actions = {
-	editUserInfo: async ({ request, locals }) => {
+	updateUser: async ({ request, locals }) => {
 		console.log('Edit User Info');
-		const editUserForm = await superValidate(request, editUserSchema);
-		if (!editUserForm.valid) return message(editUserForm, 'Invalid form', { status: 400 });
-		const customer = editUserForm.data as Customer;
+		const updateUserForm = await superValidate(request, updateUserSchema);
+		if (!updateUserForm.valid) return message(updateUserForm, 'Invalid form', { status: 400 });
+		const customer = updateUserForm.data as Customer;
 		const success = await medusa.editCustomer(locals, customer);
-		if (!success) return message(editUserForm, 'Please try again later.', { status: 500 });
-		return { editUserForm };
+		if (!success) return message(updateUserForm, 'Please try again later.', { status: 500 });
+		console.log("success")
+		return { updateUserForm };
 	},
 
 	addAddress: async ({ request, locals }) => {
@@ -61,5 +63,23 @@ export const actions: Actions = {
 		const success = await medusa.editCustomer(locals, { password: newPassword });
 		if (!success) return message(changePasswordForm, 'Something went wrong', { status: 500 });
 		return { changePasswordForm };
+	},
+
+	registerUser: async({ request, cookies, locals}) => {
+		console.log('Register customer action');
+		const form = await superValidate(request, registerSchema);
+		if (!form.valid) return message(form, 'Something went wrong', { status: 500 }); // this shouldn't happen because of client-side validation
+		const user = {
+			first_name: form.data.first_name,
+			last_name: form.data.last_name,
+			email: form.data.email,
+			password: form.data.password
+		}
+		const res = await medusa.register(locals, cookies, user);
+		if (res) {
+			return { success: true }	
+		} else {
+			return message(form, 'Failed to register new user.', { status: 401 });
+		}
 	}
 };

@@ -3,7 +3,6 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	import Toaster from '$lib/components/toast/index.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
 
 	export let data: PageData;
@@ -27,7 +26,6 @@
 	<slot />
 {:else}
 	<NavBar bind:user bind:cart bind:count />
-	<!-- <Navigation bind:user bind:cart bind:count /> -->
 	<main class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:pb-24">
 		<slot />
 	</main>

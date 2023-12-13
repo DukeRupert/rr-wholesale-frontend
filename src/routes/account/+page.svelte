@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import type { ToastEvent } from '$lib/types/events'
 	import { enhance } from '$app/forms';
 	import { superForm } from 'sveltekit-superforms/client';
 	import {
 		shippingAddressSchema,
 		changePasswordSchema,
-		editUserSchema
+		updateUserSchema
 	} from '$lib/validators/account';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -14,9 +15,11 @@
 	import { fly, type FlyParams } from 'svelte/transition';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import { AlertCircle } from 'lucide-svelte';
+	import UpdateUserForm from './UpdateUserForm.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 
 	export let data: PageData;
+	$: ({ updateUserForm } = data);
 	console.log(data.user);
 
 	$: ({ email, first_name, last_name, phone, shipping_addresses } = data.user);
@@ -30,68 +33,6 @@
 	const timeoutMs = 8000;
 
 	// Get forms
-	const {
-		form: editUserForm,
-		errors: editUserFormErrors,
-		constraints: editUserFormConstraints,
-		delayed: editUserFormDelayed,
-		enhance: editUserFormEnhance
-	} = superForm(data.editUserForm, {
-		onSubmit({ cancel }) {
-			if (processing) cancel(); // silly fast clickers
-			processing = true; // start process
-		},
-		onUpdated({ form }) {
-			if (form.message) {
-				// Something went wrong
-				if ($page.status === 400)
-					addToast({
-						data: {
-							type: 'warning',
-							title: 'Warning',
-							description: form.message
-						}
-					});
-				if ($page.status === 500)
-					addToast({
-						data: {
-							type: 'error',
-							title: 'Error',
-							description: form.message
-						}
-					});
-			} else {
-				// Success
-				addToast({
-					data: {
-						type: 'success',
-						title: 'Success',
-						description: 'Contact information updated.'
-					}
-				});
-				editUserInfo = false; // close the form
-			}
-			// Wrap things up
-			processing = false; // end process
-		},
-		onError({ result }) {
-			addToast({
-				data: {
-					type: 'error',
-					title: 'Error',
-					description: result.error.message
-				}
-			});
-			// Wrap things up
-			processing = false; // end process
-		},
-		validators: editUserSchema,
-		invalidateAll: true,
-		taintedMessage: null,
-		delayMs: delayMs,
-		timeoutMs: timeoutMs
-	});
-
 	const {
 		form: changePasswordForm,
 		errors: changePasswordFormErrors,
@@ -227,6 +168,24 @@
 		delay: 100,
 		easing: quadOut
 	};
+
+	interface ToastMessageData {
+		type: 'success';
+		title: 'Success';
+		description: 'Success! Check your email for a confirmation link.';
+	}
+
+	function handleSuccess(e: ToastEvent) {
+		console.log('Success');
+		const { type, title, description } = e.detail;
+		addToast({
+			data: {
+				type,
+				title,
+				description
+			}
+		});
+	}
 </script>
 
 <div class="max-w-xl">
@@ -260,114 +219,14 @@
 		</div>
 	</div>
 	{#if editUserInfo}
-		<form in:fly={flyInParams} action="?/editUserInfo" method="POST" use:editUserFormEnhance>
-			<div class="mt-5 mb-8 max-w-lg grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
-				<div class="sm:col-span-6">
-					<label for="first_name" class="label">First Name</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="first_name"
-							required
-							class="block w-full input"
-							aria-invalid={$editUserFormErrors.first_name ? 'true' : undefined}
-							bind:value={$editUserForm.first_name}
-							{...$editUserFormConstraints.first_name}
-						/>
-						{#if $editUserFormErrors.first_name}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-					{#if $editUserFormErrors.first_name}
-						<p class="mt-2 text-sm text-red-600" id="email-error">
-							{$editUserFormErrors.first_name}
-						</p>
-					{/if}
-				</div>
-				<div class="sm:col-span-6">
-					<label for="last_name" class="label">Last Name</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="last_name"
-							required
-							class="block w-full input"
-							aria-invalid={$editUserFormErrors.last_name ? 'true' : undefined}
-							bind:value={$editUserForm.last_name}
-							{...$editUserFormConstraints.last_name}
-						/>
-						{#if $editUserFormErrors.last_name}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-					{#if $editUserFormErrors.last_name}
-						<p class="mt-2 text-sm text-red-600" id="email-error">
-							{$editUserFormErrors.last_name}
-						</p>
-					{/if}
-				</div>
-				<div class="sm:col-span-7">
-					<label for="email" class="label">Email</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="email"
-							class="block w-full input"
-							aria-invalid={$editUserFormErrors.email ? 'true' : undefined}
-							bind:value={$editUserForm.email}
-							{...$editUserFormConstraints.email}
-						/>
-						{#if $editUserFormErrors.email}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-					{#if $editUserFormErrors.email}
-						<p class="mt-2 text-sm text-red-600" id="email-error">
-							{$editUserFormErrors.email}
-						</p>
-					{/if}
-				</div>
-
-				<div class="sm:col-span-5">
-					<label for="last_name" class="label">Phone (optional)</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="phone"
-							class="block w-full input"
-							aria-invalid={$editUserFormErrors.phone ? 'true' : undefined}
-							bind:value={$editUserForm.phone}
-							{...$editUserFormConstraints.phone}
-						/>
-						{#if $editUserFormErrors.phone}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-					{#if $editUserFormErrors.phone}
-						<p class="mt-2 text-sm text-red-600" id="email-error">
-							{$editUserFormErrors.phone}
-						</p>
-					{/if}
-				</div>
-				<div class="sm:col-span-6">
-					<button type="submit" disabled={processing} class="mt-6 flex w-full btn">
-						{#if processing && $editUserFormDelayed}
-							<Spinner /> &nbsp; Processing...
-						{:else}
-							Save
-						{/if}
-					</button>
-				</div>
-			</div>
-		</form>
+		<UpdateUserForm
+			data={updateUserForm}
+			{delayMs}
+			{timeoutMs}
+			{flyInParams}
+			bind:processing
+			on:success={handleSuccess}
+		/>
 	{:else if changePassword}
 		<form
 			in:fly={flyInParams}

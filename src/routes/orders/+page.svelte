@@ -9,8 +9,6 @@
 	$: orders.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
 	$: currentPage = data?.currentPage || 1;
 	let opp = 10; // orders per page
-
-	$: console.log(orders);
 </script>
 
 <div class="max-w-xl">

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { page } from '$app/stores';
 	import { resetPostReq } from '$lib/validators/auth';
 	import { AlertCircle } from 'lucide-svelte';
 
@@ -12,8 +11,6 @@
 		invalidateAll: true,
 		taintedMessage: null
 	});
-
-	$: console.log($errors)
 
 	$form.rurl = data.rurl || '';
 </script>

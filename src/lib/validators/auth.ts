@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { editUserSchema } from './account'
 
 export const loginPostReq = z.object({
    email: z.string().email().refine((val) => val.length > 0, {

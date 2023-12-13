@@ -4,7 +4,6 @@
     import { company } from '$lib/constants';
 
 	export let data: OrderSummary;
-	console.log(data);
 </script>
 
 <!-- <main class="lg:flex lg:min-h-full lg:flex-row-reverse lg:max-h-screen lg:overflow-hidden">
