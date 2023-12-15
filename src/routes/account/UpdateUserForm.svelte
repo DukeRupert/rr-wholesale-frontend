@@ -24,6 +24,7 @@
 	};
 
 	const dispatch = createEventDispatcher<ToastEvent>();
+	const simpleDispatch = createEventDispatcher();
 
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
@@ -40,6 +41,7 @@
 					title: 'Success',
 					description: 'Success! Your account information has been updated.'
 				});
+				simpleDispatch('cancel')
 			}
 		},
 		onError({ result }) {

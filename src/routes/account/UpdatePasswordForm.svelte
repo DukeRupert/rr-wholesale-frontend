@@ -41,6 +41,7 @@
 					title: 'Success',
 					description: 'Success! Your account information has been updated.'
 				});
+				simpleDispatch("cancel")
 			}
 		},
 		onError({ result }) {

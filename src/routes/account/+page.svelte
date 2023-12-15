@@ -1,106 +1,34 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { ToastEventPayload } from '$lib/types/events'
-	import { enhance } from '$app/forms';
-	import { superForm } from 'sveltekit-superforms/client';
-	import {
-		shippingAddressSchema,
-		updatePasswordSchema,
-		updateUserSchema
-	} from '$lib/validators/account';
-	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
+	import type { ToastEventPayload } from '$lib/types/events';
+	import type { FlipParams } from 'svelte/animate';
+	import type { FlyParams } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
-	import { flip, type FlipParams } from 'svelte/animate';
-	import { fly, type FlyParams } from 'svelte/transition';
 	import { addToast } from '$lib/components/toast/index.svelte';
-	import { AlertCircle } from 'lucide-svelte';
 	import UpdateUserForm from './UpdateUserForm.svelte';
 	import UpdatePasswordForm from './UpdatePasswordForm.svelte';
-	import Spinner from '$lib/components/elements/Spinner.svelte';
+	import CreateAddressForm from './CreateAddressForm.svelte';
+	import AddressBook from './AddressBook.svelte';
 
 	export let data: PageData;
-	$: ({ updateUserForm, updatePasswordForm } = data);
-	console.log(data.user);
-
+	$: ({ updateUserForm, updatePasswordForm, createAddressForm } = data);
 	$: ({ email, first_name, last_name, phone, shipping_addresses } = data.user);
+
+	// Toggles
 	let processing = false;
-	let editUserInfo = false;
-	let addAddress = false;
-	let changePassword = false;
+	let updateUserInfo = false;
+	let createAddress = false;
+	let updatePassword = false;
 
 	// Form configuration
 	const delayMs = 200;
 	const timeoutMs = 8000;
-
-	// Get forms
-	const {
-		form: addAddressForm,
-		errors: addAddressFormErrors,
-		constraints: addAddressFormConstraints,
-		delayed: addAddressFormDelayed,
-		enhance: addAddressFormEnhance
-	} = superForm(data.addAddressForm, {
-		onSubmit({ cancel }) {
-			if (processing) cancel(); // silly fast clickers
-			processing = true; // start process
-		},
-		onUpdated({ form }) {
-			if (form.message) {
-				// Something went wrong
-				if ($page.status === 400)
-					addToast({
-						data: {
-							type: 'warning',
-							title: 'Warning',
-							description: form.message
-						}
-					});
-				if ($page.status === 500)
-					addToast({
-						data: {
-							type: 'error',
-							title: 'Error',
-							description: form.message
-						}
-					});
-			} else {
-				// Success
-				addToast({
-					data: {
-						type: 'success',
-						title: 'Success',
-						description: 'Address information updated.'
-					}
-				});
-				addAddress = false; // close the form
-			}
-			// Wrap things up
-			processing = false; // end process
-		},
-		onError({ result }) {
-			addToast({
-				data: {
-					type: 'error',
-					title: 'Error',
-					description: result.error.message
-				}
-			});
-			// Wrap things up
-			processing = false; // end process
-		},
-		validators: shippingAddressSchema,
-		invalidateAll: true,
-		taintedMessage: null,
-		delayMs: delayMs,
-		timeoutMs: timeoutMs
-	});
-
+	
+	// Animation 
 	const flipParams: FlipParams = {
 		duration: 250,
 		easing: quadOut
 	};
-
 	const flyInParams: FlyParams = {
 		x: -50,
 		duration: 250,
@@ -108,8 +36,9 @@
 		easing: quadOut
 	};
 
+	// Toast Messages
 	function handleToast(e: CustomEvent<ToastEventPayload>) {
-		const details = e.detail
+		const details = e.detail;
 		addToast({
 			data: {
 				...details
@@ -125,7 +54,7 @@
 	</p>
 </div>
 
-<div class="max-w-screen-lg mx-auto">
+<div class="mx-auto">
 	<!-- Contact Information -->
 	<div class="border-b border-gray-200 dark:border-gray-600 px-4 py-5 sm:px-6">
 		<div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
@@ -137,18 +66,14 @@
 			<div class="ml-4 mt-2 flex-shrink-0">
 				<button
 					type="button"
-					on:click={() => (editUserInfo = !editUserInfo)}
+					on:click={() => (updateUserInfo = !updateUserInfo)}
 					class="relative inline-flex btn px-3 py-2 text-sm font-semibold"
-					>{#if editUserInfo}
-						Cancel
-					{:else}
-						Edit
-					{/if}</button
-				>
+					>{updateUserInfo ? 'Cancel' : 'Edit'}
+				</button>
 			</div>
 		</div>
 	</div>
-	{#if editUserInfo}
+	{#if updateUserInfo}
 		<UpdateUserForm
 			data={updateUserForm}
 			{delayMs}
@@ -156,16 +81,21 @@
 			{flyInParams}
 			bind:processing
 			on:toast={handleToast}
+			on:cancel={() => updateUserInfo = false}
 		/>
-	{:else if changePassword}
-		<UpdatePasswordForm data={updatePasswordForm} {delayMs}
+	{:else if updatePassword}
+		<UpdatePasswordForm
+			data={updatePasswordForm}
+			{delayMs}
 			{timeoutMs}
 			{flyInParams}
 			bind:processing
 			on:toast={handleToast}
-			on:cancel={() => changePassword = false} />
+			on:cancel={() => (updatePassword = false)}
+		/>
 	{:else}
-		<h3 class="mt-3 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
+		<div class="p-6">
+			<h3 class="mt-3 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
 			{first_name}
 			{last_name}
 		</h3>
@@ -175,10 +105,11 @@
 		{/if}
 		<button
 			on:click={() => {
-				changePassword = true;
+				updatePassword = true;
 			}}
 			class="text-thunderbird-600 hover:text-thunderbird-500 mt-3">Change Password</button
 		>
+		</div>
 	{/if}
 
 	<!-- Addresses -->
@@ -194,266 +125,25 @@
 			<div class="ml-4 mt-2 flex-shrink-0">
 				<button
 					type="button"
-					on:click={() => (addAddress = !addAddress)}
+					on:click={() => (createAddress = !createAddress)}
 					class="relative inline-flex btn px-3 py-2 text-sm font-semibold"
-					>{#if addAddress}
-						Cancel
-					{:else}
-						Add
-					{/if}</button
-				>
+					>{createAddress ? 'Cancel' : 'Add'}
+				</button>
 			</div>
 		</div>
 	</div>
-	{#if addAddress}
-		<form in:fly={flyInParams} action="?/addAddress" method="POST" use:addAddressFormEnhance>
-			<div class="max-w-lg mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
-				<div class="sm:col-span-6">
-					<label for="first_name" class="label">First Name</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="first_name"
-							required
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.first_name ? 'true' : undefined}
-							bind:value={$addAddressForm.first_name}
-							{...$addAddressFormConstraints.first_name}
-						/>
-						{#if $addAddressFormErrors.first_name}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-6">
-					<label for="last_name" class="label">Last Name</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="last_name"
-							required
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.last_name ? 'true' : undefined}
-							bind:value={$addAddressForm.last_name}
-							{...$addAddressFormConstraints.last_name}
-						/>
-						{#if $addAddressFormErrors.last_name}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-12">
-					<label for="company" class="label">Company</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="company"
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.company ? 'true' : undefined}
-							bind:value={$addAddressForm.company}
-							{...$addAddressFormConstraints.company}
-						/>
-						{#if $addAddressFormErrors.company}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-12">
-					<label for="address_1" class="label">Address Line 1</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="address_1"
-							required
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.address_1 ? 'true' : undefined}
-							bind:value={$addAddressForm.address_1}
-							{...$addAddressFormConstraints.address_1}
-						/>
-						{#if $addAddressFormErrors.address_1}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-12">
-					<label for="address_2" class="label">Address Line 2</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="address_2"
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.address_2 ? 'true' : undefined}
-							bind:value={$addAddressForm.address_2}
-							{...$addAddressFormConstraints.address_2}
-						/>
-						{#if $addAddressFormErrors.address_2}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-8">
-					<label for="city" class="label">City</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="city"
-							required
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.city ? 'true' : undefined}
-							bind:value={$addAddressForm.city}
-							{...$addAddressFormConstraints.city}
-						/>
-						{#if $addAddressFormErrors.city}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-4">
-					<label for="province" class="label">State</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="province"
-							required
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.province ? 'true' : undefined}
-							bind:value={$addAddressForm.province}
-							{...$addAddressFormConstraints.province}
-						/>
-						{#if $addAddressFormErrors.province}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-4">
-					<label for="postal_code" class="label">Postal Code</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="postal_code"
-							required
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.postal_code ? 'true' : undefined}
-							bind:value={$addAddressForm.postal_code}
-							{...$addAddressFormConstraints.postal_code}
-						/>
-						{#if $addAddressFormErrors.postal_code}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-8">
-					<label for="last_name" class="label">Phone (optional)</label>
-					<div class="relative mt-2">
-						<input
-							type="text"
-							name="phone"
-							class="block w-full input"
-							aria-invalid={$addAddressFormErrors.phone ? 'true' : undefined}
-							bind:value={$addAddressForm.phone}
-							{...$addAddressFormConstraints.phone}
-						/>
-						{#if $addAddressFormErrors.phone}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-				</div>
-				<div class="sm:col-span-6">
-					<button disabled={processing} type="submit" class="mt-6 flex w-full btn">
-						{#if processing && $addAddressFormDelayed}
-							<Spinner /> &nbsp; Processing...
-						{:else}
-							Save
-						{/if}
-					</button>
-				</div>
-			</div>
-		</form>
+	{#if createAddress}
+		<CreateAddressForm
+			data={createAddressForm}
+			{delayMs}
+			{timeoutMs}
+			{flyInParams}
+			bind:processing
+			on:toast={handleToast}
+			on:cancel={() => (createAddress = false)}
+		/>
 	{:else if shipping_addresses.length > 0}
-		<ul role="list" class="mt-3 mb-8 sm:mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-			{#each shipping_addresses as address, i (address.id)}
-				<li
-					animate:flip={flipParams}
-					class="col-span-1 flex flex-col divide-y divide-gray-200 dark:divide-gray-900 rounded-lg bg-white dark:bg-gray-800 shadow"
-				>
-					<div class="grow flex flex-col w-full justify-between p-6">
-						<div>
-							<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-								{address.first_name}
-								{address.last_name}
-							</p>
-							{#if address.company}
-								<p class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-									{address.company}
-								</p>
-							{/if}
-							<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-								{address.address_1}
-							</p>
-							{#if address.address_2}
-								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-									{address.address_2}
-								</p>
-							{/if}
-							<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-								{address.city}, {address.province}
-								{address.postal_code}
-							</p>
-							{#if address.phone}
-								<p class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-									{address.phone}
-								</p>
-							{/if}
-						</div>
-					</div>
-					<div>
-						<div class="-mt-px flex divide-x divide-gray-200 dark:divide-gray-900">
-							<form
-								class="-ml-px flex w-0 flex-1"
-								action="?/deleteAddress"
-								method="POST"
-								use:enhance={async ({ cancel }) => {
-									return async ({ result }) => {
-										if (result.status === 200) {
-											await invalidateAll();
-										} else {
-											console.log('failed');
-										}
-										processing = false;
-									};
-								}}
-							>
-								<button
-									type="submit"
-									class="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-thunderbird-600 dark:hover:text-thunderbird-500 capitalize"
-								>
-									delete
-								</button>
-								<input type="hidden" name="addressId" value={address.id} />
-							</form>
-						</div>
-					</div>
-				</li>
-			{/each}
-		</ul>
+		<AddressBook data={shipping_addresses} {flipParams} bind:processing />
 	{:else}
 		No addresses saved
 	{/if}
