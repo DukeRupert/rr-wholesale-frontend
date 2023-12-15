@@ -1,16 +1,20 @@
 <script lang="ts">
-	import { updateUserSchema } from '$lib/validators/account';
-	import type { UpdateUserSchema } from '$lib/validators/account';
+	import type { ToastEvent } from '$lib/types/events';
+	import type { UpdatePasswordSchema } from '$lib/validators/account';
 	import type { SuperValidated } from 'sveltekit-superforms';
+	import { updatePasswordSchema } from '$lib/validators/account';
 	import { superForm } from 'sveltekit-superforms/client';
+	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
-	import { AlertCircle } from 'lucide-svelte';
-	import { fly, type FlyParams } from 'svelte/transition';
-	import { addToast } from '$lib/components/toast/index.svelte';
-	import Spinner from '$lib/components/elements/Spinner.svelte';
 	import { quadOut } from 'svelte/easing';
+	import { fly, type FlyParams } from 'svelte/transition';
+	import { AlertCircle } from 'lucide-svelte';
+	import Spinner from '$lib/components/elements/Spinner.svelte';
 
-	export let data: SuperValidated<UpdateUserSchema>;
+	const dispatch = createEventDispatcher<ToastEvent>();
+	const simpleDispatch = createEventDispatcher();
+
+	export let data: SuperValidated<UpdatePasswordSchema>;
 	export let processing: boolean;
 	// Form configuration
 	export let delayMs = 200;
@@ -25,38 +29,29 @@
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
 			if (form.message) {
-				if ($page.status === 200)
-					// Display the message using a toast library
-					addToast({
-						data: {
-							type: 'success',
-							title: 'Success',
-							description: 'Success! Check your email for a confirmation link.'
-						}
+				if ($page.status === 400)
+					dispatch('toast', {
+						type: 'warning',
+						title: 'Warning',
+						description: form.message
 					});
-				if ($page.status === 401)
-					// Display the message using a toast library
-					addToast({
-						data: {
-							type: 'warning',
-							title: 'Warning',
-							description: form.message
-						}
-					});
+			} else {
+				dispatch('toast', {
+					type: 'success',
+					title: 'Success',
+					description: 'Success! Your account information has been updated.'
+				});
 			}
 		},
 		onError({ result }) {
 			console.log(result);
-			// Display the message using a toast library
-			addToast({
-				data: {
-					type: 'error',
-					title: 'Error',
-					description: result.error.message
-				}
+			dispatch('toast', {
+				type: 'error',
+				title: 'Error',
+				description: result.error.message
 			});
 		},
-		validators: updateUserSchema,
+		validators: updatePasswordSchema,
 		invalidateAll: true,
 		taintedMessage: null,
 		delayMs: delayMs,
@@ -64,110 +59,77 @@
 	});
 </script>
 
-<form in:fly={flyInParams} action="?/editUserInfo" method="POST" use:enhance>
-	<div class="mt-5 mb-8 max-w-lg grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+<form in:fly={flyInParams} action="?/updatePassword" method="POST" use:enhance>
+	<div class="max-w-lg mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
 		<div class="sm:col-span-6">
-			<label for="first_name" class="label">First Name</label>
+			<label for="newPassword" class="label">New Password</label>
 			<div class="relative mt-2">
 				<input
-					type="text"
-					name="first_name"
+					name="newPassword"
+					type="password"
+					autocomplete="new-password"
 					required
 					class="block w-full input"
-					aria-invalid={$errors.first_name ? 'true' : undefined}
-					bind:value={$form.first_name}
-					{...$constraints.first_name}
+					aria-invalid={$errors.newPassword ? 'true' : undefined}
+					bind:value={$form.newPassword}
+					{...$constraints.newPassword}
 				/>
-				{#if $errors.first_name}
+				{#if $errors.newPassword}
 					<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
 						<AlertCircle class="h-5 w-5 text-red-500" />
 					</div>
 				{/if}
 			</div>
-			{#if $errors.first_name}
+			{#if $errors.newPassword}
 				<p class="mt-2 text-sm text-red-600" id="email-error">
-					{$errors.first_name}
+					{$errors.newPassword}
 				</p>
 			{/if}
 		</div>
 		<div class="sm:col-span-6">
-			<label for="last_name" class="label">Last Name</label>
+			<label for="confirmPassword" class="label">Confirm New Password</label>
 			<div class="relative mt-2">
 				<input
-					type="text"
-					name="last_name"
+					name="confirmPassword"
+					type="password"
+					autocomplete="new-password"
 					required
 					class="block w-full input"
-					aria-invalid={$errors.last_name ? 'true' : undefined}
-					bind:value={$form.last_name}
-					{...$constraints.last_name}
+					aria-invalid={$errors.confirmPassword ? 'true' : undefined}
+					bind:value={$form.confirmPassword}
+					{...$constraints.confirmPassword}
 				/>
-				{#if $errors.last_name}
+				{#if $errors.confirmPassword}
 					<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
 						<AlertCircle class="h-5 w-5 text-red-500" />
 					</div>
 				{/if}
 			</div>
-			{#if $errors.last_name}
+			{#if $errors.confirmPassword}
 				<p class="mt-2 text-sm text-red-600" id="email-error">
-					{$errors.last_name}
-				</p>
-			{/if}
-		</div>
-		<div class="sm:col-span-7">
-			<label for="email" class="label">Email</label>
-			<div class="relative mt-2">
-				<input
-					type="text"
-					name="email"
-					class="block w-full input"
-					aria-invalid={$errors.email ? 'true' : undefined}
-					bind:value={$form.email}
-					{...$constraints.email}
-				/>
-				{#if $errors.email}
-					<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-						<AlertCircle class="h-5 w-5 text-red-500" />
-					</div>
-				{/if}
-			</div>
-			{#if $errors.email}
-				<p class="mt-2 text-sm text-red-600" id="email-error">
-					{$errors.email}
-				</p>
-			{/if}
-		</div>
-
-		<div class="sm:col-span-5">
-			<label for="last_name" class="label">Phone (optional)</label>
-			<div class="relative mt-2">
-				<input
-					type="text"
-					name="phone"
-					class="block w-full input"
-					aria-invalid={$errors.phone ? 'true' : undefined}
-					bind:value={$form.phone}
-					{...$constraints.phone}
-				/>
-				{#if $errors.phone}
-					<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-						<AlertCircle class="h-5 w-5 text-red-500" />
-					</div>
-				{/if}
-			</div>
-			{#if $errors.phone}
-				<p class="mt-2 text-sm text-red-600" id="email-error">
-					{$errors.phone}
+					{$errors.confirmPassword}
 				</p>
 			{/if}
 		</div>
 		<div class="sm:col-span-6">
-			<button type="submit" disabled={processing} class="mt-6 flex w-full btn">
+			<button disabled={processing} type="submit" class="mt-6 flex w-full btn">
 				{#if processing && $delayed}
 					<Spinner /> &nbsp; Processing...
 				{:else}
 					Save
 				{/if}
+			</button>
+		</div>
+		<div class="sm:col-span-6">
+			<button
+				hidden={processing}
+				on:click|preventDefault={() => {
+					simpleDispatch("cancel")	
+				}}
+				type="button"
+				class="mt-6 w-full btn btn-secondary"
+			>
+				Cancel
 			</button>
 		</div>
 	</div>

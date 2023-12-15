@@ -7,7 +7,6 @@
 	import { page } from '$app/stores';
 	import { AlertCircle } from 'lucide-svelte';
 	import { fly, type FlyParams } from 'svelte/transition';
-	import { addToast } from '$lib/components/toast/index.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 	import { quadOut } from 'svelte/easing';
 	import { createEventDispatcher } from 'svelte';
@@ -29,47 +28,26 @@
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
 			if (form.message) {
-				if ($page.status === 200)
-					// Display the message using a toast library
-					dispatch('success', {
-						type: 'success',
-						title: 'Success',
-						description: 'Success! Your account information has been updated.'
-					});
-				addToast({
-					data: {
-						type: 'success',
-						title: 'Success',
-						description: 'Success! Check your email for a confirmation link.'
-					}
-				});
-				if ($page.status === 401)
-					// Display the message using a toast library
-					addToast({
-						data: {
-							type: 'warning',
-							title: 'Warning',
-							description: form.message
-						}
+				if ($page.status === 400)
+					dispatch('toast', {
+						type: 'warning',
+						title: 'Warning',
+						description: form.message
 					});
 			} else {
-				dispatch('success', {
-						type: 'success',
-						title: 'Success',
-						description: 'Success! Your account information has been updated.'
-					});
+				dispatch('toast', {
+					type: 'success',
+					title: 'Success',
+					description: 'Success! Your account information has been updated.'
+				});
 			}
-			
 		},
 		onError({ result }) {
 			console.log(result);
-			// Display the message using a toast library
-			addToast({
-				data: {
-					type: 'error',
-					title: 'Error',
-					description: result.error.message
-				}
+			dispatch('toast', {
+				type: 'error',
+				title: 'Error',
+				description: result.error.message
 			});
 		},
 		validators: updateUserSchema,

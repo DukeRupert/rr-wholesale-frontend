@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { ToastEvent } from '$lib/types/events'
+	import type { ToastEventPayload } from '$lib/types/events'
 	import { enhance } from '$app/forms';
 	import { superForm } from 'sveltekit-superforms/client';
 	import {
 		shippingAddressSchema,
-		changePasswordSchema,
+		updatePasswordSchema,
 		updateUserSchema
 	} from '$lib/validators/account';
 	import { invalidateAll } from '$app/navigation';
@@ -16,10 +16,11 @@
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import { AlertCircle } from 'lucide-svelte';
 	import UpdateUserForm from './UpdateUserForm.svelte';
+	import UpdatePasswordForm from './UpdatePasswordForm.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 
 	export let data: PageData;
-	$: ({ updateUserForm } = data);
+	$: ({ updateUserForm, updatePasswordForm } = data);
 	console.log(data.user);
 
 	$: ({ email, first_name, last_name, phone, shipping_addresses } = data.user);
@@ -33,68 +34,6 @@
 	const timeoutMs = 8000;
 
 	// Get forms
-	const {
-		form: changePasswordForm,
-		errors: changePasswordFormErrors,
-		constraints: changePasswordFormConstraints,
-		delayed: changePasswordFormDelayed,
-		enhance: changePasswordFormEnhance
-	} = superForm(data.changePasswordForm, {
-		onSubmit({ cancel }) {
-			if (processing) cancel(); // silly fast clickers
-			processing = true; // start process
-		},
-		onUpdated({ form }) {
-			if (form.message) {
-				// Something went wrong
-				if ($page.status === 400)
-					addToast({
-						data: {
-							type: 'warning',
-							title: 'Warning',
-							description: form.message
-						}
-					});
-				if ($page.status === 500)
-					addToast({
-						data: {
-							type: 'error',
-							title: 'Error',
-							description: form.message
-						}
-					});
-			} else {
-				// Success
-				addToast({
-					data: {
-						type: 'success',
-						title: 'Success',
-						description: 'Password updated.'
-					}
-				});
-				changePassword = false; // close the form
-			}
-			// Wrap things up
-			processing = false; // end process
-		},
-		onError({ result }) {
-			addToast({
-				data: {
-					type: 'error',
-					title: 'Error',
-					description: result.error.message
-				}
-			});
-			// Wrap things up
-			processing = false; // end process
-		},
-		validators: changePasswordSchema,
-		resetForm: true,
-		taintedMessage: null,
-		delayMs: delayMs,
-		timeoutMs: timeoutMs
-	});
-
 	const {
 		form: addAddressForm,
 		errors: addAddressFormErrors,
@@ -169,20 +108,11 @@
 		easing: quadOut
 	};
 
-	interface ToastMessageData {
-		type: 'success';
-		title: 'Success';
-		description: 'Success! Check your email for a confirmation link.';
-	}
-
-	function handleSuccess(e: ToastEvent) {
-		console.log('Success');
-		const { type, title, description } = e.detail;
+	function handleToast(e: CustomEvent<ToastEventPayload>) {
+		const details = e.detail
 		addToast({
 			data: {
-				type,
-				title,
-				description
+				...details
 			}
 		});
 	}
@@ -225,89 +155,15 @@
 			{timeoutMs}
 			{flyInParams}
 			bind:processing
-			on:success={handleSuccess}
+			on:toast={handleToast}
 		/>
 	{:else if changePassword}
-		<form
-			in:fly={flyInParams}
-			action="?/changePassword"
-			method="POST"
-			use:changePasswordFormEnhance
-		>
-			<div class="max-w-lg mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
-				<div class="sm:col-span-6">
-					<label for="newPassword" class="label">New Password</label>
-					<div class="relative mt-2">
-						<input
-							name="newPassword"
-							type="password"
-							autocomplete="new-password"
-							required
-							class="block w-full input"
-							aria-invalid={$changePasswordFormErrors.newPassword ? 'true' : undefined}
-							bind:value={$changePasswordForm.newPassword}
-							{...$changePasswordFormConstraints.newPassword}
-						/>
-						{#if $changePasswordFormErrors.newPassword}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-					{#if $changePasswordFormErrors.newPassword}
-						<p class="mt-2 text-sm text-red-600" id="email-error">
-							{$changePasswordFormErrors.newPassword}
-						</p>
-					{/if}
-				</div>
-				<div class="sm:col-span-6">
-					<label for="confirmPassword" class="label">Confirm New Password</label>
-					<div class="relative mt-2">
-						<input
-							name="confirmPassword"
-							type="password"
-							autocomplete="new-password"
-							required
-							class="block w-full input"
-							aria-invalid={$changePasswordFormErrors.confirmPassword ? 'true' : undefined}
-							bind:value={$changePasswordForm.confirmPassword}
-							{...$changePasswordFormConstraints.confirmPassword}
-						/>
-						{#if $changePasswordFormErrors.confirmPassword}
-							<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-								<AlertCircle class="h-5 w-5 text-red-500" />
-							</div>
-						{/if}
-					</div>
-					{#if $changePasswordFormErrors.confirmPassword}
-						<p class="mt-2 text-sm text-red-600" id="email-error">
-							{$changePasswordFormErrors.confirmPassword}
-						</p>
-					{/if}
-				</div>
-				<div class="sm:col-span-6">
-					<button disabled={processing} type="submit" class="mt-6 flex w-full btn">
-						{#if processing && $changePasswordFormDelayed}
-							<Spinner /> &nbsp; Processing...
-						{:else}
-							Save
-						{/if}
-					</button>
-				</div>
-				<div class="sm:col-span-6">
-					<button
-						hidden={processing}
-						on:click|preventDefault={() => {
-							changePassword = false;
-						}}
-						type="button"
-						class="mt-6 w-full btn btn-secondary"
-					>
-						Cancel
-					</button>
-				</div>
-			</div>
-		</form>
+		<UpdatePasswordForm data={updatePasswordForm} {delayMs}
+			{timeoutMs}
+			{flyInParams}
+			bind:processing
+			on:toast={handleToast}
+			on:cancel={() => changePassword = false} />
 	{:else}
 		<h3 class="mt-3 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
 			{first_name}

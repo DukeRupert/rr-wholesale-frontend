@@ -20,7 +20,7 @@ export const shippingAddressSchema = z.object({
 	country_code: z.string().toLowerCase().default('us')
 });
 
-export const changePasswordSchema = z
+export const updatePasswordSchema = z
 	.object({
 		newPassword: z.string().min(6),
 		confirmPassword: z.string().min(6)
@@ -32,3 +32,4 @@ export const changePasswordSchema = z
 
 export type ShippingAddressSchema = typeof shippingAddressSchema;
 export type UpdateUserSchema = typeof updateUserSchema
+export type UpdatePasswordSchema = typeof updatePasswordSchema

@@ -2,7 +2,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
 import { superValidate, message } from 'sveltekit-superforms/server';
-import { updateUserSchema, changePasswordSchema, shippingAddressSchema } from '$lib/validators/account';
+import { updateUserSchema, updatePasswordSchema, shippingAddressSchema } from '$lib/validators/account';
 import { registerSchema } from '$lib/validators/auth';
 import type { Address, Customer } from '@dukerupert/sveltekit-medusa-client';
 
@@ -11,14 +11,14 @@ export const load: PageServerLoad = async function ({ url, locals }) {
 
 	// Setup forms
 	const updateUserForm = await superValidate(locals.user, updateUserSchema)
-	const changePasswordForm = await superValidate(changePasswordSchema)
+	const updatePasswordForm = await superValidate(updatePasswordSchema)
 	const addAddressForm = await superValidate(shippingAddressSchema)
 
 	return {
 		user: locals.user,
 		currentPage: parseInt(url.searchParams?.get('page') as string) || 1,
 		updateUserForm,
-		changePasswordForm,
+		updatePasswordForm,
 		addAddressForm
 	};
 };
@@ -55,14 +55,14 @@ export const actions: Actions = {
 		return { success };
 	},
 
-	changePassword: async ({ request, locals }) => {
+	updatePassword: async ({ request, locals }) => {
 		console.log('Change Password action');
-		const changePasswordForm = await superValidate(request, changePasswordSchema); // Validator checks that newPassword === confirmPassword
-		if (!changePasswordForm.valid) return message(changePasswordForm, 'Invalid form', { status: 400 });
-		const { newPassword } = changePasswordForm.data as { newPassword: string };
+		const updatePasswordForm = await superValidate(request, updatePasswordSchema); // Validator checks that newPassword === confirmPassword
+		if (!updatePasswordForm.valid) return message(updatePasswordForm, 'Invalid form', { status: 400 });
+		const { newPassword } = updatePasswordForm.data as { newPassword: string };
 		const success = await medusa.editCustomer(locals, { password: newPassword });
-		if (!success) return message(changePasswordForm, 'Something went wrong', { status: 500 });
-		return { changePasswordForm };
+		if (!success) return message(updatePasswordForm, 'Something went wrong', { status: 500 });
+		return { updatePasswordForm };
 	},
 
 	registerUser: async({ request, cookies, locals}) => {

@@ -1,11 +1,11 @@
-import type { ToastData } from '$lib/components/toast/index.svelte';
+export type ToastEventType = "success" | "warning" |"error"
 
-export interface ToastPayload {
-	detail: ToastData;
+export interface ToastEventPayload {
+	type: ToastEventType;
+	title: string;
+	description: string;
 }
 
 export interface ToastEvent {
-	success: ToastPayload;
-	warning: ToastPayload;
-	error: ToastPayload;
+	"toast" : ToastEventPayload
 }
