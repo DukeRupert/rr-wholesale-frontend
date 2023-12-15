@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import type { editUserSchema } from './account'
 
 export const loginPostReq = z.object({
    email: z.string().email().refine((val) => val.length > 0, {
@@ -59,5 +58,17 @@ export const resetPostReq = z.object({
    }
 })
 
+export const contactSalesSchema = z.object({
+   email: z.string().email().refine((val) => val.length > 0, {
+      message: 'Email is required'
+   }),
+   first_name: z.string().min(1),
+   last_name: z.string().min(1),
+   password: z.string().optional().default(''),
+   phone: z.string().optional().default(''),
+   message: z.string().optional().default('')
+})
+
 export type LoginSchema = typeof loginSchema
 export type RegisterSchema = typeof registerSchema
+export type ContactSalesSchema = typeof contactSalesSchema

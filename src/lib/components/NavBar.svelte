@@ -68,7 +68,7 @@
 					{#each links as { label, href }}
 						<a
 							{href}
-							class="inline-flex items-center border-b-2 focus:outline-none focus:ring-2 focus:ring-inset-2 focus:ring-thunderbird-500 {path ===
+							class="inline-flex items-center border-b-2 {path ===
 							href
 								? 'border-thunderbird-500 text-gray-900'
 								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} px-1 pt-1 text-sm font-medium"
