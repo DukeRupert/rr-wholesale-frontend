@@ -6,25 +6,7 @@
 	export let data: OrderSummary;
 </script>
 
-<!-- <main class="lg:flex lg:min-h-full lg:flex-row-reverse lg:max-h-screen lg:overflow-hidden">
-		<section class="flex-auto px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-4 lg:pt-0">
-			<div class="mx-auto max-w-lg">
-				<div class="py-10 lg:flex">
-					<span class="sr-only">{company.name}</span>
-					<a href="/"><img src={company.logo.src} alt={company.logo.alt} class="h-14 w-auto" /></a>
-				</div>
-				<p>Thank you for your order!</p>
-				<p>
-					Your order number is <a
-						class="font-bold text-lime-600"
-						href={`/account/order/${order.id}`}>{order.display_id}</a
-					>
-				</p>
-				<p class="mt-6"><a href="/">&larr; Continue Shopping</a></p>
-			</div>
-		</section>
-	</main> -->
-<main class="lg:flex lg:min-h-full lg:flex-row-reverse lg:max-h-screen lg:overflow-hidden">
+<main class="lg:flex lg:min-h-full lg:flex-row-reverse">
 	<section class="flex-auto px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-4 lg:pt-0">
 		<div class="mx-auto max-w-3xl">
 			<div class="max-w-xl">
@@ -79,7 +61,7 @@
 					</div>
 				{/each}
 
-				<div class="sm:ml-40 sm:pl-6">
+				<div class="sm:pl-6">
 					<h3 class="sr-only">Your information</h3>
 
 					<h4 class="sr-only">Addresses</h4>
@@ -113,11 +95,11 @@
 							<dd class="text-gray-900">{formatPrice(data.total)}</dd>
 						</div>
 					</dl>
-				</div>
-			</section>
-            <div class="mt-10 text-center">
+				<div class="mt-10 text-center">
                 <a href="/" class="btn">&larr; Return home</a>
-            </div>
+            </div></div>
+			</section>
+            
 		</div>
 	</section>
 </main>
