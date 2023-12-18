@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { ProductDTO } from '@medusajs/types';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
 	import { addToast } from './toast/index.svelte';
 	export let products: ProductDTO[] = [];
@@ -79,7 +78,7 @@
 								action="/cart?/add"
 								use:enhance={({ formData }) => {
 									const quantity = formData.get('quantity');
-									return async ({ result }) => {
+									return async ({ result, update }) => {
 										if (result.type === 'success') {
 											addToast({
 												data: {
@@ -88,7 +87,7 @@
 													description: `${quantity} ${variant.title} added to cart`
 												}
 											});
-											await invalidateAll();
+											update()
 										}
 									};
 								}}
