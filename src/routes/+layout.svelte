@@ -19,6 +19,10 @@
 	$: user = data?.user;
 	$: cart = data?.cart;
 	$: count = cart?.items?.length || null;
+
+	function handleTest(e: any) {
+		console.log("success")
+	}
 </script>
 
 <Toaster />
@@ -26,7 +30,7 @@
 	<slot />
 {:else}
 	<NavBar bind:user bind:cart bind:count />
-	<main class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:pb-24">
+	<main on:test={handleTest} class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:pb-24">
 		<slot />
 	</main>
 {/if}

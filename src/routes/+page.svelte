@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import ProductList from '$lib/components/ProductList.svelte';
+
 	export let data: PageData;
+	$: ({ products } = data);
 </script>
 
 <div class="max-w-xl">
@@ -10,4 +12,11 @@
 		Please add the products you want to order to your cart and checkout.
 	</p>
 </div>
-<ProductList products={data.products} />
+{#if products}
+	<ProductList {products} />
+{:else}
+	<p class="mt-6">
+		An error occured. Please <a href="mailto:logan@fireflysoftware.dev">contact</a> our technical support
+		team.
+	</p>
+{/if}
