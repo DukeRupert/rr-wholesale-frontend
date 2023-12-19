@@ -65,7 +65,6 @@ export const contactSalesSchema = z.object({
    first_name: z.string().min(1),
    last_name: z.string().min(1),
    password: z.string().optional().default(''),
-   phone: z.string().optional().default(''),
    message: z.string().optional().default('')
 })
 

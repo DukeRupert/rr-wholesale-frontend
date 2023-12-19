@@ -55,7 +55,7 @@ export const actions: Actions = {
 			// reset locals
 			locals.cartid = '';
 			locals.cart = null;
-			return { success: true, order: order };
+			return { order: order };
 		} else {
 			return fail(400, { success: false });
 		}

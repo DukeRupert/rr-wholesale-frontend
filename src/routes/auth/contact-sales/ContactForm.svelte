@@ -7,23 +7,17 @@
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let data: SuperValidated<ContactSalesSchema>;
+
+	const dispatch = createEventDispatcher<{ success: { f: string; l: string } }>();
 
 	const { form, errors, tainted, message, submitting, delayed, timeout, enhance } = superForm(
 		data,
 		{
 			onUpdated({ form }) {
 				if (form.message) {
-					if ($page.status === 200)
-						// Display the message using a toast library
-						addToast({
-							data: {
-								type: 'success',
-								title: 'Success',
-								description: "You've been logged in!"
-							}
-						});
 					if ($page.status === 401)
 						// Display the message using a toast library
 						addToast({
@@ -33,6 +27,16 @@
 								description: form.message
 							}
 						});
+				} else {
+					// handle success
+					addToast({
+						data: {
+							type: 'success',
+							title: 'Success',
+							description: "You've been logged in!"
+						}
+					});
+					dispatch('success', { f: $form.first_name, l: $form.last_name });
 				}
 			},
 			onError({ result }) {
@@ -46,6 +50,7 @@
 					}
 				});
 			},
+			resetForm: false,
 			validators: contactSalesSchema,
 			invalidateAll: true,
 			taintedMessage: null,
@@ -136,7 +141,7 @@
 		<div class="mt-2">
 			<textarea
 				id="message"
-				rows=3
+				rows="3"
 				name="message"
 				autocomplete="current-message"
 				required
@@ -158,7 +163,8 @@
 	</div>
 	<div>
 		<button type="submit" class="flex w-full btn"
-			>{#if $delayed}<Spinner /> &nbsp; Send{:else} Send
+			>{#if $delayed}<Spinner /> &nbsp; Send{:else}
+				Send
 			{/if}</button
 		>
 	</div>
