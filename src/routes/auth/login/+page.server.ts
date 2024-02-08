@@ -7,13 +7,15 @@ import medusa from '$lib/server/medusa';
 export const load: PageServerLoad = async ({ locals, url }) => {
 	let rurl = url.searchParams.get('rurl') || '';
 	let code = url.searchParams.get('code') || '';
+	let username = url.searchParams.get('username') || '';
+	let pwd = url.searchParams.get('pwd') || '';
 
 	// If logged in, redirect to return url or home
 	if (locals.user) {
 		throw redirect(302, `/${rurl}`);
 	}
 
-	const form = await superValidate(loginPostReq);
+	const form = await superValidate({ email: username, password: pwd }, loginPostReq);
 
 	return {
 		rurl,
