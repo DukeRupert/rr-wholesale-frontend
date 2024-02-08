@@ -9,6 +9,7 @@
 	import OrderSummary from './OrderSummary.svelte';
 
 	export let data: PageData;
+	$: console.log(data)
 	$: ({ user, cart, shippingOptions, shippingAddressForm } = data);
 	$: ({ shipping_addresses } = user);
 
