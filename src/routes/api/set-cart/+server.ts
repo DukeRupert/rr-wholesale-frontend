@@ -1,10 +1,9 @@
 // api/set-cart
 import type { RequestHandler } from './$types';
-import { redirect, json } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 
-export const GET: RequestHandler = async ({ request, locals, url, cookies }) => {   
+export const GET: RequestHandler = async ({ url, cookies }) => {   
     const id = url.searchParams.get('cartId') || ''
-	console.log(id)
     if(id) {
         console.log('Setting cart id')
         cookies.set('cartid', id, {
@@ -15,5 +14,5 @@ export const GET: RequestHandler = async ({ request, locals, url, cookies }) => 
                secure: true
             })
     }
-    throw redirect(302, '/checkout')
+    throw redirect(302, '/checkout?invalidate=true')
 };

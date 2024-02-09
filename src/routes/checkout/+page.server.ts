@@ -6,13 +6,14 @@ import medusa from '$lib/server/medusa';
 import { superValidate, message } from 'sveltekit-superforms/server';
 import { shippingAddressSchema } from '$lib/validators/account';
 
-export const load: PageServerLoad = async function ({ locals }) {
+export const load: PageServerLoad = async function ({ locals, url }) {
 	if (!locals.user) throw redirect(302, '/auth?rurl=checkout');
 
 	const shippingAddressForm = await superValidate(shippingAddressSchema);
 
 	console.log('Fetching cart from locals to createPaymentSession');
-	let cart = (await medusa.createPaymentSessions(locals)) as Cart;
+	let cart = await medusa.createPaymentSessions(locals) as Cart;
+	console.log(cart)
 
 	if (!cart.total) {
 		throw error(400, { message: 'Could not create payment sessions' });

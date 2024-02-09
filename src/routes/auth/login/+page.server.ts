@@ -3,6 +3,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { loginPostReq } from '$lib/validators/auth';
 import medusa from '$lib/server/medusa';
+import medusaClient from '$lib/medusaClient';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	let rurl = url.searchParams.get('rurl') || '';
@@ -30,7 +31,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, loginPostReq);
 		if (!form.valid) return message(form, 'Something went wrong', { status: 500 }); // this shouldn't happen because of client-side validation
 		console.log('Form valid. Calling medusa');
-		const res = await medusa.login(locals, cookies, form.data.email, form.data.password);
+		const res = await medusaClient.login(locals, cookies, form.data.email, form.data.password);
 		console.log('Medusa response', res);
 		if (res) {
 			throw redirect(302, `/${form.data.rurl}`);
@@ -40,7 +41,8 @@ export const actions: Actions = {
 	},
 
 	logout: async ({ locals, cookies }) => {
-		if (await medusa.logout(locals, cookies)) {
+		if (await medusaClient.logout(locals, cookies)) {
+			console.log(`Locals after logout: ${JSON.stringify(locals, null, 2)}`)
 			throw redirect(302, '/auth/login');
 		} else throw error(500, 'server error');
 	}

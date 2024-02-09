@@ -1,15 +1,15 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
+import type { Customer } from '@medusajs/medusa/dist/models/customer';
+import type { Cart } from '@medusajs/medusa/dist/models/cart';
 
-import type { Cart } from '$lib/types/cart';
-import type { User } from '$lib/types/user';
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
 			sid: string;
-			cartid: string;
-			user: User | null;
+			cartId: string;
+			user: Customer | null;
 			cart: Cart | null;
 		}
 		// interface PageData {}
