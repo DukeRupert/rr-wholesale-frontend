@@ -3,7 +3,6 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { superForm } from 'sveltekit-superforms';
-	import { page } from '$app/stores';
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
@@ -11,34 +10,21 @@
 	export let data: SuperValidated<Infer<typeof loginPostReq>>;
 	export let rurl: string = '';
 
-	const { form, errors, tainted, message, submitting, delayed, timeout, enhance } = superForm(
+	const { form, errors, delayed, enhance } = superForm(
 		data,
 		{
 			onUpdated({ form }) {
 				if (form.message) {
-					if ($page.status === 200)
-						// Display the message using a toast library
-						addToast({
-							data: {
-								type: 'success',
-								title: 'Success',
-								description: "You've been logged in!"
-							}
-						});
-					if ($page.status === 401)
-						// Display the message using a toast library
-						addToast({
-							data: {
-								type: 'warning',
-								title: 'Warning',
-								description: form.message
-							}
-						});
+					addToast({
+						data: {
+							type: form.message.type,
+							title: form.message.type,
+							description: form.message.text
+						}
+					});
 				}
 			},
 			onError({ result }) {
-				console.log(result);
-				// Display the message using a toast library
 				addToast({
 					data: {
 						type: 'error',
@@ -47,11 +33,10 @@
 					}
 				});
 			},
+			resetForm: false,
 			validators: zodClient(loginPostReq),
 			invalidateAll: true,
-			taintedMessage: null,
-			delayMs: 200,
-			timeoutMs: 8000
+			taintedMessage: null
 		}
 	);
 

@@ -22,7 +22,7 @@
 			<AlertTriangle class="h-5 w-5 text-white fill-yellow-400" />
 		</div>
 		<div class="ml-3">
-			<h3 use:melt={$title(id)} class="text-sm font-medium text-yellow-800">{data.title}</h3>
+			<h3 use:melt={$title(id)} class="text-sm font-medium capitalize text-yellow-800">{data.title}</h3>
 			<div class="mt-2 text-sm text-yellow-700">
 				<p use:melt={$description(id)}>
 					{data.description}

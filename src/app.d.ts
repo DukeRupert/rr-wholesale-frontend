@@ -12,6 +12,12 @@ declare global {
 			user: Customer | null;
 			cart: Cart | null;
 		}
+		namespace Superforms {
+			type Message = {
+				type: 'error' | 'success' | 'warning';
+				text: string;
+			};
+		}
 		// interface PageData {}
 		// interface Platform {}
 	}

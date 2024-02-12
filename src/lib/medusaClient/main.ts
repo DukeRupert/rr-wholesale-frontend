@@ -82,7 +82,8 @@ export class MedusaClient {
 			this.parseAuthCookie(setCookies, locals, cookies);
 			return customer;
 		} catch (error) {
-			console.log(error);
+			console.log('Error: invalid sid.')
+			cookies.delete("sid")	
 			return null;
 		}
 	}
