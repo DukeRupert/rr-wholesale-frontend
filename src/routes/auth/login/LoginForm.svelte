@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { loginSchema } from '$lib/validators/auth';
-	import type { LoginSchema } from '$lib/validators/auth';
-	import type { SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms/client';
+	import { loginPostReq } from '$lib/validators/auth';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import type { SuperValidated, Infer } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 	import { page } from '$app/stores';
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 
-	export let data: SuperValidated<LoginSchema>;
+	export let data: SuperValidated<Infer<typeof loginPostReq>>;
 	export let rurl: string = '';
 
 	const { form, errors, tainted, message, submitting, delayed, timeout, enhance } = superForm(
@@ -47,7 +47,7 @@
 					}
 				});
 			},
-			validators: loginSchema,
+			validators: zodClient(loginPostReq),
 			invalidateAll: true,
 			taintedMessage: null,
 			delayMs: 200,
@@ -97,7 +97,7 @@
 				<a href="/auth/forgot-password" class="font-semibold">Forgot password?</a>
 			</div>
 		</div>
-		<div class="mt-2">
+		<div class="relative mt-2 rounded-md shadow-sm">
 			<input
 				id="password"
 				name="password"

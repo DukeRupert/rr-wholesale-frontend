@@ -119,7 +119,7 @@ export class MedusaClient {
 			locals.user = customer;
 			result = true;
 		} catch (error) {
-			console.log(error);
+			console.log('Login failed.');
 		}
 		return result;
 	}
