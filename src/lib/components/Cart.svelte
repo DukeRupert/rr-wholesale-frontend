@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { X, ShoppingCart } from 'lucide-svelte';
-	import { createDialog } from '@melt-ui/svelte';
+	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
@@ -11,9 +11,9 @@
 
 	$: cart = cart;
 	$: items = cart?.items || [];
-	$: total = cart?.subtotal;
+	$: total = cart?.subtotal ?? 0;
 	const {
-		elements: { trigger, portalled, overlay, content, title, close },
+		elements: { trigger, portalled, overlay, content, title, description, close },
 		states: { open }
 	} = createDialog({ preventScroll: true });
 </script>
@@ -27,7 +27,7 @@
 		>
 			<span class="sr-only">Close cart</span>
 			<ShoppingCart class="h-6 w-6 flex-shrink-0" />
-			{#if count > 0}
+			{#if count && count > 0}
 				<span class="ml-2 text-sm font-medium">{count}</span>
 				<span class="sr-only">items in cart, view bag</span>
 			{/if}
@@ -36,13 +36,12 @@
 {:else}
 	<div class="flow-root">
 		<button
-			{...$trigger}
-			use:trigger
+			use:melt={$trigger}
 			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"
 		>
 			<span class="sr-only">View cart</span>
 			<ShoppingCart class="h-6 w-6 flex-shrink-0" />
-			{#if count > 0}
+			{#if count && count > 0}
 				<span class="ml-2 text-sm font-medium">{count}</span>
 				<span class="sr-only">items in cart, view bag</span>
 			{/if}
@@ -52,24 +51,21 @@
 <div use:portalled>
 	{#if $open}
 		<div
-			{...$overlay}
-			use:overlay
+			use:melt={$overlay}
 			class="fixed inset-0 z-20 bg-black/50"
 			transition:fade={{ duration: 150 }}
 		/>
 		<div
-			{...$content}
-			use:content
+			use:melt={$content}
 			class="overflow-auto fixed right-0 top-0 z-50 w-full h-full pb-0 mb-0 sm:w-4/5 md:w-2/3 lg:w-2/3 xl:w-1/2 bg-white p-[25px] shadow-lg focus:outline-none"
 			transition:fly={{ x: '100%', duration: 300, opacity: 1 }}
 		>
-			<button {...$close} use:close>
+			<button use:melt={$close}>
 				<X class="text-gray-800 h-8 w-8" />
 			</button>
 			<div class="px-8 sm:px-12">
 				<h2
-					{...$title}
-					use:title
+					use:melt={$title}
 					class="mb-6 text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
 				>
 					Shopping Cart
@@ -128,7 +124,7 @@
 											name="quantity"
 											class="text-sm font-medium text-gray-900 rounded-lg focus:ring-gray-700 focus:border-none"
 											on:change={async (e) => {
-												const form = e.target.closest('form');
+												const form = e?.target?.closest('form');
 												const formData = new FormData(form);
 												const result = await fetch(form.action, {
 													method: 'POST',

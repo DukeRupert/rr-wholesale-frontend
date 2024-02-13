@@ -7,10 +7,10 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			sid: string;
-			cartId: string;
+			sid: string | null;
+			cartId: string | null;
 			user: Customer | null;
-			cart: Cart | null;
+			cart: Omit<Cart, "refundable_amount" | "refunded_total"> | null;
 		}
 		namespace Superforms {
 			type Message = {

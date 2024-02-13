@@ -11,7 +11,7 @@ export const actions: Actions = {
 
 	login: async({request, locals, cookies}) => {
 		console.log('Login action')
-		const res = await medusaClient.login(locals, cookies, "lwilliams56@gmail.com", "serenity")
+		const res = await medusaClient.authenticate(locals, cookies, "lwilliams56@gmail.com", "serenity")
 				console.log('Medusa response', res);
 		return { success: true }
 	}

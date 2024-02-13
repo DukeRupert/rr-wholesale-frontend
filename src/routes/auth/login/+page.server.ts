@@ -32,7 +32,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(loginPostReq));
 		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' }); // this shouldn't happen because of client-side validation
 		console.log('Form valid. Calling medusa');
-		const res = await medusaClient.login(locals, cookies, form.data.email, form.data.password);
+		const res = await medusaClient.authenticate(locals, cookies, form.data.email, form.data.password);
 		if (res) {
 			console.log(`Login success. Redirect to /${form.data.rurl}`)
 			throw redirect(302, `/${form.data.rurl}`);
@@ -42,7 +42,7 @@ export const actions: Actions = {
 	},
 
 	logout: async ({ locals, cookies }) => {
-		if (await medusaClient.logout(locals, cookies)) {
+		if (await medusaClient.deleteSession(locals, cookies)) {
 			throw redirect(302, '/auth/login');
 		} else throw error(500, 'server error');
 	}
