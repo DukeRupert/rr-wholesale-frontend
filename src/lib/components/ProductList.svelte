@@ -1,9 +1,10 @@
 <script lang="ts">
-	import type { ProductDTO } from '@medusajs/types';
+	import type { PricedProduct } from '@medusajs/medusa/dist/types/pricing';
 	import { enhance } from '$app/forms';
 	import { formatPrice } from '$lib/utilities';
 	import { addToast } from './toast/index.svelte';
-	export let products: ProductDTO[] = [];
+	export let products: PricedProduct[] = [];
+	$: console.log(products)
 </script>
 
 <div class="-mx-4 mt-8 sm:-mx-0">
@@ -43,7 +44,7 @@
 					>
 						<div class="flex flex-col space-y-2 items-center text-center">
 							{product.title}
-							{#if product.variants.length > 1}
+							{#if product.variants.length > 1 && product.images}
 								<img
 									class="mt-4 w-20 h-auto lg:w-28"
 									src={product.images[0]?.url ?? ''}
@@ -61,18 +62,22 @@
 						</td>
 						<td class="px-3 py-4 text-sm text-gray-500 capitalize">
 							<ul>
-								{#each variant.options as option, i}
-									<li>
-										{option.value}
-									</li>
-								{/each}
+								{#if variant.options}
+									{#each variant.options as option, i}
+										<li>
+											{option.value}
+										</li>
+									{/each}
+								{/if}
 							</ul></td
 						>
+						{#if variant.prices}
 						<td class="px-3 py-4 text-sm text-gray-500"
 							>{formatPrice(
 								variant.prices.find((price) => price.currency_code === 'usd')?.amount
 							)}</td
 						>
+						{/if}
 						<td class="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
 							<form
 								action="/cart?/add"
@@ -87,7 +92,7 @@
 													description: `${quantity} ${variant.title} added to cart`
 												}
 											});
-											update()
+											update();
 										}
 									};
 								}}

@@ -3,9 +3,19 @@ import cookie from 'cookie';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { Cookies } from '@sveltejs/kit';
 import type { Cart } from '@medusajs/medusa/dist/models/cart';
+import type { PricedProduct } from '@medusajs/medusa/dist/types/pricing';
+import type { StoreProductsListRes } from '@medusajs/medusa';
 
 interface clientConfig {
 	persistCart: boolean;
+}
+
+interface QueryOptions {
+	limit?: number;
+	offset?: number;
+	expand?: string;
+	region_id?: "NA";
+	currency_code?: "usd";
 }
 
 export class MedusaClient {
@@ -82,8 +92,8 @@ export class MedusaClient {
 			this.parseAuthCookie(setCookies, locals, cookies);
 			return customer;
 		} catch (error) {
-			console.log('Error: invalid sid.')
-			cookies.delete("sid")	
+			console.log('Error: invalid sid.');
+			cookies.delete('sid');
 			return null;
 		}
 	}
@@ -137,6 +147,19 @@ export class MedusaClient {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	async getProducts(options?: QueryOptions): Promise<PricedProduct[]> {
+		// returns an array of product objects
+		let opts: QueryOptions = options ? {...options} : { offset: 0, limit: 20, expand: "variants,variants.prices,variants.options", currency_code: "usd" }
+
+		try {
+			const { products, limit, offset, count } = await this.client.products.list(opts);
+			return products
+		} catch (error) {
+			console.log('Error: failed call getProducts()')
+			return []
 		}
 	}
 }

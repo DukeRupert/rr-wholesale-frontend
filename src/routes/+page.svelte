@@ -4,6 +4,7 @@
 
 	export let data: PageData;
 	$: ({ products } = data);
+	$: console.log(products)	
 </script>
 
 <div class="max-w-xl">
