@@ -6,9 +6,12 @@ import type { Cart } from '@medusajs/medusa/dist/models/cart';
 import type {
 	StoreAuthRes,
 	StoreCartsRes,
+	StoreCustomersRes,
 	StoreGetProductsParams,
+	StorePostCustomersCustomerAddressesReq,
 	StoreProductsListRes
 } from '@medusajs/medusa';
+import type { AddressCreatePayload, AddressPayload } from '@medusajs/types';
 
 export interface QueryOptions {
 	expand?: string;
@@ -350,6 +353,31 @@ export class MedusaClient {
 			}
 		} catch (error) {
 			console.error('Error: failed addToCart()', error);
+			return null;
+		}
+	}
+	async addAddress(locals: App.Locals, payload: AddressCreatePayload): Promise<StoreCustomersRes | null> {
+		console.log('Adding a new customer address.');
+		const headers = { Cookie: `connect.sid=${locals.sid}` };
+
+		if (!payload) {
+			throw new Error('Missing address payload');
+		}
+
+		try {
+			const params: StorePostCustomersCustomerAddressesReq = {
+				address: payload
+			};
+
+			const res = await this.client.customers.addresses.addAddress(params, headers);
+
+			if (res.response.status !== 200) {
+				throw new Error(`Add address failed: API responded with ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed addAddress()', error);
 			return null;
 		}
 	}

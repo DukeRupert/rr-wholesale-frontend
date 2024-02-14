@@ -18,16 +18,14 @@ export const actions: Actions = {
 			quantity
 		};
 		const res = await medusaClient.addToCart(locals, cookies, params);
-		if (res !== null) {
-			const { cart } = res;
-			locals.cart = cart;
-			locals.cartId = cart.id;
-			return {
-				cart,
-				success: true
-			};
-		}
-		return { success: false };
+		if (res === null) return { success: false };
+		const { cart } = res;
+		locals.cart = cart;
+		locals.cartId = cart.id;
+		return {
+			cart,
+			success: true
+		};
 	},
 
 	remove: async ({ request, locals }) => {
@@ -40,16 +38,14 @@ export const actions: Actions = {
 			lineItemId
 		};
 		const res = await medusaClient.deleteLineItem(params);
-		if (res !== null) {
-			const { cart } = res;
-			locals.cart = cart;
-			locals.cartId = cart.id;
-			return {
-				cart,
-				success: true
-			};
-		}
-		return { success: false };
+		if (res === null) return { success: false };
+		const { cart } = res;
+		locals.cart = cart;
+		locals.cartId = cart.id;
+		return {
+			cart,
+			success: true
+		};
 	},
 
 	update: async ({ request, locals }) => {
@@ -73,15 +69,13 @@ export const actions: Actions = {
 			};
 			res = await medusaClient.updateLineItem(params);
 		}
-		if (res !== null) {
-			const { cart } = res;
-			locals.cart = cart;
-			locals.cartId = cart.id;
-			return {
-				cart,
-				success: true
-			};
-		}
-		return { success: false };
+		if (res === null) return { success: false };
+		const { cart } = res;
+		locals.cart = cart;
+		locals.cartId = cart.id;
+		return {
+			cart,
+			success: true
+		};
 	}
 };

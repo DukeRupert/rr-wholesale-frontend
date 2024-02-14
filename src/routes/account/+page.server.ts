@@ -1,11 +1,12 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
+import medusaClient from '$lib/medusaClient';
 import type { Infer } from 'sveltekit-superforms'
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { updateUserSchema, updatePasswordSchema, shippingAddressSchema } from '$lib/validators/account';
-import type { Address, Customer } from '@dukerupert/sveltekit-medusa-client';
+import type { Customer } from '@dukerupert/sveltekit-medusa-client';
 
 export const load: PageServerLoad = async function ({ url, locals }) {
 	if (!locals.user) throw redirect(307, '/auth');
@@ -38,10 +39,11 @@ export const actions: Actions = {
 		console.log('Create Address action');
 		const createAddressForm = await superValidate(request, zod(shippingAddressSchema));
 		if (!createAddressForm.valid) return message(createAddressForm, { type: 'error', text: 'Invalid address' });
-		const address = createAddressForm.data as Address;
-		const success = (await medusa.addShippingAddress(locals, address)) as boolean;
-		if (!success) return message(createAddressForm, { type: 'error', text: 'Server error' });
-		return { createAddressForm };
+		const payload = {...createAddressForm.data, metadata: {}};
+		const res = await medusaClient.addAddress(locals, payload);
+		if (res === null) return message(createAddressForm, { type: 'error', text: 'Server error' })
+		locals.user = Object.assign({}, locals.user, res.customer);
+		return message(createAddressForm, { type: 'success', text: 'Address added' }) ;
 	},
 
 	deleteAddress: async ({ request, locals }) => {

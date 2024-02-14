@@ -4,6 +4,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { shippingAddressSchema } from '$lib/validators/account';
+	import { createEventDispatcher } from 'svelte';
 	import { fly, type FlyParams } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
 	import { AlertCircle } from 'lucide-svelte';
@@ -21,6 +22,8 @@
 		easing: quadOut
 	};
 
+	const simpleDispatch = createEventDispatcher();
+
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
 			if (form.message) {
@@ -32,6 +35,7 @@
 					}
 				});
 			}
+			simpleDispatch('cancel')
 		},
 		onError({ result }) {
 			addToast({

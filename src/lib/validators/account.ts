@@ -17,7 +17,7 @@ export const shippingAddressSchema = z.object({
 	province: z.string(),
 	phone: z.string().optional().default(''),
 	postal_code: z.string(),
-	country_code: z.string().toLowerCase().default('us')
+	country_code: z.string().toLowerCase().default('us'),
 });
 
 export const updatePasswordSchema = z
