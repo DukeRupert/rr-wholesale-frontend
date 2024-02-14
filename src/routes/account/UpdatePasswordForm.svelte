@@ -22,6 +22,8 @@
 		easing: quadOut
 	};
 
+	const dispatch = createEventDispatcher();
+
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
 			if (form.message) {
@@ -33,6 +35,7 @@
 					}
 				});
 			}
+			dispatch('cancel');
 		},
 		onError({ result }) {
 			addToast({
@@ -49,8 +52,6 @@
 		delayMs: delayMs,
 		timeoutMs: timeoutMs
 	});
-
-	const simpleDispatch = createEventDispatcher();
 </script>
 
 <form in:fly={flyInParams} action="?/updatePassword" method="POST" use:enhance>
@@ -118,7 +119,7 @@
 			<button
 				hidden={processing}
 				on:click|preventDefault={() => {
-					simpleDispatch('cancel');
+					dispatch('cancel');
 				}}
 				type="button"
 				class="mt-6 w-full btn btn-secondary"

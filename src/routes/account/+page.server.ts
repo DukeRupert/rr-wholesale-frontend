@@ -79,7 +79,8 @@ export const actions: Actions = {
 		const update_password_form = await superValidate(request, zod(updatePasswordSchema));
 		if (!update_password_form.valid)
 			return message(update_password_form, { type: 'error', text: 'Invalid form' });
-		const res = { password: update_password_form.data.newPassword}
+		const payload = { password: update_password_form.data.newPassword}
+		const res = await medusaClient.updateCustomer(locals, payload)
 		if (res === null) return message(update_password_form, { type: 'error', text: 'Server error' });
 		return message(update_password_form, { type: 'success', text: 'Password updated' });
 	}

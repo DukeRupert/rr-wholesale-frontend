@@ -42,6 +42,7 @@ export const actions: Actions = {
 	},
 
 	logout: async ({ locals, cookies }) => {
+		console.log('Logout action')
 		if (await medusaClient.deleteSession(locals, cookies)) {
 			throw redirect(302, '/auth/login');
 		} else throw error(500, 'server error');
