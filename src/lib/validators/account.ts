@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const updateUserSchema = z.object({
+export const updateCustomerSchema = z.object({
 	first_name: z.string().max(30),
 	last_name: z.string().max(30),
 	email: z.string().email(),
@@ -31,5 +31,5 @@ export const updatePasswordSchema = z
 	});
 
 export type ShippingAddressSchema = typeof shippingAddressSchema;
-export type UpdateUserSchema = typeof updateUserSchema
+export type UpdateCustomerSchema = typeof updateCustomerSchema
 export type UpdatePasswordSchema = typeof updatePasswordSchema

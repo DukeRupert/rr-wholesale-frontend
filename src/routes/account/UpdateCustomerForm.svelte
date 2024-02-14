@@ -3,14 +3,14 @@
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { superForm } from 'sveltekit-superforms';
-	import { updateUserSchema } from '$lib/validators/account';
+	import { updateCustomerSchema } from '$lib/validators/account';
 	import { AlertCircle } from 'lucide-svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { fly, type FlyParams } from 'svelte/transition';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 	import { quadOut } from 'svelte/easing';
 
-
-	export let data: SuperValidated<Infer<typeof updateUserSchema>>;
+	export let data: SuperValidated<Infer<typeof updateCustomerSchema>>;
 	export let processing: boolean;
 	// Form configuration
 	export let delayMs = 200;
@@ -21,6 +21,8 @@
 		delay: 100,
 		easing: quadOut
 	};
+
+	const dispatch = createEventDispatcher();
 
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
@@ -33,6 +35,7 @@
 					}
 				});
 			}
+			dispatch('cancel')
 		},
 		onError({ result }) {
 			addToast({
@@ -43,7 +46,7 @@
 				}
 			});
 		},	
-		validators: zodClient(updateUserSchema),
+		validators: zodClient(updateCustomerSchema),
 		invalidateAll: true,
 		taintedMessage: null,
 		delayMs: delayMs,
@@ -51,7 +54,7 @@
 	});
 </script>
 
-<form in:fly={flyInParams} action="?/updateUser" method="POST" use:enhance>
+<form in:fly={flyInParams} action="?/updateCustomer" method="POST" use:enhance>
 	<div class="mt-5 mb-8 max-w-lg grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
 		<div class="sm:col-span-6">
 			<label for="first_name" class="label">First Name</label>

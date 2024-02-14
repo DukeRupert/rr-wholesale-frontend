@@ -22,7 +22,7 @@
 		easing: quadOut
 	};
 
-	const simpleDispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher();
 
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
@@ -35,7 +35,7 @@
 					}
 				});
 			}
-			simpleDispatch('cancel')
+			dispatch('cancel')
 		},
 		onError({ result }) {
 			addToast({
@@ -54,7 +54,7 @@
 	});
 </script>
 
-<form in:fly={flyInParams} action="?/createAddress" method="POST" use:enhance>
+<form in:fly={flyInParams} action="?/addAddress" method="POST" use:enhance>
 	<div class="max-w-lg mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
 		<div class="sm:col-span-6">
 			<label for="first_name" class="label">First Name</label>

@@ -5,20 +5,20 @@
 	import type { FlyParams } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
 	import { addToast } from '$lib/components/toast/index.svelte';
-	import UpdateUserForm from './UpdateUserForm.svelte';
+	import UpdateCustomerForm from './UpdateCustomerForm.svelte';
 	import UpdatePasswordForm from './UpdatePasswordForm.svelte';
-	import CreateAddressForm from './CreateAddressForm.svelte';
 	import AddressBook from './AddressBook.svelte';
+	import AddAddressForm from './AddAddressForm.svelte';
 
 	export let data: PageData;
-	$: ({ updateUserForm, updatePasswordForm, createAddressForm } = data);
+	$: ({ update_customer_form, update_password_form, update_address_form } = data);
 	$: ({ email, first_name, last_name, phone, shipping_addresses } = data.user);
 
 	// Toggles
 	let processing = false;
-	let updateUserInfo = false;
-	let createAddress = false;
-	let updatePassword = false;
+	let showUpdateCustomer = false;
+	let showAddAddress = false;
+	let showUpdatePassword = false;
 
 	// Form configuration
 	const delayMs = 200;
@@ -66,32 +66,32 @@
 			<div class="ml-4 mt-2 flex-shrink-0">
 				<button
 					type="button"
-					on:click={() => (updateUserInfo = !updateUserInfo)}
+					on:click={() => (showUpdateCustomer = !showUpdateCustomer)}
 					class="relative inline-flex btn px-3 py-2 text-sm font-semibold"
-					>{updateUserInfo ? 'Cancel' : 'Edit'}
+					>{showUpdateCustomer ? 'Cancel' : 'Edit'}
 				</button>
 			</div>
 		</div>
 	</div>
-	{#if updateUserInfo}
-		<UpdateUserForm
-			data={updateUserForm}
+	{#if showUpdateCustomer}
+		<UpdateCustomerForm
+			data={update_customer_form}
 			{delayMs}
 			{timeoutMs}
 			{flyInParams}
 			bind:processing
 			on:toast={handleToast}
-			on:cancel={() => updateUserInfo = false}
+			on:cancel={() => showUpdateCustomer = false}
 		/>
-	{:else if updatePassword}
+	{:else if showUpdatePassword}
 		<UpdatePasswordForm
-			data={updatePasswordForm}
+			data={update_password_form}
 			{delayMs}
 			{timeoutMs}
 			{flyInParams}
 			bind:processing
 			on:toast={handleToast}
-			on:cancel={() => (updatePassword = false)}
+			on:cancel={() => (showUpdatePassword = false)}
 		/>
 	{:else}
 		<div class="p-6">
@@ -105,7 +105,7 @@
 		{/if}
 		<button
 			on:click={() => {
-				updatePassword = true;
+				showUpdatePassword = true;
 			}}
 			class="text-thunderbird-600 hover:text-thunderbird-500 mt-3">Change Password</button
 		>
@@ -125,22 +125,22 @@
 			<div class="ml-4 mt-2 flex-shrink-0">
 				<button
 					type="button"
-					on:click={() => (createAddress = !createAddress)}
+					on:click={() => (showAddAddress = !showAddAddress)}
 					class="relative inline-flex btn px-3 py-2 text-sm font-semibold"
-					>{createAddress ? 'Cancel' : 'Add'}
+					>{showAddAddress ? 'Cancel' : 'Add'}
 				</button>
 			</div>
 		</div>
 	</div>
-	{#if createAddress}
-		<CreateAddressForm
-			data={createAddressForm}
+	{#if showAddAddress}
+		<AddAddressForm
+			data={update_address_form}
 			{delayMs}
 			{timeoutMs}
 			{flyInParams}
 			bind:processing
 			on:toast={handleToast}
-			on:cancel={() => (createAddress = false)}
+			on:cancel={() => (showAddAddress = false)}
 		/>
 	{:else if shipping_addresses.length > 0}
 		<AddressBook data={shipping_addresses} {flipParams} bind:processing />

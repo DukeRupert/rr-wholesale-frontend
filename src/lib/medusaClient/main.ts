@@ -7,6 +7,7 @@ import type {
 	StoreCartsRes,
 	StoreCustomersRes,
 	StoreGetProductsParams,
+	StorePostCustomersCustomerReq,
 	StorePostCustomersCustomerAddressesReq,
 	StoreProductsListRes
 } from '@medusajs/medusa';
@@ -350,6 +351,30 @@ export class MedusaClient {
 			return null;
 		}
 	}
+	async updateCustomer(
+		locals: App.Locals,
+		payload: StorePostCustomersCustomerReq
+	): Promise<StoreCustomersRes | null> {
+		console.log('Update customer record.');
+		const headers = { Cookie: `connect.sid=${locals.sid}` };
+
+		if (!payload) {
+			throw new Error('Missing address payload');
+		}
+
+		try {
+			const res = await this.client.customers.update(payload, headers);
+
+			if (res.response.status !== 200) {
+				throw new Error(`Add address failed: API responded with ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed updateCustomer()', error);
+			return null;
+		}
+	}
 	async addAddress(
 		locals: App.Locals,
 		payload: AddressCreatePayload
@@ -395,7 +420,7 @@ export class MedusaClient {
 
 			return res;
 		} catch (error) {
-			console.error('Error: failed addAddress()', error);
+			console.error('Error: failed deleteAddress()', error);
 			return null;
 		}
 	}
