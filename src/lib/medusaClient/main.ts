@@ -2,7 +2,6 @@ import Medusa from '@medusajs/medusa-js';
 import cookie from 'cookie';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { Cookies } from '@sveltejs/kit';
-import type { Cart } from '@medusajs/medusa/dist/models/cart';
 import type {
 	StoreAuthRes,
 	StoreCartsRes,
@@ -17,11 +16,6 @@ export interface QueryOptions {
 	expand?: string;
 	region_id?: 'NA';
 	currency_code?: 'usd';
-}
-
-interface GetSessionResult {
-	authData: StoreAuthRes | null;
-	authCookieUpdated: boolean;
 }
 
 export interface CreateLineItemParams {
@@ -356,7 +350,10 @@ export class MedusaClient {
 			return null;
 		}
 	}
-	async addAddress(locals: App.Locals, payload: AddressCreatePayload): Promise<StoreCustomersRes | null> {
+	async addAddress(
+		locals: App.Locals,
+		payload: AddressCreatePayload
+	): Promise<StoreCustomersRes | null> {
 		console.log('Adding a new customer address.');
 		const headers = { Cookie: `connect.sid=${locals.sid}` };
 
@@ -370,6 +367,27 @@ export class MedusaClient {
 			};
 
 			const res = await this.client.customers.addresses.addAddress(params, headers);
+
+			if (res.response.status !== 200) {
+				throw new Error(`Add address failed: API responded with ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed addAddress()', error);
+			return null;
+		}
+	}
+	async deleteAddress(locals: App.Locals, address_id: string): Promise<StoreCustomersRes | null> {
+		console.log('Adding a new customer address.');
+		const headers = { Cookie: `connect.sid=${locals.sid}` };
+
+		if (!address_id) {
+			throw new Error('Missing address id');
+		}
+
+		try {
+			const res = await this.client.customers.addresses.deleteAddress(address_id, headers);
 
 			if (res.response.status !== 200) {
 				throw new Error(`Add address failed: API responded with ${res.response.status}`);
