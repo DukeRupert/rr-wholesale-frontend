@@ -10,10 +10,32 @@ import type {
 	StoreProductsListRes
 } from '@medusajs/medusa';
 
-interface QueryOptions {
+export interface QueryOptions {
 	expand?: string;
 	region_id?: 'NA';
 	currency_code?: 'usd';
+}
+
+export interface CreateLineItemParams {
+	cartId: string;
+	variantId: string;
+	quantity?: number;
+}
+
+export interface UpdateLineItemParams {
+	cartId: string;
+	lineItemId: string;
+	quantity: number;
+}
+
+export interface DeleteLineItemParams {
+	cartId: string;
+	lineItemId: string;
+}
+
+export interface AddToCartParams {
+	variantId: string;
+	quantity: number;
 }
 
 export class MedusaClient {
@@ -171,57 +193,79 @@ export class MedusaClient {
 		}
 	}
 
-	async createLineItem(
-		locals: App.Locals,
-		variant_id: string,
-		quantity: number = 1
-	): Promise<StoreCartsRes | null> {
-		console.log(`Updating cart: create ${variant_id} quantity to ${quantity}.`);
-		if (!locals.cartId || !variant_id) return null;
+	async createLineItem(params: CreateLineItemParams): Promise<StoreCartsRes | null> {
+		console.log(
+			`Creating line item in cart: ${params.variantId} with quantity ${params.quantity}.`
+		);
+
+		if (!params.cartId || !params.variantId) {
+			throw new Error('Missing cartId or variantId');
+		}
+
 		try {
-			const { cart, response } = await this.client.carts.lineItems.create(locals.cartId, {
-				variant_id,
-				quantity
+			const { cart, response } = await this.client.carts.lineItems.create(params.cartId, {
+				variant_id: params.variantId,
+				quantity: params.quantity ?? 1 // Use default value 1 if not provided
 			});
-			if (response.status !== 200) return null;
-			locals.cart = cart;
+
+			if (response.status !== 200) {
+				throw new Error(`API create failed: ${response.status}`);
+			}
+
 			return { cart };
-		} catch {
-			console.log('Error: failed addToCart()');
+		} catch (error) {
+			console.error('Error: failed createLineItem()', error);
 			return null;
 		}
 	}
 
-	async updateLineItem(
-		locals: App.Locals,
-		line_id: string,
-		quantity: number
-	): Promise<StoreCartsRes | null> {
-		console.log(`Updating cart: ${line_id} quantity to ${quantity}.`);
-		if (!locals.cartId || !line_id) return null;
+	async updateLineItem(params: UpdateLineItemParams): Promise<StoreCartsRes | null> {
+		console.log(`Updating cart: ${params.lineItemId} quantity to ${params.quantity}.`);
+
+		if (!params.cartId || !params.lineItemId) {
+			throw new Error('Missing cartId or lineItemId');
+		}
+
 		try {
-			const { cart, response } = await this.client.carts.lineItems.update(locals.cartId, line_id, {
-				quantity
-			});
-			if (response.status !== 200) return null;
-			locals.cart = cart;
+			const { cart, response } = await this.client.carts.lineItems.update(
+				params.cartId,
+				params.lineItemId,
+				{
+					quantity: params.quantity
+				}
+			);
+
+			if (response.status !== 200) {
+				throw new Error(`API update failed: ${response.status}`);
+			}
+
 			return { cart };
 		} catch (error) {
-			console.log('Error: failed updateLineItem()');
+			console.error('Error: failed updateLineItem()', error);
 			return null;
 		}
 	}
 
-	async deleteLineItem(locals: App.Locals, line_id: string): Promise<StoreCartsRes | null> {
-		console.log(`Deleting ${line_id} from cart.`);
-		if (!locals.cartId || !line_id) return null;
+	async deleteLineItem(params: DeleteLineItemParams): Promise<StoreCartsRes | null> {
+		console.log(`Deleting line item ${params.lineItemId} from cart.`);
+
+		if (!params.cartId || !params.lineItemId) {
+			throw new Error('Missing cartId or lineItemId');
+		}
+
 		try {
-			const { cart, response } = await this.client.carts.lineItems.delete(locals.cartId, line_id);
-			if (response.status !== 200) return null;
-			locals.cart = cart;
+			const { cart, response } = await this.client.carts.lineItems.delete(
+				params.cartId,
+				params.lineItemId
+			);
+
+			if (response.status !== 200) {
+				throw new Error(`API delete failed: ${response.status}`);
+			}
+
 			return { cart };
 		} catch (error) {
-			console.log('Error: failed deleteLineItem()');
+			console.error('Error: failed deleteLineItem()', error);
 			return null;
 		}
 	}
@@ -229,7 +273,11 @@ export class MedusaClient {
 	async createCart(locals: App.Locals, cookies: Cookies): Promise<StoreCartsRes | null> {
 		try {
 			const { cart, response } = await this.client.carts.create();
-			if (response.status !== 200) return null;
+
+			if (response.status !== 200) {
+				throw new Error(`Cart creation failed: API responded with ${response.status}`);
+			}
+
 			cookies.set('cartid', cart.id, {
 				path: '/',
 				maxAge: 60 * 60 * 24 * 400,
@@ -237,11 +285,13 @@ export class MedusaClient {
 				httpOnly: true,
 				secure: true
 			});
+
 			locals.cartId = cart.id;
 			locals.cart = cart as Cart;
+
 			return { cart };
 		} catch (error) {
-			console.log('Error createCart()');
+			console.error('Error createCart()', error);
 			return null;
 		}
 	}
@@ -249,29 +299,45 @@ export class MedusaClient {
 	async addToCart(
 		locals: App.Locals,
 		cookies: Cookies,
-		variant_id: string,
-		quantity: number = 1
+		params: AddToCartParams
 	): Promise<StoreCartsRes | null> {
-		// If no variantId is provided we can't do anything
-		console.log(`Adding ${variant_id} to cart.`);
-		if (!variant_id) {
-			return null;
-		}
-		// If no cart exists, create one
-		if (!locals.cart) {
-			const response = await this.createCart(locals, cookies);
-			if (response === null) return null;
-		}
-		// Create or Update LineItem
-		if (locals.cart && locals.cart.items) {
-			const lineItem = locals.cart.items.find((el) => el.variant_id === variant_id);
-			if (lineItem === undefined) {
-				return await this.createLineItem(locals, variant_id, quantity);
-			}
-			return await this.updateLineItem(locals, lineItem.id, quantity + lineItem.quantity);
+		console.log(`Adding ${params.variantId} to cart.`);
+
+		if (!params.variantId) {
+			throw new Error('Missing variantId');
 		}
 
-		return null;
+		try {
+			// Ensure a cart exists
+			let cart = locals.cart;
+			if (!cart) {
+				const response = await this.createCart(locals, cookies);
+				if (!response) throw new Error('Cart creation failed');
+				cart = response.cart;
+			}
+
+			// Find existing line item if possible
+			const lineItem = cart.items.find((el) => el.variant_id === params.variantId);
+
+			if (lineItem) {
+				// Update existing item
+				return await this.updateLineItem({
+					cartId: cart.id,
+					lineItemId: lineItem.id,
+					quantity: params.quantity + lineItem.quantity
+				});
+			} else {
+				// Create new item
+				return await this.createLineItem({
+					cartId: cart.id,
+					variantId: params.variantId,
+					quantity: params.quantity ?? 1
+				});
+			}
+		} catch (error) {
+			console.error('Error: failed addToCart()', error);
+			return null;
+		}
 	}
 }
 
