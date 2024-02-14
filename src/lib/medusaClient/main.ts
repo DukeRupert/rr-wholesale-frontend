@@ -9,7 +9,8 @@ import type {
 	StoreGetProductsParams,
 	StorePostCustomersCustomerReq,
 	StorePostCustomersCustomerAddressesReq,
-	StoreProductsListRes
+	StoreProductsListRes,
+	StorePostCartsCartPaymentSessionReq
 } from '@medusajs/medusa';
 import type { AddressCreatePayload, AddressPayload } from '@medusajs/types';
 
@@ -421,6 +422,45 @@ export class MedusaClient {
 			return res;
 		} catch (error) {
 			console.error('Error: failed deleteAddress()', error);
+			return null;
+		}
+	}
+	async createPaymentSessions(locals: App.Locals): Promise<StoreCartsRes | null> {
+		console.log('Creating payment sessions.');
+		if (!locals.cartId) {
+			return null;
+		}
+		try {
+			const res = await this.client.carts.createPaymentSessions(locals.cartId);
+
+			if (res.response.status !== 200) {
+				throw new Error(`Create payment sessions failed: API responded with ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed deleteAddress()', error);
+			return null;
+		}
+	}
+	async setPaymentSession(locals: App.Locals, provider_id: string): Promise<StoreCartsRes | null> {
+		console.log('Set payment session.');
+		if (!locals.cartId || !provider_id) {
+			return null;
+		}
+		try {
+			const payload: StorePostCartsCartPaymentSessionReq = {
+				provider_id
+			}
+			const res = await this.client.carts.setPaymentSession(locals.cartId, payload);
+
+			if (res.response.status !== 200) {
+				throw new Error(`Set payment session failed: API responded with ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed setPaymentSession()', error);
 			return null;
 		}
 	}

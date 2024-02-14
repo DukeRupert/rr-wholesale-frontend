@@ -10,7 +10,7 @@
 
 	export let data: PageData;
 	$: console.log(data)
-	$: ({ user, cart, shippingOptions, shippingAddressForm } = data);
+	$: ({ user, cart, shippingOptions, shipping_address_form } = data);
 	$: ({ shipping_addresses } = user);
 
 	let order: any; // Order data
@@ -90,7 +90,7 @@
 							>
 						{:else}
 							<ShippingAddressForm
-								data={shippingAddressForm}
+								data={shipping_address_form}
 								{shipping_addresses}
 								bind:processing
 								bind:isUpdatingAddress

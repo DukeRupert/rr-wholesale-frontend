@@ -3,26 +3,25 @@ import type { Cart, ShippingOption } from '$lib/types/cart';
 import type { OrderSummary } from '$lib/types/order';
 import { fail, redirect, error } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
-import { superValidate, message } from 'sveltekit-superforms/server';
+import medusaClient from '$lib/medusaClient';
+import type { Infer } from 'sveltekit-superforms';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 import { shippingAddressSchema } from '$lib/validators/account';
 
 export const load: PageServerLoad = async function ({ locals, url }) {
 	if (!locals.user) throw redirect(302, '/auth?rurl=checkout');
 
-	const shippingAddressForm = await superValidate(shippingAddressSchema);
+	const shipping_address_form = await superValidate<Infer<typeof shippingAddressSchema>>(zod(shippingAddressSchema));
 
 	console.log('Fetching cart from locals to createPaymentSession');
-	let cart = await medusa.createPaymentSessions(locals) as Cart;
-	console.log(cart)
+	const createPaymentSessionsResponse = await medusaClient.createPaymentSessions(locals);
+	if(createPaymentSessionsResponse === null) throw error(400, { message: 'Could not create payment sessions' });
+	let cart = createPaymentSessionsResponse.cart;
 
-	if (!cart.total) {
-		throw error(400, { message: 'Could not create payment sessions' });
-	}
-
-	cart = (await medusa.selectPaymentSession(locals, 'manual')) as Cart;
-	if (!cart.total) {
-		throw error(400, { message: 'Could not select payment provider' });
-	}
+	const setPaymentSessionResponse = await medusaClient.setPaymentSession(locals, 'manual');
+	if(setPaymentSessionResponse === null) throw error(400, { message: 'Could not select payment provider' });
+	cart = setPaymentSessionResponse.cart;
 
 	// Get shipping options
 	console.log('Fetching shipping options');
@@ -36,7 +35,7 @@ export const load: PageServerLoad = async function ({ locals, url }) {
 		user: locals.user,
 		cart: locals.cart,
 		shippingOptions,
-		shippingAddressForm
+		shipping_address_form
 	};
 };
 
@@ -54,7 +53,7 @@ export const actions: Actions = {
 				secure: true
 			});
 			// reset locals
-			locals.cartid = '';
+			locals.cartId = '';
 			locals.cart = null;
 			return { order: order };
 		} else {
@@ -63,15 +62,15 @@ export const actions: Actions = {
 	},
 	updateShippingAddress: async ({ request, locals, fetch }) => {
 		console.log('Update shipping address');
-		const shippingAddressForm = await superValidate(request, shippingAddressSchema);
+		const shippingAddressForm = await superValidate(request, zod(shippingAddressSchema));
 		// Handle invalid data
 		if (!shippingAddressForm.valid)
-			return message(shippingAddressForm, 'This address is invalid.', { status: 400 }); // this shouldn't happen because of client-side validation
+			return message(shippingAddressForm, { type: 'error', text: 'This address is invalid.' });
 
 		// If there is no cart in locals, throw an error
 		const { data: address } = shippingAddressForm;
-		if (!locals.cartid || !address) {
-			return message(shippingAddressForm, 'Bad request', { status: 400 });
+		if (!locals.cartId || !address) {
+			return message(shippingAddressForm, { type: 'error', text: 'Bad request' });
 		}
 
 		// Update cart

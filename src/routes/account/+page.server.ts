@@ -1,6 +1,5 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import medusa from '$lib/server/medusa';
 import medusaClient from '$lib/medusaClient';
 import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
