@@ -1,6 +1,8 @@
 import type { PageServerLoad, Actions } from './$types';
+import type { Infer } from 'sveltekit-superforms';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 import { redirect } from '@sveltejs/kit';
-import { message, superValidate } from 'sveltekit-superforms/server';
 import { contactSalesSchema } from '$lib/validators/auth';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -11,7 +13,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		throw redirect(302, `/${rurl}`);
 	}
 
-	const form = await superValidate(contactSalesSchema);
+	const form = await superValidate<Infer<typeof contactSalesSchema>>(zod(contactSalesSchema));
 
 	return {
 		rurl,
@@ -22,8 +24,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 export const actions: Actions = {
 	default: async ({ request }) => {
 		console.log('Contact sales action');
-		const form = await superValidate(request, contactSalesSchema);
-		if (!form.valid) return message(form, 'Something went wrong', { status: 500 }); // this shouldn't happen because of client-side validation
+		const form = await superValidate(request, zod(contactSalesSchema));
+		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' }); // this shouldn't happen because of client-side validation
 		console.log('Form valid. Checking for bots');
 		// Todo: Connect to postmark
 		console.log('Sending message');

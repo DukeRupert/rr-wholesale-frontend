@@ -1,13 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { superForm } from 'sveltekit-superforms/client';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { superForm } from 'sveltekit-superforms';	
 	import { resetPostReq } from '$lib/validators/auth';
 	import { AlertCircle } from 'lucide-svelte';
 
 	export let data: PageData;
 
 	const { form, errors, tainted, message, enhance } = superForm(data.form, {
-		validators: resetPostReq,
+		validators: zodClient(resetPostReq),
 		invalidateAll: true,
 		taintedMessage: null
 	});

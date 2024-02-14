@@ -1,47 +1,29 @@
 <script lang="ts">
+	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { contactSalesSchema } from '$lib/validators/auth';
-	import type { ContactSalesSchema } from '$lib/validators/auth';
-	import type { SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { page } from '$app/stores';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { superForm } from 'sveltekit-superforms';
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
-	import { createEventDispatcher } from 'svelte';
 
-	export let data: SuperValidated<ContactSalesSchema>;
-
-	const dispatch = createEventDispatcher<{ success: { f: string; l: string } }>();
+	export let data: SuperValidated<Infer<typeof contactSalesSchema>>;
 
 	const { form, errors, tainted, message, submitting, delayed, timeout, enhance } = superForm(
 		data,
 		{
 			onUpdated({ form }) {
 				if (form.message) {
-					if ($page.status === 401)
-						// Display the message using a toast library
-						addToast({
-							data: {
-								type: 'warning',
-								title: 'Warning',
-								description: form.message
-							}
-						});
-				} else {
-					// handle success
 					addToast({
 						data: {
-							type: 'success',
-							title: 'Success',
-							description: "You've been logged in!"
+							type: form.message.type,
+							title: form.message.type,
+							description: form.message.text
 						}
 					});
-					dispatch('success', { f: $form.first_name, l: $form.last_name });
 				}
 			},
 			onError({ result }) {
-				console.log(result);
-				// Display the message using a toast library
 				addToast({
 					data: {
 						type: 'error',
@@ -51,7 +33,7 @@
 				});
 			},
 			resetForm: false,
-			validators: contactSalesSchema,
+			validators: zodClient(contactSalesSchema),
 			invalidateAll: true,
 			taintedMessage: null,
 			delayMs: 200,
