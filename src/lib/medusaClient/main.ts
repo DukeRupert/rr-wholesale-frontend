@@ -16,6 +16,11 @@ export interface QueryOptions {
 	currency_code?: 'usd';
 }
 
+interface GetSessionResult {
+	authData: StoreAuthRes | null;
+	authCookieUpdated: boolean;
+}
+
 export interface CreateLineItemParams {
 	cartId: string;
 	variantId: string;
@@ -50,72 +55,85 @@ export class MedusaClient {
 		});
 	}
 
+	// this middleware function is called by src/hooks.server.ts or src/hooks.server.js
 	async handleRequest(event: RequestEvent) {
-		// this middleware function is called by src/hooks.server.ts or src/hooks.server.js
+		// Cookie retrieval
 		event.locals.sid = event.cookies.get('sid') || '';
 		event.locals.cartId = event.cookies.get('cartid') || '';
-		// Check cookies for sid, if present fetch customer information
-		if (event.locals.sid) {
-			const getSessionResponse = await this.getSession(event.locals, event.cookies);
-			if (getSessionResponse !== null) {
-				event.locals.user = getSessionResponse.customer;
+		// Fetch user and cart data
+		try {
+			const [userData, cartData] = await Promise.all([
+				event.locals.sid ? this.getSession(event.locals, event.cookies) : Promise.resolve(null),
+				this.retrieveCart(event.locals)
+			]);
+
+			if (userData) {
+				event.locals.user = userData.customer;
+			} else {
+				await this.handleInvalidSession(event.locals, event.cookies);
 			}
+			if (cartData) {
+				event.locals.cartId = cartData.cart.id;
+				event.locals.cart = cartData.cart;
+			}
+
+			return event;
+		} catch (error) {
+			console.error('Error in handleRequest()', error);
+			return event;
 		}
-		// Check cookies for cartId, if present fetch cart information
-		const retrieveCartResponse = await this.retrieveCart(event.locals);
-		if (retrieveCartResponse !== null) {
-			const { cart } = retrieveCartResponse;
-			event.locals.cartId = cart.id;
-			event.locals.cart = cart;
-		}
-		return event;
 	}
 
-	async parseAuthCookie(
-		setCookie: string[],
-		locals: App.Locals,
-		cookies: Cookies
-	): Promise<boolean> {
-		let result = false;
-		if (setCookie.length === 0) return result;
-		try {
-			for (let rawCookie of setCookie) {
-				let parsedCookie = cookie.parse(rawCookie);
+	// Sets cookies for session
+	async parseAuthCookie(setCookie: string[], cookies: Cookies): Promise<boolean> {
+		for (const rawCookie of setCookie) {
+			try {
+				const parsedCookie = cookie.parse(rawCookie);
+
 				if (parsedCookie['connect.sid']) {
-					locals.sid = parsedCookie['connect.sid'];
-					let expires = new Date(parsedCookie['Expires']);
-					let maxAge = Math.floor((expires.getTime() - Date.now()) / 1000);
-					cookies.set('sid', locals.sid, {
+					const sid = parsedCookie['connect.sid'];
+					const expires = new Date(parsedCookie['Expires']);
+					const maxAge = Math.floor((expires.getTime() - Date.now()) / 1000);
+
+					cookies.set('sid', sid, {
 						path: '/',
-						maxAge: maxAge,
+						maxAge,
 						sameSite: 'strict',
 						httpOnly: true,
 						secure: true
 					});
-					result = true;
+
+					return true;
 				}
+			} catch (error) {
+				console.error('Error parsing cookie:', error);
+				return false;
 			}
-		} catch (e) {
-			console.log(e);
 		}
-		return result;
+
+		return false;
+	}
+
+	async handleInvalidSession(locals: App.Locals, cookies: Cookies) {
+		cookies.delete('sid', {
+			path: '/'
+		});
+		locals.cartId = '';
+		locals.cart = null;
 	}
 
 	async getSession(locals: App.Locals, cookies: Cookies): Promise<StoreAuthRes | null> {
 		// https://docs.medusajs.com/api/store#authentication
 		// Custom header must be provided to authenticate
-		let headers: Record<string, any> = {};
-		headers['Cookie'] = `connect.sid=${locals.sid}`;
+		const headers = { Cookie: `connect.sid=${locals.sid}` };
+
 		try {
 			const getSessionResponse = await this.client.auth.getSession(headers);
 			const setCookies = getSessionResponse.response.headers['set-cookie'] || [];
-			this.parseAuthCookie(setCookies, locals, cookies);
+			const authCookieUpdated = await this.parseAuthCookie(setCookies, cookies);
 			return getSessionResponse;
 		} catch (error) {
-			console.log('Error: invalid sid.');
-			cookies.delete('sid');
-			locals.cartId = '';
-			locals.cart = null;
+			console.error('Error: invalid sid.', error);
 			return null;
 		}
 	}
@@ -149,7 +167,7 @@ export class MedusaClient {
 			});
 			if (response.status !== 200) return null;
 			const setCookies = response.headers['set-cookie'] || [];
-			this.parseAuthCookie(setCookies, locals, cookies);
+			const authCookieUpdated = await this.parseAuthCookie(setCookies, cookies);
 			locals.user = customer;
 			return { customer };
 		} catch (error) {
@@ -162,11 +180,7 @@ export class MedusaClient {
 		// returns true or false based on success
 		const { response } = await this.client.auth.deleteSession();
 		if (response.status !== 200) return false;
-		locals.sid = null;
-		locals.user = null;
-		cookies.delete('sid', {
-			path: '/'
-		});
+		await this.handleInvalidSession(locals, cookies);
 		return true;
 	}
 
@@ -287,7 +301,7 @@ export class MedusaClient {
 			});
 
 			locals.cartId = cart.id;
-			locals.cart = cart as Cart;
+			locals.cart = cart;
 
 			return { cart };
 		} catch (error) {

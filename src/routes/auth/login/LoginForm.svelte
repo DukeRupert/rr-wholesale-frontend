@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { loginPostReq } from '$lib/validators/auth';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { superForm } from 'sveltekit-superforms';
+	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';

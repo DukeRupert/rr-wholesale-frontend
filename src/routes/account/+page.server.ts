@@ -1,18 +1,19 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import medusa from '$lib/server/medusa';
-import { superValidate, message } from 'sveltekit-superforms/server';
+import type { Infer } from 'sveltekit-superforms'
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 import { updateUserSchema, updatePasswordSchema, shippingAddressSchema } from '$lib/validators/account';
-import { registerSchema } from '$lib/validators/auth';
 import type { Address, Customer } from '@dukerupert/sveltekit-medusa-client';
 
 export const load: PageServerLoad = async function ({ url, locals }) {
 	if (!locals.user) throw redirect(307, '/auth');
 
 	// Setup forms
-	const updateUserForm = await superValidate(locals.user, updateUserSchema)
-	const updatePasswordForm = await superValidate(updatePasswordSchema)
-	const createAddressForm = await superValidate(shippingAddressSchema)
+	const updateUserForm = await superValidate<Infer<typeof updateUserSchema>>(locals.user, zod(updateUserSchema), { errors: false })
+	const updatePasswordForm = await superValidate<Infer<typeof updatePasswordSchema>>(zod(updatePasswordSchema))
+	const createAddressForm = await superValidate<Infer<typeof shippingAddressSchema>>(zod(shippingAddressSchema))
 
 	return {
 		user: locals.user,
@@ -25,21 +26,21 @@ export const load: PageServerLoad = async function ({ url, locals }) {
 export const actions: Actions = {
 	updateUser: async ({ request, locals }) => {
 		console.log('Update User action');
-		const updateUserForm = await superValidate(request, updateUserSchema);
-		if (!updateUserForm.valid) return message(updateUserForm, 'Invalid form', { status: 400 });
+		const updateUserForm = await superValidate(request, zod(updateUserSchema));
+		if (!updateUserForm.valid) return message(updateUserForm, { type: 'error', text: 'Invalid data' });
 		const customer = updateUserForm.data as Customer;
 		const success = await medusa.editCustomer(locals, customer);
-		if (!success) return message(updateUserForm, 'Please try again later.', { status: 500 });
+		if (!success) return message(updateUserForm, { type: 'error', text: 'Server error' });
 		return { updateUserForm };
 	},
 
 	createAddress: async ({ request, locals }) => {
 		console.log('Create Address action');
-		const createAddressForm = await superValidate(request, shippingAddressSchema);
-		if (!createAddressForm.valid) return message(createAddressForm, 'Invalid address', { status: 400 });
+		const createAddressForm = await superValidate(request, zod(shippingAddressSchema));
+		if (!createAddressForm.valid) return message(createAddressForm, { type: 'error', text: 'Invalid address' });
 		const address = createAddressForm.data as Address;
 		const success = (await medusa.addShippingAddress(locals, address)) as boolean;
-		if (!success) return message(createAddressForm, 'Something went wrong', { status: 500 });
+		if (!success) return message(createAddressForm, { type: 'error', text: 'Server error' });
 		return { createAddressForm };
 	},
 
@@ -57,11 +58,11 @@ export const actions: Actions = {
 	updatePassword: async ({ request, locals }) => {
 		console.log('Update Password action');
 		// Validator checks that newPassword === confirmPassword
-		const updatePasswordForm = await superValidate(request, updatePasswordSchema);
-		if (!updatePasswordForm.valid) return message(updatePasswordForm, 'Invalid form', { status: 400 });
+		const updatePasswordForm = await superValidate(request, zod(updatePasswordSchema));
+		if (!updatePasswordForm.valid) return message(updatePasswordForm, { type: 'error', text: 'Invalid form' });
 		const { newPassword } = updatePasswordForm.data as { newPassword: string };
 		const success = await medusa.editCustomer(locals, { password: newPassword });
-		if (!success) return message(updatePasswordForm, 'Something went wrong', { status: 500 });
+		if (!success) return message(updatePasswordForm, { type: 'error', text: 'Server error' });
 		return { updatePasswordForm };
 	},
 };

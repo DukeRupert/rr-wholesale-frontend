@@ -1,20 +1,16 @@
 <script lang="ts">
-	import type { ToastEvent } from '$lib/types/events';
-	import type { UpdatePasswordSchema } from '$lib/validators/account';
-	import type { SuperValidated } from 'sveltekit-superforms';
+	import type { SuperValidated, Infer } from 'sveltekit-superforms';
+	import { addToast } from '$lib/components/toast/index.svelte';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { superForm } from 'sveltekit-superforms';
 	import { updatePasswordSchema } from '$lib/validators/account';
-	import { superForm } from 'sveltekit-superforms/client';
 	import { createEventDispatcher } from 'svelte';
-	import { page } from '$app/stores';
 	import { quadOut } from 'svelte/easing';
 	import { fly, type FlyParams } from 'svelte/transition';
 	import { AlertCircle } from 'lucide-svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 
-	const dispatch = createEventDispatcher<ToastEvent>();
-	const simpleDispatch = createEventDispatcher();
-
-	export let data: SuperValidated<UpdatePasswordSchema>;
+	export let data: SuperValidated<Infer<typeof updatePasswordSchema>>;
 	export let processing: boolean;
 	// Form configuration
 	export let delayMs = 200;
@@ -29,35 +25,32 @@
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
 			if (form.message) {
-				if ($page.status === 400)
-					dispatch('toast', {
-						type: 'warning',
-						title: 'Warning',
-						description: form.message
-					});
-			} else {
-				dispatch('toast', {
-					type: 'success',
-					title: 'Success',
-					description: 'Success! Your account information has been updated.'
+				addToast({
+					data: {
+						type: form.message.type,
+						title: form.message.type,
+						description: form.message.text
+					}
 				});
-				simpleDispatch("cancel")
 			}
 		},
 		onError({ result }) {
-			console.log(result);
-			dispatch('toast', {
-				type: 'error',
-				title: 'Error',
-				description: result.error.message
+			addToast({
+				data: {
+					type: 'error',
+					title: 'Error',
+					description: result.error.message
+				}
 			});
 		},
-		validators: updatePasswordSchema,
+		validators: zodClient(updatePasswordSchema),
 		invalidateAll: true,
 		taintedMessage: null,
 		delayMs: delayMs,
 		timeoutMs: timeoutMs
 	});
+
+	const simpleDispatch = createEventDispatcher();
 </script>
 
 <form in:fly={flyInParams} action="?/updatePassword" method="POST" use:enhance>
@@ -125,7 +118,7 @@
 			<button
 				hidden={processing}
 				on:click|preventDefault={() => {
-					simpleDispatch("cancel")	
+					simpleDispatch('cancel');
 				}}
 				type="button"
 				class="mt-6 w-full btn btn-secondary"

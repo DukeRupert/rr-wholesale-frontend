@@ -1,17 +1,16 @@
 <script lang="ts">
-	import type { ToastEvent } from '$lib/types/events';
+	import type { SuperValidated, Infer } from 'sveltekit-superforms';
+	import { addToast } from '$lib/components/toast/index.svelte';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { superForm } from 'sveltekit-superforms';
 	import { updateUserSchema } from '$lib/validators/account';
-	import type { UpdateUserSchema } from '$lib/validators/account';
-	import type { SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { page } from '$app/stores';
 	import { AlertCircle } from 'lucide-svelte';
 	import { fly, type FlyParams } from 'svelte/transition';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 	import { quadOut } from 'svelte/easing';
-	import { createEventDispatcher } from 'svelte';
 
-	export let data: SuperValidated<UpdateUserSchema>;
+
+	export let data: SuperValidated<Infer<typeof updateUserSchema>>;
 	export let processing: boolean;
 	// Form configuration
 	export let delayMs = 200;
@@ -23,36 +22,28 @@
 		easing: quadOut
 	};
 
-	const dispatch = createEventDispatcher<ToastEvent>();
-	const simpleDispatch = createEventDispatcher();
-
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
 			if (form.message) {
-				if ($page.status === 400)
-					dispatch('toast', {
-						type: 'warning',
-						title: 'Warning',
-						description: form.message
-					});
-			} else {
-				dispatch('toast', {
-					type: 'success',
-					title: 'Success',
-					description: 'Success! Your account information has been updated.'
+				addToast({
+					data: {
+						type: form.message.type,
+						title: form.message.type,
+						description: form.message.text
+					}
 				});
-				simpleDispatch('cancel')
 			}
 		},
 		onError({ result }) {
-			console.log(result);
-			dispatch('toast', {
-				type: 'error',
-				title: 'Error',
-				description: result.error.message
+			addToast({
+				data: {
+					type: 'error',
+					title: 'Error',
+					description: result.error.message
+				}
 			});
-		},
-		validators: updateUserSchema,
+		},	
+		validators: zodClient(updateUserSchema),
 		invalidateAll: true,
 		taintedMessage: null,
 		delayMs: delayMs,
