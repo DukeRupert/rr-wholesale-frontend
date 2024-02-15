@@ -10,7 +10,13 @@ import type {
 	StorePostCustomersCustomerReq,
 	StorePostCustomersCustomerAddressesReq,
 	StoreProductsListRes,
-	StorePostCartsCartPaymentSessionReq
+	StorePostCartsCartPaymentSessionReq,
+	StoreShippingOptionsListRes,
+	StorePostCartsCartShippingMethodReq,
+	StorePostCartsCartReq,
+	StoreCompleteCartRes,
+	StorePostCustomersCustomerPasswordTokenReq,
+	StorePostCustomersResetPasswordReq
 } from '@medusajs/medusa';
 import type { AddressCreatePayload, AddressPayload } from '@medusajs/types';
 
@@ -69,7 +75,7 @@ export class MedusaClient {
 			if (userData) {
 				event.locals.user = userData.customer;
 			} else {
-				await this.handleInvalidSession(event.locals, event.cookies);
+				this.invalidateSession(event.locals, event.cookies);
 			}
 			if (cartData) {
 				event.locals.cartId = cartData.cart.id;
@@ -113,12 +119,27 @@ export class MedusaClient {
 		return false;
 	}
 
-	async handleInvalidSession(locals: App.Locals, cookies: Cookies) {
+	invalidateSession(locals: App.Locals, cookies: Cookies) {
 		cookies.delete('sid', {
 			path: '/'
 		});
 		locals.cartId = '';
 		locals.cart = null;
+		return;
+	}
+
+	invalidateCart(locals: App.Locals, cookies: Cookies): void {
+		cookies.set('cartId', '', {
+			path: '/',
+			maxAge: 0,
+			sameSite: 'strict',
+			httpOnly: true,
+			secure: true
+		});
+		// reset locals
+		locals.cartId = '';
+		locals.cart = null;
+		return;
 	}
 
 	async getSession(locals: App.Locals, cookies: Cookies): Promise<StoreAuthRes | null> {
@@ -137,20 +158,93 @@ export class MedusaClient {
 		}
 	}
 
+	/**
+	 * Retrieves the specified cart.
+	 *
+	 * @param locals - An App.Locals object likely containing the cartId
+	 * @returns A Promise that resolves to a StoreCartsRes object (if the cart is valid), or null if the cart is not found, doesn't exist, is completed, or an API error occurs.
+	 * @throws {Error} If the API call fails with a non-200 status code.
+	 */
 	async retrieveCart(locals: App.Locals): Promise<StoreCartsRes | null> {
-		const cartId = locals?.cartId ?? '';
-		let retrieveCartResponse: StoreCartsRes;
-		if (!cartId) return null;
+		console.log('Retrieve cart');
+
+		// Validation - Early Exit
+		if (!locals.cartId) {
+			return null; // Cart ID is mandatory
+		}
+
 		try {
-			retrieveCartResponse = await this.client.carts.retrieve(cartId);
+			const res = await this.client.carts.retrieve(locals.cartId);
+
+			if (res.response.status !== 200) {
+				throw new Error(`API call failed: ${res.response.status}`);
+			}
+
+			// Cart Completion Check
+			if (res.cart && res.cart.completed_at) {
+				return null; // Cart is considered invalid if already completed
+			}
+
+			return res;
 		} catch (error) {
-			console.log(error);
+			console.error('Error: failed retrieveCart()', error);
 			return null;
 		}
-		const { cart } = retrieveCartResponse;
-		// if this cart was completed on another device, we don't want to use it
-		if (cart && cart.completed_at) return null;
-		return retrieveCartResponse;
+	}
+	/**
+	 * Updates details of the specified cart.
+	 *
+	 * @param locals - An App.Locals object likely containing the cartId
+	 * @param payload - A StorePostCartsCartReq object holding cart update data
+	 * @returns A Promise that resolves to a StoreCartsRes object on success, or null if cart ID is missing, update fails, or an API error occurs.
+	 * @throws {Error} If the cartId is missing.
+	 * @throws {Error} If the API call fails with a non-200 status code.
+	 */
+	async updateCart(
+		locals: App.Locals,
+		payload: StorePostCartsCartReq
+	): Promise<StoreCartsRes | null> {
+		console.log('Update cart details.');
+
+		// Validation - Early Exit
+		if (!locals.cartId) {
+			return null; // Cart ID is mandatory
+		}
+
+		try {
+			const res = await this.client.carts.update(locals.cartId, payload);
+
+			if (res.response.status !== 200) {
+				throw new Error(`API call failed: ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed updateCart()', error);
+			return null;
+		}
+	}
+
+	async completeCart(locals: App.Locals): Promise<StoreCompleteCartRes | null> {
+		console.log('Complete cart.');
+
+		// Validation - Early Exit
+		if (!locals.cartId) {
+			return null; // Cart ID is mandatory
+		}
+
+		try {
+			const res = await this.client.carts.complete(locals.cartId);
+
+			if (res.response.status !== 200) {
+				throw new Error(`API call failed: ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed completeCart()', error);
+			return null;
+		}
 	}
 
 	async authenticate(
@@ -175,11 +269,45 @@ export class MedusaClient {
 		}
 	}
 
+	async generatePasswordToken(email: string): Promise<boolean> {
+		console.log('Generate password token');
+		if (!email) return false;
+		try {
+			const payload: StorePostCustomersCustomerPasswordTokenReq = {
+				email
+			};
+			const { response } = await this.client.customers.generatePasswordToken(payload);
+			if (response.status !== 200) return false;
+			return true;
+		} catch (error) {
+			console.log('Error: failed addShippingMethod()', error);
+			return false;
+		}
+	}
+
+	async resetPassword(
+		payload: StorePostCustomersResetPasswordReq
+	): Promise<StoreCustomersRes | null> {
+		console.log('Reset password');
+		const { token, email, password } = payload;
+		if (!token || !email || !password) return null;
+		try {
+			const res = await this.client.customers.resetPassword(payload);
+			if (res.response.status !== 200) {
+				throw new Error(`API update failed: ${res.response.status}`);
+			}
+			return res;
+		} catch (error) {
+			console.log('Error: failed resetPassword()', error);
+			return null;
+		}
+	}
+
 	async deleteSession(locals: App.Locals, cookies: Cookies): Promise<boolean> {
 		// returns true or false based on success
 		const { response } = await this.client.auth.deleteSession();
 		if (response.status !== 200) return false;
-		await this.handleInvalidSession(locals, cookies);
+		await this.invalidateSession(locals, cookies);
 		return true;
 	}
 
@@ -205,7 +333,14 @@ export class MedusaClient {
 			return null;
 		}
 	}
-
+	/**
+	 * Creates a new line item in the specified cart.
+	 *
+	 * @param params - A CreateLineItemParams object containing cartId, variantId, and quantity.
+	 * @returns A Promise that resolves to a StoreCartsRes object containing the updated cart, or null if the operation fails.
+	 * @throws {Error} If cartId or variantId are missing.
+	 * @throws {Error} If the API call fails.
+	 */
 	async createLineItem(params: CreateLineItemParams): Promise<StoreCartsRes | null> {
 		console.log(
 			`Creating line item in cart: ${params.variantId} with quantity ${params.quantity}.`
@@ -232,6 +367,14 @@ export class MedusaClient {
 		}
 	}
 
+	/**
+	 * Updates the quantity of an existing line item in the specified cart.
+	 *
+	 * @param params - An UpdateLineItemParams object containing cartId, lineItemId, and quantity.
+	 * @returns A Promise that resolves to a StoreCartsRes object containing the updated cart, or null if the operation fails.
+	 * @throws {Error} If cartId or lineItemId are missing.
+	 * @throws {Error} If the API call fails.
+	 */
 	async updateLineItem(params: UpdateLineItemParams): Promise<StoreCartsRes | null> {
 		console.log(`Updating cart: ${params.lineItemId} quantity to ${params.quantity}.`);
 
@@ -259,6 +402,14 @@ export class MedusaClient {
 		}
 	}
 
+	/**
+	 * Deletes a line item from the specified cart.
+	 *
+	 * @param params - A DeleteLineItemParams object containing cartId and lineItemId.
+	 * @returns A Promise that resolves to a StoreCartsRes object containing the updated cart, or null if the operation fails.
+	 * @throws {Error} If cartId or lineItemId are missing.
+	 * @throws {Error} If the API call fails.
+	 */
 	async deleteLineItem(params: DeleteLineItemParams): Promise<StoreCartsRes | null> {
 		console.log(`Deleting line item ${params.lineItemId} from cart.`);
 
@@ -283,6 +434,14 @@ export class MedusaClient {
 		}
 	}
 
+	/**
+	 * Creates a new shopping cart.
+	 *
+	 * @param locals - An App.Locals object (define any relevant properties for this)
+	 * @param cookies - A Cookies object for managing cart cookies
+	 * @returns A Promise that resolves to a StoreCartsRes object containing the newly created cart, or null if the operation fails.
+	 * @throws {Error} If the API call for cart creation fails.
+	 */
 	async createCart(locals: App.Locals, cookies: Cookies): Promise<StoreCartsRes | null> {
 		try {
 			const { cart, response } = await this.client.carts.create();
@@ -309,6 +468,17 @@ export class MedusaClient {
 		}
 	}
 
+	/**
+	 * Adds an item to the shopping cart, either by creating a new line item or updating the quantity of an existing one.
+	 *
+	 * @param locals - An App.Locals object (define relevant properties)
+	 * @param cookies - A Cookies object for managing cart cookies
+	 * @param params - An AddToCartParams object containing variantId, and optionally quantity
+	 * @returns A Promise that resolves to a StoreCartsRes object containing the updated cart, or null if the operation fails.
+	 * @throws {Error} If variantId is missing.
+	 * @throws {Error} If cart creation fails (if a cart didn't already exist).
+	 * @throws {Error} If line item creation or update fails due to API errors.
+	 */
 	async addToCart(
 		locals: App.Locals,
 		cookies: Cookies,
@@ -434,7 +604,9 @@ export class MedusaClient {
 			const res = await this.client.carts.createPaymentSessions(locals.cartId);
 
 			if (res.response.status !== 200) {
-				throw new Error(`Create payment sessions failed: API responded with ${res.response.status}`);
+				throw new Error(
+					`Create payment sessions failed: API responded with ${res.response.status}`
+				);
 			}
 
 			return res;
@@ -451,7 +623,7 @@ export class MedusaClient {
 		try {
 			const payload: StorePostCartsCartPaymentSessionReq = {
 				provider_id
-			}
+			};
 			const res = await this.client.carts.setPaymentSession(locals.cartId, payload);
 
 			if (res.response.status !== 200) {
@@ -461,6 +633,46 @@ export class MedusaClient {
 			return res;
 		} catch (error) {
 			console.error('Error: failed setPaymentSession()', error);
+			return null;
+		}
+	}
+	/**
+	 * Retrieves a list of shipping options available for the specified cart.
+	 *
+	 * @param locals - An App.Locals object containing required properties (likely cartId)
+	 * @returns A Promise that resolves to a StoreShippingOptionsListRes object, or null if the operation fails.
+	 * @throws {Error} If the cartId is missing.
+	 * @throws {Error} If the API call fails.
+	 */
+	async listShippingOptions(locals: App.Locals): Promise<StoreShippingOptionsListRes | null> {
+		console.log('Retrieve a list of shipping options available for a cart.');
+		if (!locals.cartId) throw new Error('Missing cartId');
+		try {
+			const res = await this.client.shippingOptions.listCartOptions(locals.cartId);
+			if (res.response.status !== 200) {
+				throw new Error(`List shipping options failed: API responded with ${res.response.status}`);
+			}
+			return res;
+		} catch (error) {
+			console.error('Error: failed listShippingOptions()', error);
+			return null;
+		}
+	}
+	async addShippingMethod(locals: App.Locals, option_id: string): Promise<StoreCartsRes | null> {
+		console.log('Add a shipping method to the cart.');
+		if (!locals.cartId || !option_id) return null;
+		try {
+			let payload: StorePostCartsCartShippingMethodReq = {
+				option_id,
+				data: {}
+			};
+			const res = await this.client.carts.addShippingMethod(locals.cartId, payload);
+			if (res.response.status !== 200) {
+				throw new Error(`List shipping options failed: API responded with ${res.response.status}`);
+			}
+			return res;
+		} catch (error) {
+			console.error('Error: failed addShippingMethod()', error);
 			return null;
 		}
 	}

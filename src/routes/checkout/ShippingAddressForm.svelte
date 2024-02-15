@@ -1,26 +1,26 @@
 <script lang="ts">
+	import type { Address } from '@medusajs/medusa/dist/models/address';
 	import { DELAY_MS, TIMEOUT_MS } from '$lib/constants';
-	import { shippingAddressSchema, type ShippingAddressSchema } from '$lib/validators/account';
-	import type { SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { page } from '$app/stores';
+	import { shippingAddressSchema } from '$lib/validators/account';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { superForm } from 'sveltekit-superforms';
+	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { fly, type FlyParams } from 'svelte/transition';
 	import { quadOut, quadIn } from 'svelte/easing';
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Divider from '$lib/components/elements/Divider.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
-	import type { ShippingAddress } from '$lib/types/user';
 	import { createEventDispatcher } from 'svelte';
 
-	export let data: SuperValidated<ShippingAddressSchema>;
-	export let shipping_addresses: ShippingAddress[] = [];
+	export let data: SuperValidated<Infer<typeof shippingAddressSchema>>;
+	export let shipping_addresses: Address[] = [];
 	export let processing: boolean;
-	export let isUpdatingAddress: boolean;
-
+	
+	let show_options = true;
 	const dispatch = createEventDispatcher();
 
-	const { form, errors, constraints, tainted, message, submitting, delayed, timeout, enhance } =
+	const { form, errors, constraints, enhance } =
 		superForm(data, {
 			onSubmit({ cancel }) {
 				if (processing) cancel(); // silly fast clickers
@@ -28,38 +28,17 @@
 			},
 			onUpdated({ form }) {
 				if (form.message) {
-					// Something went wrong
-					if ($page.status === 400)
-						addToast({
-							data: {
-								type: 'warning',
-								title: 'Warning',
-								description: form.message
-							}
-						});
-					if ($page.status === 500)
-						addToast({
-							data: {
-								type: 'error',
-								title: 'Error',
-								description: form.message
-							}
-						});
-				} else {
-					// Send message to update shipping method options
-					dispatch('addressUpdated');
-					// Success
 					addToast({
 						data: {
-							type: 'success',
-							title: 'Success',
-							description: 'Contact information updated.'
+							type: form.message.type,
+							title: form.message.type,
+							description: form.message.text
 						}
 					});
 				}
 				// Wrap things up
-				processing = false; // end process
-				isUpdatingAddress = false; // close form
+				dispatch('done') // end process
+				dispatch('cancel') // close form
 			},
 			onError({ result }) {
 				addToast({
@@ -69,17 +48,15 @@
 						description: result.error.message
 					}
 				});
-				// Wrap things up
 				processing = false; // end process
 			},
-			validators: shippingAddressSchema,
+			validators: zodClient(shippingAddressSchema),
 			invalidateAll: true,
 			taintedMessage: null,
 			delayMs: DELAY_MS,
 			timeoutMs: TIMEOUT_MS
 		});
 
-	let showOptions = true;
 
 	// Animation settings
 	const duration = 150;
@@ -96,7 +73,7 @@
 	};
 </script>
 
-{#if shipping_addresses.length > 0 && showOptions}
+{#if shipping_addresses.length > 0 && show_options}
 	<ul role="list" class="mt-3 mb-8 sm:mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 		{#each shipping_addresses as address, i (address.id)}
 			<li
@@ -136,9 +113,9 @@
 					<div class="-mt-px flex divide-x divide-gray-200 dark:divide-gray-900">
 						<button
 							type="submit"
-							on:click|preventDefault={() => {
-								$form = address;
-								showOptions = false;
+							on:click|preventDefault={async () => {
+								$form = address
+								show_options = false;
 							}}
 							class="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-thunderbird-600 dark:hover:text-thunderbird-500 capitalize"
 						>
@@ -298,7 +275,7 @@
 			>{#if processing}<Spinner />{:else}Confirm{/if}</button
 		>
 		<button
-			on:click|preventDefault={() => (isUpdatingAddress = false)}
+			on:click|preventDefault={() => dispatch('cancel')}
 			type="button"
 			class="btn btn-secondary">Cancel</button
 		>

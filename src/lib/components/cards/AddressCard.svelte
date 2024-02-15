@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { ShippingAddress } from '$lib/types/user';
+	import type { Address } from '@medusajs/medusa/dist/models/address'
 
-	export let data: ShippingAddress;
+	export let data: Address;
 </script>
 
 <div>

@@ -1,14 +1,12 @@
 import type { RequestHandler } from './$types';
-import medusa from '$lib/server/medusa';
+import medusaClient from '$lib/medusaClient';
 import { error, json } from '@sveltejs/kit';
-import type { ShippingOption } from '$lib/types/cart';
 
 export const GET: RequestHandler = async ({ request, locals }) => {
-	let shippingOptions = (await medusa.getShippingOptions(locals)) as ShippingOption[];
+	const listShippingOptionsResponse = await medusaClient.listShippingOptions(locals);
+	if (listShippingOptionsResponse === null)
+		throw error(400, { message: 'Could not fetch shipping options' });
+	const { shipping_options } = listShippingOptionsResponse;
 
-	if (shippingOptions) {
-		return json(shippingOptions);
-	} else {
-		throw error(404, 'not found');
-	}
+	return json(shipping_options);
 };

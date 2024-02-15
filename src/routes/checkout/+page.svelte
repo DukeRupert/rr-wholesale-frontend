@@ -10,7 +10,7 @@
 
 	export let data: PageData;
 	$: console.log(data)
-	$: ({ user, cart, shippingOptions, shipping_address_form } = data);
+	$: ({ user, cart, shipping_options, shipping_address_form } = data);
 	$: ({ shipping_addresses } = user);
 
 	let order: any; // Order data
@@ -18,7 +18,7 @@
 	let processing = false;
 
 	// Shipping address logic
-	let isUpdatingAddress = false;
+	let show_shipping_address_form = false;
 	async function handleShippingOptionClick(e: any) {
 		console.log('Option selected');
 		const shippingOptionId = e.detail.id as string;
@@ -30,7 +30,7 @@
 	async function fetchShippingOptions() {
 		console.log('fetching shipping options');
 		try {
-			shippingOptions = await fetch('/checkout/get-shipping-options').then((res) => res.json());
+			shipping_options = await fetch('/checkout/get-shipping-options').then((res) => res.json());
 		} catch (err) {
 			console.log(err);
 		}
@@ -80,20 +80,21 @@
 							<HomeIcon class="block h-5 w-5 text-gray-500 dark:text-gray-400" />
 							<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
 						</div>
-						{#if cart.shipping_address && cart.shipping_address?.address_1 && !isUpdatingAddress}
+						{#if cart.shipping_address && cart.shipping_address?.address_1 && !show_shipping_address_form}
 							<div class="mt-6">
 								<AddressCard data={cart.shipping_address} />
 							</div>
 							<button
-								on:click|preventDefault={() => (isUpdatingAddress = true)}
+								on:click|preventDefault={() => (show_shipping_address_form = true)}
 								class="mt-6 text-sm text-thunderbird-500">Change address?</button
 							>
 						{:else}
 							<ShippingAddressForm
 								data={shipping_address_form}
 								{shipping_addresses}
-								bind:processing
-								bind:isUpdatingAddress
+								{processing}
+								on:done={() => (processing = false)}
+								on:cancel={() => (show_shipping_address_form = false)}
 								on:addressUpdated={fetchShippingOptions}
 							/>
 						{/if}
@@ -105,7 +106,7 @@
 							<h3 class="text-lg font-medium text-gray-900">Shipping Method</h3>
 						</div>
 
-						<ShippingSelect data={shippingOptions} on:select={handleShippingOptionClick} />
+						<ShippingSelect data={shipping_options} on:select={handleShippingOptionClick} />
 						{#if !isShippingMethodSelected}
 							<p class="ml-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
 								Please select a shipping method.
@@ -119,10 +120,9 @@
 						use:enhance={async ({ cancel }) => {
 							if (processing) cancel();
 							processing = true;
-
 							return async ({ result }) => {
 								if (result.status === 200) {
-									order = result.data.order;
+									// order = result.data.order;
 									success = true;
 								}
 							};

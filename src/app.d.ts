@@ -3,13 +3,18 @@
 import type { Customer } from '@medusajs/medusa/dist/models/customer';
 import type { Cart } from '@medusajs/medusa/dist/models/cart';
 
+type ExtendedCustomerMetadata = Record<string, unknown> & { is_trusted?: boolean };
+interface ExtendedCustomer extends Customer {
+	metadata: ExtendedCustomerMetadata
+}
+
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
 			sid: string | null;
 			cartId: string | null;
-			user: Customer | null;
+			user: ExtendedCustomer | null;
 			cart: Omit<Cart, "refundable_amount" | "refunded_total"> | null;
 		}
 		namespace Superforms {

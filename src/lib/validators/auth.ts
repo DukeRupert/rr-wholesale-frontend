@@ -47,7 +47,7 @@ export const resetPostReq = z.object({
    }),
    password: z.string().min(6),
    passwordConfirm: z.string().min(6),
-   code: z.string().min(1),
+   token: z.string().min(1),
    rurl: z.string()
 }).superRefine(({ passwordConfirm, password }, ctx) => {
    if (passwordConfirm !== password) {

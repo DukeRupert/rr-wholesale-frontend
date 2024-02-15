@@ -1,5 +1,4 @@
 import type { Handle } from '@sveltejs/kit';
-import medusa from '$lib/server/medusa';
 import { redirect } from '@sveltejs/kit';
 import medusaClient from '$lib/medusaClient';
 

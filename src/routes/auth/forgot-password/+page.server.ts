@@ -4,7 +4,7 @@ import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { forgotPostReq } from '$lib/validators/auth';
-import medusa from '$lib/server/medusa';
+import medusaClient from '$lib/medusaClient';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	let rurl = url.searchParams.get('rurl') || '';
@@ -27,14 +27,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 export const actions: Actions = {
 	forgot: async ({ request }) => {
 		const form = await superValidate(request, zod(forgotPostReq));
-		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' }); // this shouldn't happen because of client-side validation
-		if (await medusa.requestResetPassword(form.data.email)) {
-			return message(form, {
-				type: 'success',
-				text: 'A reset code has been sent to your email address'
-			});
-		} else {
-			return message(form, { type: 'success', text: 'Unable to send reset code' });
-		}
+		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' });
+		const res = await medusaClient.generatePasswordToken(form.data.email);
+		if (res === null) return message(form, { type: 'error', text: 'Failed to send email' });
+		return message(form, {
+			type: 'success',
+			text: 'A reset code has been sent to your email address'
+		});
 	}
 };
