@@ -16,9 +16,9 @@ import type {
 	StorePostCartsCartReq,
 	StoreCompleteCartRes,
 	StorePostCustomersCustomerPasswordTokenReq,
-	StorePostCustomersResetPasswordReq
+	StorePostCustomersResetPasswordReq,
+	AddressCreatePayload
 } from '@medusajs/medusa';
-import type { AddressCreatePayload, AddressPayload } from '@medusajs/types';
 
 export interface QueryOptions {
 	expand?: string;
@@ -48,16 +48,26 @@ export interface AddToCartParams {
 	quantity: number;
 }
 
+export interface Config {
+	baseUrl: string;
+	maxRetries: number;
+	apiKey?: string;
+	publishableApiKey?: string;
+	customHeaders?: Record<string, any>;
+}
+
+const defaultConfig = {
+	baseUrl: 'http://localhost:9000',
+	maxRetries: 0
+};
+
 export class MedusaClient {
-	url: string;
+	config: Config;
 	client: Medusa;
 
-	constructor(url: string) {
-		this.url = url;
-		this.client = new Medusa({
-			baseUrl: this.url,
-			maxRetries: 0
-		});
+	constructor(config: Config) {
+		this.config = { ...defaultConfig, ...config };
+		this.client = new Medusa(config);
 	}
 
 	// this middleware function is called by src/hooks.server.ts or src/hooks.server.js
