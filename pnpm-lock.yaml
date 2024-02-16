@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@dukerupert/sveltekit-medusa-client':
-    specifier: ^3.1.2
-    version: 3.1.2(svelte@4.2.8)
   '@medusajs/medusa-js':
     specifier: ^6.1.6
     version: 6.1.6(@medusajs/medusa@1.20.2)
@@ -361,16 +358,6 @@ packages:
       colorspace: 1.1.4
       enabled: 2.0.0
       kuler: 2.0.0
-
-  /@dukerupert/sveltekit-medusa-client@3.1.2(svelte@4.2.8):
-    resolution: {integrity: sha512-24XlBmZx89B3AwlsBQYU7tvc8Hak2lJqwqPK1OvG9sQVGCpLTPeh+wcoraREc0wtwgo65kyAEB6KgBflOFVjbw==}
-    peerDependencies:
-      svelte: ^4.0.0
-    dependencies:
-      '@medusajs/types': 1.11.8
-      svelte: 4.2.8
-      sveltekit-superfetch: 3.0.3(svelte@4.2.8)
-    dev: false
 
   /@esbuild/aix-ppc64@0.20.0:
     resolution: {integrity: sha512-fGFDEctNh0CcSwsiRPxiaqX0P5rq+AqE0SRhYGZ4PX46Lg1FNR6oCxJghf8YgY0WQEgQuh3lErUFE4KxLeRmmw==}
@@ -951,11 +938,6 @@ packages:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: /wrap-ansi@7.0.0
 
-  /@isaacs/ttlcache@1.4.1:
-    resolution: {integrity: sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA==}
-    engines: {node: '>=12'}
-    dev: false
-
   /@jridgewell/gen-mapping@0.3.3:
     resolution: {integrity: sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==}
     engines: {node: '>=6.0.0'}
@@ -1266,6 +1248,7 @@ packages:
 
   /@medusajs/types@1.11.8:
     resolution: {integrity: sha512-FmcfP6dvdgDYT8hBLdMPlsj7k8WXamrtDkuXmU07qaePLhyUbksLDO0MEmo4oltAyfmgpzKw7U3/DJZJIlEjVg==}
+    dev: true
 
   /@medusajs/utils@1.11.5(pg@8.11.3):
     resolution: {integrity: sha512-LiGrZ4VycsYrYgWYQbxoWddsD35tznAtnYu1Xg63m4k0iMi4LSHonTlX60GQ9EKNxCZQd+fEjugIfoBk4+IeQQ==}
@@ -4627,12 +4610,6 @@ packages:
     hasBin: true
     dev: true
 
-  /nanoid@5.0.3:
-    resolution: {integrity: sha512-I7X2b22cxA4LIHXPSqbBCEQSL+1wv8TuoefejsX4HFWyC6jc5JG7CEaxOltiKjc1M+YCS2YkrZZcj4+dytw9GA==}
-    engines: {node: ^18 || >=20}
-    hasBin: true
-    dev: false
-
   /nanoid@5.0.5:
     resolution: {integrity: sha512-/Veqm+QKsyMY3kqi4faWplnY1u+VuKO3dD2binyPIybP31DRO29bPF+1mszgLnrR2KqSLceFLBNw0zmvDzN1QQ==}
     engines: {node: ^18 || >=20}
@@ -5927,16 +5904,6 @@ packages:
       locate-character: 3.0.0
       magic-string: 0.30.5
       periscopic: 3.1.0
-
-  /sveltekit-superfetch@3.0.3(svelte@4.2.8):
-    resolution: {integrity: sha512-pO4lKbQDqTQYvzWgia9JhhhEpYnyXCsmmDylSAnY/aFHP4noqn8zf+cegkEj/FfuxbD5JH/6LPR+LrCFc8lrgQ==}
-    peerDependencies:
-      svelte: ^4.0.0
-    dependencies:
-      '@isaacs/ttlcache': 1.4.1
-      nanoid: 5.0.3
-      svelte: 4.2.8
-    dev: false
 
   /sveltekit-superforms@2.1.0(@sveltejs/kit@1.27.6)(@types/json-schema@7.0.15)(esbuild-runner@2.2.2)(esbuild@0.20.0)(svelte@4.2.8):
     resolution: {integrity: sha512-Tl3drSPGklOsIG2wbLSM/DZmir/EZfHcB+rbQd2xIx2byqGHm4HGRA7aP9X5cft1d3CqSFJUPTmuTqLurMipZw==}

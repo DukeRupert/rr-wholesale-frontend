@@ -43,7 +43,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@dukerupert/sveltekit-medusa-client": "^3.1.2",
 		"@medusajs/medusa-js": "^6.1.6",
 		"@types/cookie": "^0.6.0",
 		"cookie": "^0.6.0",

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import type { User } from '@dukerupert/sveltekit-medusa-client';
-
-	export let user: User;
+	import type { Customer } from '@medusajs/medusa/dist/models/customer';
+	export let user: Customer;
 </script>
 
 <div class="border-b border-gray-900/10 pb-12">
