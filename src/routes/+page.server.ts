@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
-import medusaClient from '$lib/medusaClient';
 import type { PricedProduct } from '@medusajs/medusa/dist/types/pricing';
+import { error } from '@sveltejs/kit';
+import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async ({url}) => {
 	// get query params
@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({url}) => {
 	let offset = parseInt(o) || 0;
 	// fetch products
 	let products: PricedProduct[] = [];
-	const res = await medusaClient.listProducts(limit, offset);
+	const res = await medusa.products.list(limit, offset);
 	if (res !== null) {
 		const { products: p, limit, offset, count } = res;
 		products = p

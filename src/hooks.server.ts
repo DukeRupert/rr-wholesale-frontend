@@ -1,11 +1,11 @@
 import type { Handle } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
-import medusaClient from '$lib/medusaClient';
+import medusa from '$lib/medusa';;
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// MEDUSA SESSION MIDDLEWARE
 	// Sets locals.user and locals.cart if they are found.
-	event = await medusaClient.handleRequest(event);
+	event = await medusa.auth.handleRequest(event);
 	// If the user is not logged in and they are not trying to log in, redirect them to the login page.
 	if (!event.locals?.user && !event.url.pathname.startsWith('/auth')) {
 		throw redirect(302, '/auth/login');

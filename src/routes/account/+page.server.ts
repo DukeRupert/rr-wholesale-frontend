@@ -1,6 +1,5 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import medusaClient from '$lib/medusaClient';
 import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -9,6 +8,7 @@ import {
 	updatePasswordSchema,
 	shippingAddressSchema
 } from '$lib/validators/account';
+import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async function ({ url, locals }) {
 	if (!locals.user) throw redirect(307, '/auth');
@@ -40,8 +40,8 @@ export const actions: Actions = {
 		const update_customer_form = await superValidate(request, zod(updateCustomerSchema));
 		if (!update_customer_form.valid)
 			return message(update_customer_form, { type: 'error', text: 'Invalid data' });
-		const payload = { ...update_customer_form.data}
-		const res = await medusaClient.updateCustomer(locals, payload);
+		const payload = { ...update_customer_form.data };
+		const res = await medusa.customers.updateCustomer(locals, payload);
 		if (res === null) return message(update_customer_form, { type: 'error', text: 'Server error' });
 		locals.user = Object.assign({}, locals.user, res.customer);
 		return message(update_customer_form, { type: 'success', text: 'User information updated' });
@@ -53,7 +53,7 @@ export const actions: Actions = {
 		if (!createAddressForm.valid)
 			return message(createAddressForm, { type: 'error', text: 'Invalid address' });
 		const payload = { ...createAddressForm.data, metadata: {} };
-		const res = await medusaClient.addAddress(locals, payload);
+		const res = await medusa.customers.addresses.addAddress(locals, { address: payload });
 		if (res === null) return message(createAddressForm, { type: 'error', text: 'Server error' });
 		locals.user = Object.assign({}, locals.user, res.customer);
 		return message(createAddressForm, { type: 'success', text: 'Address added' });
@@ -62,12 +62,12 @@ export const actions: Actions = {
 	deleteAddress: async ({ request, locals }) => {
 		console.log('Delete Address action');
 		const data = await request.formData();
-		const addressId = data.get('addressId') as string;
-		if (!addressId) {
-			return fail(400, { addressId, missing: true });
+		const address_id = data.get('addressId') as string;
+		if (!address_id) {
+			return fail(400, { addressId: address_id, missing: true });
 		}
-		const res = await medusaClient.deleteAddress(locals, addressId);
-		if (res === null) return fail(400, { addressId, success: false});
+		const res = await medusa.customers.addresses.deleteAddress(locals, address_id);
+		if (res === null) return fail(400, { addressId: address_id, success: false });
 		locals.user = Object.assign({}, locals.user, res.customer);
 		return { success: true };
 	},
@@ -78,8 +78,8 @@ export const actions: Actions = {
 		const update_password_form = await superValidate(request, zod(updatePasswordSchema));
 		if (!update_password_form.valid)
 			return message(update_password_form, { type: 'error', text: 'Invalid form' });
-		const payload = { password: update_password_form.data.newPassword}
-		const res = await medusaClient.updateCustomer(locals, payload)
+		const payload = { password: update_password_form.data.newPassword };
+		const res = await medusa.customers.updateCustomer(locals, payload);
 		if (res === null) return message(update_password_form, { type: 'error', text: 'Server error' });
 		return message(update_password_form, { type: 'success', text: 'Password updated' });
 	}

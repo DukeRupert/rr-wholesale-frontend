@@ -4,7 +4,7 @@ import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { loginPostReq } from '$lib/validators/auth';
-import medusaClient from '$lib/medusaClient';
+import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	let rurl = url.searchParams.get('rurl') || '';
@@ -36,7 +36,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(loginPostReq));
 		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' }); // this shouldn't happen because of client-side validation
 		console.log('Form valid. Calling medusa');
-		const res = await medusaClient.authenticate(
+		const res = await medusa.auth.authenticate(
 			locals,
 			cookies,
 			form.data.email,
@@ -52,7 +52,7 @@ export const actions: Actions = {
 
 	logout: async ({ locals, cookies }) => {
 		console.log('Logout action');
-		if (await medusaClient.deleteSession(locals, cookies)) {
+		if (await medusa.auth.deleteSession(locals, cookies)) {
 			throw redirect(302, '/auth/login');
 		} else throw error(500, 'server error');
 	}

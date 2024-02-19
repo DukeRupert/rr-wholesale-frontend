@@ -4,7 +4,7 @@ import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { forgotPostReq } from '$lib/validators/auth';
-import medusaClient from '$lib/medusaClient';
+import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	let rurl = url.searchParams.get('rurl') || '';
@@ -28,7 +28,7 @@ export const actions: Actions = {
 	forgot: async ({ request }) => {
 		const form = await superValidate(request, zod(forgotPostReq));
 		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' });
-		const res = await medusaClient.generatePasswordToken(form.data.email);
+		const res = await medusa.customers.generatePasswordToken(form.data.email);
 		if (res === null) return message(form, { type: 'error', text: 'Failed to send email' });
 		return message(form, {
 			type: 'success',

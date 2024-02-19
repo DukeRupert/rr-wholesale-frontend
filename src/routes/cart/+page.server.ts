@@ -1,23 +1,23 @@
 import type { Actions } from './$types';
-import medusaClient from '$lib/medusaClient';
+import type { StoreCartsRes } from '@medusajs/medusa';
 import type {
 	AddToCartParams,
 	DeleteLineItemParams,
 	UpdateLineItemParams
 } from '$lib/medusaClient';
-import type { StoreCartsRes } from '@medusajs/medusa';
+import medusa from '$lib/medusa';
 
 export const actions: Actions = {
 	add: async ({ request, locals, cookies }) => {
 		const data = await request.formData();
-		const variantId = data.get('variantId') as string;
+		const variant_id = data.get('variantId') as string;
 		const quantity = parseInt(data.get('quantity') as string);
-		if (!variantId || !quantity) return { success: false };
+		if (!variant_id || !quantity) return { success: false };
 		const params: AddToCartParams = {
-			variantId,
+			variant_id,
 			quantity
 		};
-		const res = await medusaClient.addToCart(locals, cookies, params);
+		const res = await medusa.carts.addToCart(locals, cookies, params);
 		if (res === null) return { success: false };
 		const { cart } = res;
 		locals.cart = cart;
@@ -30,14 +30,14 @@ export const actions: Actions = {
 
 	remove: async ({ request, locals }) => {
 		const data = await request.formData();
-		const cartId = locals.cartId;
-		const lineItemId = (data.get('itemId') as string) || '';
-		if (!cartId || !lineItemId) return { success: false };
+		const cart_id = locals.cartId;
+		const line_item_id = (data.get('itemId') as string) || '';
+		if (!cart_id || !line_item_id) return { success: false };
 		const params: DeleteLineItemParams = {
-			cartId,
-			lineItemId
+			cart_id,
+			line_item_id
 		};
-		const res = await medusaClient.deleteLineItem(params);
+		const res = await medusa.carts.lineItems.delete(params);
 		if (res === null) return { success: false };
 		const { cart } = res;
 		locals.cart = cart;
@@ -50,24 +50,24 @@ export const actions: Actions = {
 
 	update: async ({ request, locals }) => {
 		const data = await request.formData();
-		const cartId = locals.cartId;
-		const lineItemId = data.get('itemId') as string;
+		const cart_id = locals.cartId;
+		const line_item_id = data.get('itemId') as string;
 		const quantity = parseInt(data.get('quantity') as string);
-		if (!cartId || !lineItemId || !quantity) return { success: false };
+		if (!cart_id || !line_item_id || !quantity) return { success: false };
 		let res: StoreCartsRes | null = null;
 		if (quantity === 0) {
 			const params: DeleteLineItemParams = {
-				cartId,
-				lineItemId
+				cart_id,
+				line_item_id
 			};
-			res = await medusaClient.deleteLineItem(params);
+			res = await medusa.carts.lineItems.delete(params);
 		} else if (quantity > 0) {
 			const params: UpdateLineItemParams = {
-				cartId,
-				lineItemId,
+				cartId: cart_id,
+				lineItemId: line_item_id,
 				quantity
 			};
-			res = await medusaClient.updateLineItem(params);
+			res = await medusa.carts.lineItems.update(params);
 		}
 		if (res === null) return { success: false };
 		const { cart } = res;

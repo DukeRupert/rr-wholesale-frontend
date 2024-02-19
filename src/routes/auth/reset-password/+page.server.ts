@@ -4,7 +4,7 @@ import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { resetPostReq } from '$lib/validators/auth';
-import medusaClient from '$lib/medusaClient';
+import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	let rurl = url.searchParams.get('rurl') || '';
@@ -39,7 +39,7 @@ export const actions: Actions = {
 			email,
 			password
 		};
-		const res = await medusaClient.resetPassword(payload);
+		const res = await medusa.customers.resetPassword(payload);
 		if (res === null) return message(form, { type: 'error', text: 'Failed to update password' });
 
 		throw redirect(302, `/${form.data.rurl}`);

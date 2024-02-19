@@ -1,13 +1,25 @@
-import MedusaClient from './main';
-import { MEDUSA_BACKEND_URL } from '$env/static/private';
-import type {
-	AddToCartParams,
-	CreateLineItemParams,
-	UpdateLineItemParams,
-	DeleteLineItemParams
-} from './main';
+import Client from './resources/client';
+import type { Config } from './resources/client';
+import { AuthResource, CartResource, CustomerResource, ShippingOptionsResource, ProductsResource } from './resources'
+import type { AddToCartParams, CreateLineItemParams, UpdateLineItemParams, DeleteLineItemParams } from './types';
 
-const medusaClient = new MedusaClient({ baseUrl: MEDUSA_BACKEND_URL, maxRetries: 3 });
+class MedusaClient {
+	public client: Client;
+	public auth: AuthResource;
+	public customers: CustomerResource;
+    public carts: CartResource;
+    public shippingOptions: ShippingOptionsResource;
+	public products: ProductsResource;
 
-export default medusaClient;
-export { AddToCartParams, CreateLineItemParams, UpdateLineItemParams, DeleteLineItemParams };
+	constructor(config: Config) {
+		this.client = new Client(config);
+		this.auth = new AuthResource(this.client);
+		this.customers = new CustomerResource(this.client);
+        this.carts = new CartResource(this.client);
+        this.shippingOptions = new ShippingOptionsResource(this.client),
+		this.products = new ProductsResource(this.client)
+	}
+}
+
+export default MedusaClient;
+export { Config, AddToCartParams, CreateLineItemParams, UpdateLineItemParams, DeleteLineItemParams }

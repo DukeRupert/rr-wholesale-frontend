@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
-import medusaClient from '$lib/medusaClient';
 import { error, json } from '@sveltejs/kit';
+import medusa from '$lib/medusa';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const data = await request.json();
@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.cartId || !shipping_option_id) {
 		throw error(401, 'Bad format');
 	}
-	const res = await medusaClient.addShippingMethod(locals, shipping_option_id);
+	const res = await medusa.carts.addShippingMethod(locals, shipping_option_id);
 	if (res === null) throw error(500, 'Server error');
 	const { cart } = res;
 	return json(cart);
