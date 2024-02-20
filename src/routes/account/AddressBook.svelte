@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { ShippingAddress } from "$lib/types/user";
+	import type { Address } from "@medusajs/medusa/dist/models/address";
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
     import { flip, type FlipParams } from 'svelte/animate'
 
-    export let data: ShippingAddress[] = []
+    export let data: Address[] = []
     export let processing: boolean;
     export let flipParams: FlipParams;
 </script>

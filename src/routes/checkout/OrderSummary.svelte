@@ -7,7 +7,7 @@
 </script>
 
 <main class="lg:flex lg:min-h-full lg:flex-row-reverse">
-	<section class="flex-auto px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-4 lg:pt-0">
+	<section class="flex-auto px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:px-8">
 		<div class="mx-auto max-w-3xl">
 			<div class="max-w-xl">
                 <div class="pb-4 lg:flex">

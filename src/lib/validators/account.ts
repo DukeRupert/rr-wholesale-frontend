@@ -23,7 +23,8 @@ export const shippingAddressSchema = z.object({
 export const updatePasswordSchema = z
 	.object({
 		newPassword: z.string().min(6),
-		confirmPassword: z.string().min(6)
+		confirmPassword: z.string().min(6),
+		rurl: z.string().default('')
 	})
 	.refine((data) => data.newPassword === data.confirmPassword, {
 		message: "Passwords don't match",

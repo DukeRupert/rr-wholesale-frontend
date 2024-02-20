@@ -7,9 +7,10 @@
 	import AddressCard from '$lib/components/cards/AddressCard.svelte';
 	import CartSummary from './CartSummary.svelte';
 	import OrderSummary from './OrderSummary.svelte';
+	import { addToast } from '$lib/components/toast/index.svelte';
 
 	export let data: PageData;
-	$: console.log(data)
+	$: console.log(data);
 	$: ({ user, cart, shipping_options, shipping_address_form } = data);
 	$: ({ shipping_addresses } = user);
 
@@ -122,8 +123,18 @@
 							processing = true;
 							return async ({ result }) => {
 								if (result.status === 200) {
-									// order = result.data.order;
+									//@ts-ignore
+									order = result.data.order;
 									success = true;
+								} else {
+									addToast({
+										data: {
+											type: 'error',
+											title: 'Error',
+											description:
+												'An error occured during checkout. Please contact tech support if this problem persists.'
+										}
+									});
 								}
 							};
 						}}

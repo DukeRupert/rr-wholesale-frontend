@@ -1,6 +1,12 @@
 import type { Handle } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
-import medusa from '$lib/medusa';;
+import medusa from '$lib/medusa';
+
+function generate_return_url(url: URL): string {
+	const return_url = url.pathname + url.search
+	const rurl = return_url.slice(1) // remove leading slash
+	return rurl
+}
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// MEDUSA SESSION MIDDLEWARE
@@ -8,7 +14,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event = await medusa.auth.handleRequest(event);
 	// If the user is not logged in and they are not trying to log in, redirect them to the login page.
 	if (!event.locals?.user && !event.url.pathname.startsWith('/auth')) {
-		throw redirect(302, '/auth/login');
+		const rurl = generate_return_url(event.url)
+		const url = `/auth/login?rurl=${rurl}`
+		throw redirect(302, url);
 	}
 
 	const response = await resolve(event);

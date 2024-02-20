@@ -4,7 +4,9 @@ import type {
 	StoreCustomersRes,
 	StorePostCustomersCustomerReq,
 	StorePostCustomersResetPasswordReq,
-	StorePostCustomersCustomerPasswordTokenReq
+	StorePostCustomersCustomerPasswordTokenReq,
+	StoreCustomersListOrdersRes,
+	StoreGetCustomersCustomerOrdersParams
 } from '@medusajs/medusa';
 
 class CustomerResource extends BaseResource {
@@ -65,6 +67,31 @@ class CustomerResource extends BaseResource {
 			return res;
 		} catch (error) {
 			console.error('Error: failed updateCustomer()', error);
+			return null;
+		}
+	}
+
+	async listOrders(
+		locals: App.Locals,
+		payload: StoreGetCustomersCustomerOrdersParams
+	): Promise<StoreCustomersListOrdersRes | null> {
+		console.log("Retrieve a list of the logged-in customer's orders.");
+		
+
+		if (!payload) {
+			throw new Error('Missing address payload');
+		}
+
+		try {
+			const res = await this.medusa.client.customers.listOrders(payload);
+
+			if (res.response.status !== 200) {
+				throw new Error(`Customers listOrders() failed: API responded with ${res.response.status}`);
+			}
+
+			return res;
+		} catch (error) {
+			console.error('Error: failed listOrders()', error);
 			return null;
 		}
 	}

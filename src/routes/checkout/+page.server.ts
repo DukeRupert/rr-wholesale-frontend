@@ -5,6 +5,7 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { shippingAddressSchema } from '$lib/validators/account';
 import medusa from '$lib/medusa';
+import { addToast } from '$lib/components/toast/index.svelte';
 
 export const load: PageServerLoad = async function ({ locals, url }) {
 	if (!locals.user) throw redirect(302, '/auth?rurl=checkout');
@@ -46,6 +47,7 @@ export const load: PageServerLoad = async function ({ locals, url }) {
 export const actions: Actions = {
 	completeCart: async ({ locals, cookies }) => {
 		const res = await medusa.carts.complete(locals)
+		console.log(res)
 		if(res === null)
 		throw error(400, { message: 'Could not complete cart' });
 
