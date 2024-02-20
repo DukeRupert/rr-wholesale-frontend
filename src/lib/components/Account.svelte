@@ -2,7 +2,7 @@
 	import type { User } from '$lib/types/user';
 	import Avatar from './elements/Avatar.svelte';
 	import { UserIcon } from 'lucide-svelte';
-	import { createDropdownMenu, createAvatar } from '@melt-ui/svelte';
+	import { createDropdownMenu, createAvatar, melt } from '@melt-ui/svelte';
 	import { goto } from '$app/navigation';
 
 	export let user: User;
@@ -41,8 +41,7 @@
 {#if user}
 	<button
 		type="button"
-		{...$trigger}
-		use:trigger
+		use:melt={$trigger}
 		aria-label="Open account menu"
 		class="group -m-2 flex items-center h-12 w-auto {src
 			? 'p-1'
@@ -64,8 +63,7 @@
 	</a>
 {/if}
 <div
-	{...$menu}
-	use:menu
+	use:melt={$menu}
 	class="absolute right-0 z-10 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 >
 	<a href="/account">
@@ -74,15 +72,14 @@
 		</div>
 	</a>
 	<a href="/settings">
-		<div {...$item} use:item class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+		<div use:melt={$item} class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
 			Settings
 		</div>
 	</a>
 	<button
-		{...$item}
+		use:melt={$item}
 		on:m-click={logout}
-		use:item
-		class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+		class="block w-full text-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
 	>
 		Sign Out
 	</button>
