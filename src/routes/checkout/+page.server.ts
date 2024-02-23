@@ -1,62 +1,36 @@
 import type { PageServerLoad, Actions } from './$types';
-import { fail, redirect, error } from '@sveltejs/kit';
+import { fail, error } from '@sveltejs/kit';
 import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { shippingAddressSchema } from '$lib/validators/account';
 import medusa from '$lib/medusa';
-import { addToast } from '$lib/components/toast/index.svelte';
 
 export const load: PageServerLoad = async function ({ locals, url }) {
-	if (!locals.user) throw redirect(302, '/auth?rurl=checkout');
-
+	const { cart, user } = locals;
 	const shipping_address_form = await superValidate<Infer<typeof shippingAddressSchema>>(
 		zod(shippingAddressSchema)
 	);
 
-	let { cart, user } = locals;
-	console.log('Create payment sessions');
-	const createPaymentSessionsResponse = await medusa.carts.createPaymentSessions(locals);
-	if (createPaymentSessionsResponse === null)
-		throw error(400, { message: 'Could not create payment sessions' });
-	cart = createPaymentSessionsResponse.cart;
-
-	console.log('Set payment session');
-	const { is_trusted } = locals?.user?.metadata ?? false;
-	const provider_id = is_trusted ? 'manual' : 'stripe';
-	const setPaymentSessionResponse = await medusa.carts.setPaymentSession(locals, provider_id);
-	if (setPaymentSessionResponse === null)
-		throw error(400, { message: 'Could not select payment provider' });
-	cart = setPaymentSessionResponse.cart;
-
-	// Get shipping options
-	console.log('Fetch shipping options');
-	const listShippingOptionsResponse = await medusa.shippingOptions.listCartOptions(locals);
-	if (listShippingOptionsResponse === null)
-		throw error(400, { message: 'Could not fetch shipping options' });
-	const { shipping_options } = listShippingOptionsResponse;
-
 	return {
 		user,
 		cart,
-		shipping_options,
 		shipping_address_form
 	};
 };
 
+function delay(time: number) {
+  return new Promise(resolve => setTimeout(resolve, time));
+}
+
 export const actions: Actions = {
 	completeCart: async ({ locals, cookies }) => {
-		const res = await medusa.carts.complete(locals)
-		console.log(res)
-		if(res === null)
-		throw error(400, { message: 'Could not complete cart' });
-
-		if (res.type === "order") {
-			medusa.carts.invalidateCart(locals, cookies)
-			return { order: res.data };
-		} else {
-			return fail(400, { success: false });
-		}
+		const res = await medusa.carts.complete(locals);
+		console.log(res);
+		if (res === null) throw error(400, { message: 'Could not complete cart' });
+		console.log(res.type)
+		if(res.type === "order") medusa.carts.invalidateCart(locals, cookies)
+		return { success: true };
 	},
 	updateShippingAddress: async ({ request, locals }) => {
 		const shippingAddressForm = await superValidate(request, zod(shippingAddressSchema));

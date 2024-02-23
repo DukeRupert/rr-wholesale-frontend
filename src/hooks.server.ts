@@ -3,19 +3,19 @@ import { redirect } from '@sveltejs/kit';
 import medusa from '$lib/medusa';
 
 function generate_return_url(url: URL): string {
-	const return_url = url.pathname + url.search
-	const rurl = return_url.slice(1) // remove leading slash
-	return rurl
+	const return_url = url.pathname + url.search;
+	const rurl = return_url.slice(1); // remove leading slash
+	return rurl;
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// MEDUSA SESSION MIDDLEWARE
 	// Sets locals.user and locals.cart if they are found.
-	event = await medusa.auth.handleRequest(event);
+	event = await medusa.handleRequest(event);
 	// If the user is not logged in and they are not trying to log in, redirect them to the login page.
 	if (!event.locals?.user && !event.url.pathname.startsWith('/auth')) {
-		const rurl = generate_return_url(event.url)
-		const url = `/auth/login?rurl=${rurl}`
+		const rurl = generate_return_url(event.url);
+		const url = `/auth/login?rurl=${rurl}`;
 		throw redirect(302, url);
 	}
 
@@ -34,7 +34,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 	response.headers.set(
 		'Permissions-Policy',
-		'payment=(), accelerometer=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), gyroscope=(), hid=(), interest-cohort=(), magnetometer=(), microphone=(), midi=(), picture-in-picture=(), publickey-credentials-get=(), sync-xhr=(), usb=(), xr-spatial-tracking=(), geolocation=()'
+		'accelerometer=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), gyroscope=(), hid=(), interest-cohort=(), magnetometer=(), microphone=(), midi=(), picture-in-picture=(), publickey-credentials-get=(), sync-xhr=(), usb=(), xr-spatial-tracking=(), geolocation=()'
 	);
 
 	return response;

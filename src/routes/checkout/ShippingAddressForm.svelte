@@ -37,7 +37,7 @@
 					});
 				}
 				// Wrap things up
-				dispatch('done') // end process
+				processing = false; // end process
 				dispatch('cancel') // close form
 			},
 			onError({ result }) {

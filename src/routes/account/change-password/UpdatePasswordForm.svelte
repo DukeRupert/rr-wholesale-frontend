@@ -47,7 +47,7 @@
 	<input type="hidden" name="rurl" value={$form.rurl} />
 	<div>
 		<label for="newPassword" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
-			>Email address</label
+			>New password</label
 		>
 		<div class="relative mt-2 rounded-md shadow-sm">
 			<input
@@ -75,7 +75,7 @@
 		<div class="flex items-center justify-between">
 			<label
 				for="confirmPassword"
-				class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Password</label
+				class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Confirm password</label
 			>
 		</div>
 		<div class="relative mt-2 rounded-md shadow-sm">

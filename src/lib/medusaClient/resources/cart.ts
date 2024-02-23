@@ -5,12 +5,11 @@ import type {
 	StorePostCartsCartReq,
 	StoreCompleteCartRes,
 	StorePostCartsCartShippingMethodReq,
-	StorePostCartsCartPaymentSessionReq
+	StorePostCartsCartPaymentSessionReq,
+	StorePostCartReq
 } from '@medusajs/medusa';
 import type { Cookies } from '@sveltejs/kit';
 import type { AddToCartParams } from '../types';
-
-
 
 class CartResource extends BaseResource {
 	public lineItems = new LineItemsResource(this.medusa);
@@ -56,29 +55,48 @@ class CartResource extends BaseResource {
 	 * @throws {Error} If the API call for cart creation fails.
 	 */
 	async create(locals: App.Locals, cookies: Cookies): Promise<StoreCartsRes | null> {
+		let c;
 		try {
+			// Create cart
 			const { cart, response } = await this.medusa.client.carts.create();
 
 			if (response.status !== 200) {
 				throw new Error(`Cart creation failed: API responded with ${response.status}`);
 			}
-
-			cookies.set('cartid', cart.id, {
-				path: '/',
-				maxAge: 60 * 60 * 24 * 400,
-				sameSite: 'strict',
-				httpOnly: true,
-				secure: true
-			});
-
-			locals.cartId = cart.id;
-			locals.cart = cart;
-
-			return { cart };
+			c = cart;
 		} catch (error) {
 			console.error('Error createCart()', error);
 			return null;
 		}
+
+		// Update cart with customer because medusa js client is special
+		try {
+			// Create cart
+			const { cart, response } = await this.medusa.client.carts.update(c.id, {
+				customer_id: locals.user?.id
+			});
+
+			if (response.status !== 200) {
+				throw new Error(`Cart creation failed: API responded with ${response.status}`);
+			}
+			c = cart;
+		} catch (error) {
+			console.error('Error createCart()', error);
+			return null;
+		}
+
+		cookies.set('cartid', c.id, {
+			path: '/',
+			maxAge: 60 * 60 * 24 * 400,
+			sameSite: 'strict',
+			httpOnly: true,
+			secure: true
+		});
+
+		locals.cartId = c.id;
+		locals.cart = c;
+
+		return { cart: c };
 	}
 
 	/**
@@ -218,10 +236,7 @@ class CartResource extends BaseResource {
 	 * @throws {Error} If the cartId is missing.
 	 * @throws {Error} If the API call fails with a non-200 status code.
 	 */
-	async update(
-		locals: App.Locals,
-		payload: StorePostCartsCartReq
-	): Promise<StoreCartsRes | null> {
+	async update(locals: App.Locals, payload: StorePostCartsCartReq): Promise<StoreCartsRes | null> {
 		console.log('Update cart details.');
 
 		// Validation - Early Exit

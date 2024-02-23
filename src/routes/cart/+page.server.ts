@@ -28,7 +28,7 @@ export const actions: Actions = {
 		};
 	},
 
-	remove: async ({ request, locals }) => {
+	remove: async ({ request, locals, cookies }) => {
 		const data = await request.formData();
 		const cart_id = locals.cartId;
 		const line_item_id = (data.get('itemId') as string) || '';
@@ -38,7 +38,10 @@ export const actions: Actions = {
 			line_item_id
 		};
 		const res = await medusa.carts.lineItems.delete(params);
-		if (res === null) return { success: false };
+		if (res === null) {
+			medusa.carts.invalidateCart(locals, cookies)
+			return { success: false };
+		} 
 		const { cart } = res;
 		locals.cart = cart;
 		locals.cartId = cart.id;

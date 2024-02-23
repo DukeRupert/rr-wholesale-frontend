@@ -84,33 +84,6 @@ class AuthResource extends BaseResource {
 			return null;
 		}
 	}
-	async handleRequest(event: RequestEvent) {
-		// Cookie retrieval
-		event.locals.sid = event.cookies.get('sid') || '';
-		event.locals.cartId = event.cookies.get('cartid') || '';
-		// Fetch user and cart data
-		try {
-			const [userData, cartData] = await Promise.all([
-				event.locals.sid ? this.getSession(event.locals, event.cookies) : Promise.resolve(null),
-				this.medusa.client.carts.retrieve(event.locals.cartId)
-			]);
-
-			if (userData) {
-				event.locals.user = userData.customer;
-			} else {
-				this.invalidateSession(event.locals, event.cookies);
-			}
-			if (cartData) {
-				event.locals.cartId = cartData.cart.id;
-				event.locals.cart = cartData.cart;
-			}
-
-			return event;
-		} catch (error) {
-			console.error('Error in handleRequest()', error);
-			return event;
-		}
-	}
 }
 
 export default AuthResource;
