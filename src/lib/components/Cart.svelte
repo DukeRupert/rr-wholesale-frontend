@@ -5,7 +5,10 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
-	import { AspectRatio } from "$lib/components/ui/aspect-ratio";
+	import * as Select from "$lib/components/ui/select";
+	import * as Sheet from '$lib/components/ui/sheet';
+	import { Button } from '$lib/components/ui/button';
+	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
 	import type { Cart } from '$lib/types/cart';
 	export let cart: Cart | null;
 	export let count: number | null;
@@ -13,13 +16,136 @@
 	$: cart = cart;
 	$: items = cart?.items || [];
 	$: total = cart?.subtotal ?? 0;
+
 	const {
 		elements: { trigger, portalled, overlay, content, title, description, close },
 		states: { open }
 	} = createDialog({ preventScroll: true });
 </script>
 
-{#if $open}
+<Sheet.Root>
+	<Sheet.Trigger asChild let:builder>
+		<Button builders={[builder]} variant="outline"
+			><span class="sr-only">View cart</span>
+			<ShoppingCart class="h-6 w-6 flex-shrink-0" />
+			{#if count && count > 0}
+				<span class="ml-2 text-sm font-medium">{count}</span>
+				<span class="sr-only">items in cart, view bag</span>
+			{/if}</Button
+		>
+	</Sheet.Trigger>
+	<Sheet.Content side="right">
+		<Sheet.Header>
+			<Sheet.Title>Cart</Sheet.Title>
+			<Sheet.Description>
+				Click the checkout button when you are ready to place an order.
+			</Sheet.Description>
+		</Sheet.Header>
+		<ul role="list" class="mt-4 divide-y divide-gray-200 border-t border-gray-200">
+			{#each items as item, i}
+				<li class="flex py-6">
+					<div class="h-24 w-24 my-auto">
+						<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
+							<img src={item.thumbnail} alt={item.description} class="rounded-md object-cover" />
+						</AspectRatio>
+					</div>
+					<div class="m-2 flex flex-1 flex-col sm:ml-6">
+						<div>
+							<div class="flex justify-between">
+								<a
+									data-sveltekit-reload
+									href={`/product/${item.variant.product.handle}?variant=${item.variant_id}`}
+									class="cursor-pointer text-sm"
+								>
+									<div class="font-medium text-gray-700 hover:text-gray-800">
+										{item.title}
+									</div>
+									<p class="mt-1 text-sm text-gray-500">
+										{item.description}
+									</p>
+								</a>
+								<div>
+									<p class="ml-4 text-sm font-medium text-gray-900">
+										{formatPrice(item.unit_price)}
+									</p>
+									<p class="ml-4 text-sm text-gray-900 text-right">
+										Qty: {item.quantity}
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="mt-4 flex flex-1 items-end justify-between">
+							<form
+								action="/cart?/update"
+								method="post"
+								use:enhance={() => {
+									return async ({ result }) => {
+										if (result.type === 'success') invalidateAll();
+									};
+								}}
+							>
+								<select
+									name="quantity"
+									class="text-sm font-medium text-gray-900 rounded-lg focus:ring-gray-700 focus:border-none"
+									on:change={async (e) => {
+										const form = e?.target?.closest('form');
+										const formData = new FormData(form);
+										const result = await fetch(form.action, {
+											method: 'POST',
+											body: formData
+										}).then((res) => res.json());
+										if (result.type === 'success') invalidateAll();
+									}}
+								>
+									{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as qty}
+										<option value={qty} selected={qty === item.quantity}>{qty}</option>
+									{/each}
+								</select>
+								<input type="hidden" name="itemId" value={item.id} />
+							</form>
+							<form
+								action="/cart?/remove"
+								method="post"
+								use:enhance={() => {
+									return async ({ result }) => {
+										if (result.type === 'success') invalidateAll();
+									};
+								}}
+							>
+								<div class="ml-4">
+									<button
+										type="submit"
+										class="text-sm font-medium text-gray-500 hover:text-gray-400"
+									>
+										<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+											<path
+												fill-rule="evenodd"
+												d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
+												clip-rule="evenodd"
+											/>
+										</svg>
+									</button>
+								</div>
+								<input type="hidden" name="itemId" value={item.id} />
+							</form>
+						</div>
+					</div>
+				</li>
+			{:else}
+				<div class="my-6">Cart is empty</div>
+			{/each}
+		</ul>
+		<Sheet.Footer>
+			<Sheet.Close asChild let:builder>
+				<form action="/checkout">
+					<Button builders={[builder]} type="submit" class="w-full">Checkout</Button>
+				</form>
+			</Sheet.Close>
+		</Sheet.Footer>
+	</Sheet.Content>
+</Sheet.Root>
+
+<!-- {#if $open}
 	<div class="flow-root">
 		<button
 			{...$close}
@@ -74,7 +200,7 @@
 				<ul role="list" class="divide-y divide-gray-200 border-t border-gray-200">
 					{#each items as item, i}
 						<li class="flex py-6">
-								<div class="h-24 w-24">
+							<div class="h-24 w-24">
 								<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
 									<img
 										src={item.thumbnail}
@@ -210,15 +336,8 @@
 							</button>
 						</p>
 					</div>
-					<!-- <button
-                  {...$close}
-                  use:close
-                  class="w-full text-center font-medium text-thunderbird-800 hover:text-thunderbird-500"
-               >
-                  &larr; Continue Shopping
-               </button> -->
 				</section>
 			</div>
 		</div>
 	{/if}
-</div>
+</div> -->

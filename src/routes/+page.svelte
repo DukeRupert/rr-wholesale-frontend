@@ -3,17 +3,16 @@
 	import ProductList from '$lib/components/ProductList.svelte';
 
 	export let data: PageData;
-	$: ({ products } = data);
 </script>
 
 <div class="max-w-xl">
-	<h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Wholesale Products</h1>
-	<p class="mt-1 text-sm text-gray-500">
+	<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Wholesale Products</h1>
+	<p class="mt-1 text-sm ">
 		Please add the products you want to order to your cart and checkout.
 	</p>
 </div>
-{#if products}
-	<ProductList {products} />
+{#if data?.products}
+	<ProductList products={data.products} />
 {:else}
 	<p class="mt-6">
 		An error occured. Please <a href="mailto:logan@fireflysoftware.dev">contact</a> our technical support

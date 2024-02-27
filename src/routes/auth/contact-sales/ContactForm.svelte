@@ -6,6 +6,10 @@
 	import { AlertCircle } from 'lucide-svelte';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import Label from '$lib/components/ui/label/label.svelte';
+	import Input from '$lib/components/ui/input/input.svelte';
+	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
 
 	export let data: SuperValidated<Infer<typeof contactSalesSchema>>;
 
@@ -45,9 +49,9 @@
 <form use:enhance method="POST" class="space-y-6">
 	<input type="text" name="password" class="hidden" value="" />
 	<div>
-		<label for="first_name" class="label">First</label>
+		<Label for="first_name">First</Label>
 		<div class="relative mt-2 rounded-md shadow-sm">
-			<input
+			<Input
 				id="first_name"
 				name="first_name"
 				type="text"
@@ -60,18 +64,18 @@
 			/>
 			{#if $errors.first_name}
 				<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-					<AlertCircle class="h-5 w-5 text-red-500" />
+					<AlertCircle class="h-5 w-5 text-destructive" />
 				</div>
 			{/if}
 		</div>
 		{#if $errors.first_name}
-			<p class="mt-2 text-sm text-red-600" id="first_name-error">{$errors.first_name}</p>
+			<p class="mt-2 text-sm text-destructive" id="first_name-error">{$errors.first_name}</p>
 		{/if}
 	</div>
 	<div>
-		<label for="last_name" class="label">Last</label>
+		<Label for="last_name">Last</Label>
 		<div class="relative mt-2 rounded-md shadow-sm">
-			<input
+			<Input
 				id="last_name"
 				name="last_name"
 				type="text"
@@ -84,18 +88,18 @@
 			/>
 			{#if $errors.last_name}
 				<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-					<AlertCircle class="h-5 w-5 text-red-500" />
+					<AlertCircle class="h-5 w-5 text-destructive" />
 				</div>
 			{/if}
 		</div>
 		{#if $errors.last_name}
-			<p class="mt-2 text-sm text-red-600" id="last_name-error">{$errors.last_name}</p>
+			<p class="mt-2 text-sm text-destructive" id="last_name-error">{$errors.last_name}</p>
 		{/if}
 	</div>
 	<div>
-		<label for="email" class="label">Email address</label>
+		<Label for="email">Email</Label>
 		<div class="relative mt-2 rounded-md shadow-sm">
-			<input
+			<Input
 				id="email"
 				name="email"
 				type="email"
@@ -108,23 +112,23 @@
 			/>
 			{#if $errors.email}
 				<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-					<AlertCircle class="h-5 w-5 text-red-500" />
+					<AlertCircle class="h-5 w-5 text-destructive" />
 				</div>
 			{/if}
 		</div>
 		{#if $errors.email}
-			<p class="mt-2 text-sm text-red-600" id="email-error">{$errors.email}</p>
+			<p class="mt-2 text-sm text-destructive" id="email-error">{$errors.email}</p>
 		{/if}
 	</div>
 
 	<div>
-		<label for="message" class="label">Message</label>
+		<Label for="message">Message</Label>
 
 		<div class="mt-2">
-			<textarea
+			<Textarea
 				id="message"
-				rows="3"
 				name="message"
+				placeholder="Your message goes here :)"
 				autocomplete="current-message"
 				required
 				class="block w-full input"
@@ -134,20 +138,20 @@
 			/>
 			{#if $errors.message}
 				<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-					<AlertCircle class="h-5 w-5 text-red-500" />
+					<AlertCircle class="h-5 w-5 text-destructive" />
 				</div>
 			{/if}
 		</div>
 		{#if $errors.message}
-			<p class="mt-2 text-sm text-red-600" id="email-error">{$errors.message}</p>
+			<p class="mt-2 text-sm text-destructive" id="email-error">{$errors.message}</p>
 		{/if}
-		<p class="mt-3 text-sm leading-6 text-gray-600">Please tell us a little about your business.</p>
+		<p class="mt-3 text-sm leading-6">Please tell us a little about your business.</p>
 	</div>
 	<div>
-		<button type="submit" class="flex w-full btn"
+		<Button type="submit" class="flex w-full"
 			>{#if $delayed}<Spinner /> &nbsp; Send{:else}
 				Send
-			{/if}</button
+			{/if}</Button
 		>
 	</div>
 </form>
