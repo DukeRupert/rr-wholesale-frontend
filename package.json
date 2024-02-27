@@ -48,7 +48,12 @@
 	"dependencies": {
 		"@medusajs/medusa-js": "^6.1.6",
 		"@types/cookie": "^0.6.0",
+		"bits-ui": "^0.18.2",
+		"clsx": "^2.1.0",
 		"cookie": "^0.6.0",
-		"lucide-svelte": "^0.294.0"
+		"lucide-svelte": "^0.294.0",
+		"mode-watcher": "^0.2.1",
+		"tailwind-merge": "^2.2.1",
+		"tailwind-variants": "^0.2.0"
 	}
 }

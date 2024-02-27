@@ -5,6 +5,7 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
+	import { AspectRatio } from "$lib/components/ui/aspect-ratio";
 	import type { Cart } from '$lib/types/cart';
 	export let cart: Cart | null;
 	export let count: number | null;
@@ -73,18 +74,15 @@
 				<ul role="list" class="divide-y divide-gray-200 border-t border-gray-200">
 					{#each items as item, i}
 						<li class="flex py-6">
-							<a
-								data-sveltekit-reload
-								href={`/product/${item.variant.product.handle}?variant=${item.variant_id}`}
-							>
-								<div class="cursor-pointer flex-shrink-0">
+								<div class="h-24 w-24">
+								<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
 									<img
 										src={item.thumbnail}
 										alt={item.description}
-										class="h-24 w-auto rounded-md object-cover object-center sm:h-32 sm:w-auto"
+										class="rounded-md object-cover"
 									/>
-								</div>
-							</a>
+								</AspectRatio>
+							</div>
 							<div class="m-2 flex flex-1 flex-col sm:ml-6">
 								<div>
 									<div class="flex justify-between">

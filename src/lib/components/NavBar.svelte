@@ -3,9 +3,9 @@
 	import { page, navigating } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Menu } from 'lucide-svelte';
-	import { createCollapsible, melt } from '@melt-ui/svelte';
-	import { slide, type SlideParams } from 'svelte/transition';
-	import { quadOut } from 'svelte/easing';
+	import LightSwitch from './LightSwitch.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Collapsible from '$lib/components/ui/collapsible';
 	import Cart from './Cart.svelte';
 	import Account from './Account.svelte';
 	import type { User } from '$lib/types/user';
@@ -29,17 +29,6 @@
 	// For highlighting current path
 	$: path = $page.route.id;
 
-	// Dropdown menu
-	const {
-		elements: { root, content, trigger },
-		states: { open }
-	} = createCollapsible();
-
-	const slideParams: SlideParams = {
-		duration: 300,
-		easing: quadOut
-	};
-
 	const logout = async () => {
 		console.log('logout');
 		const formData = new FormData(); // The POST request fails without a body
@@ -47,12 +36,15 @@
 		if (res.ok) goto('/auth/login');
 	};
 
+	let isOpen = false;
+
 	// Close the mobile menu when navigation
-	$: if ($navigating) open.set(false);
+	$: if ($navigating) isOpen = false;
 </script>
 
-<nav class="bg-white shadow">
-	<div use:melt={$root} class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<nav class="">
+	<Collapsible.Root bind:open={isOpen} class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+		<!-- <div use:melt={$root} class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"> -->
 		<div class="flex h-16 lg:h-24 justify-between">
 			<div class="flex">
 				<div class="flex flex-shrink-0 items-center">
@@ -61,88 +53,85 @@
 						class="rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-thunderbird-500"
 					>
 						<span class="sr-only">{company.name}</span>
-						<img class="h-12 lg:h-20 w-auto" src={company.logo.src} alt={company.logo.alt} />
+						<img
+							class="h-12 lg:h-16 w-auto dark:invert"
+							src={company.logo.src}
+							alt={company.logo.alt}
+						/>
 					</a>
 				</div>
-				<div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+				<div class="hidden sm:ml-6 sm:flex sm:space-x-8 items-center">
 					{#each links as { label, href }}
 						<a
 							{href}
-							class="inline-flex items-center border-b-2 {path ===
-							href
-								? 'border-thunderbird-500 text-gray-900'
-								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} px-1 pt-1 text-sm font-medium"
+							class="inline-flex h-10 items-center {path === href
+								? 'border-b-2 border-accent'
+								: '0'} px-1 pt-1 text-sm font-medium"
 							>{label}</a
 						>
 					{/each}
 				</div>
 			</div>
 			<div class="ml-6 flex items-center space-x-6">
+				<div>
+					<LightSwitch />
+				</div>
+				<!-- Profile dropdown -->
 				<div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-6">
-					<!-- Profile dropdown -->
 					{#if user}
 						<Account {user} />
 					{/if}
 				</div>
+				<!-- Cart menu -->
 				<div class="flex items-center">
-					<!-- Cart menu -->
 					<div class="relative">
 						<Cart bind:cart bind:count />
 					</div>
 				</div>
+				<!-- Mobile menu button -->
 				<div class="-mr-2 flex items-center space-x-6 sm:hidden">
-					<!-- Mobile menu button -->
-					<button
-						use:melt={$trigger}
-						type="button"
-						class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-thunderbird-500"
+					<Collapsible.Trigger
+						asChild
+						let:builder
 						aria-controls="mobile-menu"
-						aria-expanded="false"
+						aria-expanded={isOpen}
 					>
-						<span class="absolute -inset-0.5"></span>
-						<span class="sr-only">Open main menu</span>
+						<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+							<span class="sr-only">Open main menu</span>
 
-						<Menu class="block h-6 w-6" />
-					</button>
+							<Menu class="block h-6 w-6" />
+						</Button></Collapsible.Trigger
+					>
 				</div>
 			</div>
 		</div>
-
 		<!-- Mobile menu, show/hide based on menu state. -->
-		{#if $open}
-			<div
-				use:melt={$content}
-				transition:slide={slideParams}
-				class="sm:hidden bg-white"
-				id="mobile-menu"
-			>
-				<div class="space-y-1 pb-3 pt-2">
-					<!-- Current: "bg-thunderbird-50 border-thunderbird-500 text-thunderbird-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" -->
-					{#each links as { label, href }}
-						<a
-							{href}
-							class="block border-l-4 {path === href
-								? 'border-thunderbird-500 bg-thunderbird-50 text-thunderbird-700'
-								: 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'} py-2 pl-3 pr-4 text-base font-medium"
-							>{label}</a
-						>
-					{/each}
-				</div>
-				<div class="border-t border-gray-200 pb-3 pt-4">
-					<div class="mt-3 space-y-1">
-						<a
-							href="/settings"
-							class="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-							>Settings</a
-						>
-						<button
-							on:click={logout}
-							class="block w-full px-4 py-2 text-start text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-							>Sign out</button
-						>
-					</div>
+		<Collapsible.Content id="mobile-menu">
+			<div class="space-y-1 pb-3 pt-2">
+				{#each links as { label, href }}
+					<a
+						{href}
+						class="block border-l-4 {path === href
+							? 'border-accent'
+							: 'border-transparent'} py-2 pl-3 pr-4 text-base font-medium"
+						>{label}</a
+					>
+				{/each}
+			</div>
+			<div class="border-t pb-3 pt-4">
+				<div class="mt-3 space-y-1">
+					<a
+						href="/settings"
+						class="block px-4 py-2 text-base font-medium"
+						>Settings</a
+					>
+					<button
+						on:click={logout}
+						class="block w-full px-4 py-2 text-start text-base font-medium"
+						>Sign out</button
+					>
 				</div>
 			</div>
-		{/if}
-	</div>
+		</Collapsible.Content>
+	</Collapsible.Root>
 </nav>

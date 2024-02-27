@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import Toaster from '$lib/components/toast/index.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
+	import { ModeWatcher } from "mode-watcher";
 
 	export let data: PageData;
 	const nakedPaths = [
@@ -25,6 +26,8 @@
 	}
 </script>
 
+<!-- light/dark mode -->
+<ModeWatcher />
 <Toaster />
 {#if naked}
 	<slot />

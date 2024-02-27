@@ -11,6 +11,7 @@
 -->
 
 <script lang="ts">
+	import * as Avatar from "$lib/components/ui/avatar";
 	import { User } from 'lucide-svelte';
 	import { createAvatar, melt } from '@melt-ui/svelte';
 
@@ -29,9 +30,14 @@
 	});
 </script>
 
-<img class="h-full w-full rounded-full" use:melt={$image} {alt} />
+<Avatar.Root>
+  <Avatar.Image {src} {alt} />
+  <Avatar.Fallback>{initials}</Avatar.Fallback>
+</Avatar.Root>
+
+<!-- <img class="h-full w-full rounded-full" use:melt={$image} {alt} />
 {#if initials}
 <span use:melt={$fallback} >{initials}</span>
 {:else}
 <User class="h-6 w-6 flex-shrink-0" />
-{/if}
+{/if} -->

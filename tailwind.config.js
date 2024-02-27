@@ -1,59 +1,64 @@
-import defaultTheme from 'tailwindcss/defaultTheme';
+import { fontFamily } from "tailwindcss/defaultTheme";
 
 /** @type {import('tailwindcss').Config} */
-export default {
-	content: ['./src/**/*.{html,js,svelte,ts}'],
-	darkMode: 'class',
+const config = {
+	darkMode: ["class"],
+	content: ["./src/**/*.{html,js,svelte,ts}"],
+  safelist: ["dark"],
 	theme: {
+		container: {
+			center: true,
+			padding: "2rem",
+			screens: {
+				"2xl": "1400px"
+			}
+		},
 		extend: {
 			colors: {
-				thunderbird: {
-					DEFAULT: '#D92344',
-					50: '#F5BFC9',
-					100: '#F2ADBA',
-					200: '#EC8A9C',
-					300: '#E6677E',
-					400: '#E14460',
-					500: '#D92344',
-					600: '#A91B35',
-					700: '#781326',
-					800: '#480C17',
-					900: '#180407',
-					950: '#000000'
+				border: "hsl(var(--border) / <alpha-value>)",
+				input: "hsl(var(--input) / <alpha-value>)",
+				ring: "hsl(var(--ring) / <alpha-value>)",
+				background: "hsl(var(--background) / <alpha-value>)",
+				foreground: "hsl(var(--foreground) / <alpha-value>)",
+				primary: {
+					DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+					foreground: "hsl(var(--primary-foreground) / <alpha-value>)"
 				},
-				babyblue: {
-					DEFAULT: '#C4E1F2',
-					50: '#FFFFFF',
-					100: '#FFFFFF',
-					200: '#E5F2F9',
-					300: '#C4E1F2',
-					400: '#96CAE8',
-					500: '#68B2DE',
-					600: '#3A9BD4',
-					700: '#277DAF',
-					800: '#1C5C81',
-					900: '#123B53',
-					950: '#0D2B3C'
+				secondary: {
+					DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+					foreground: "hsl(var(--secondary-foreground) / <alpha-value>)"
 				},
-				aqua: {
-					DEFAULT: '#042626',
-					50: '#91F3F3',
-					100: '#7FF2F2',
-					200: '#5AEEEE',
-					300: '#35EAEA',
-					400: '#17DFDF',
-					500: '#14BABA',
-					600: '#109595',
-					700: '#0C7070',
-					800: '#084B4B',
-					900: '#042626',
-					950: '#010D0D'
+				destructive: {
+					DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+					foreground: "hsl(var(--destructive-foreground) / <alpha-value>)"
+				},
+				muted: {
+					DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+					foreground: "hsl(var(--muted-foreground) / <alpha-value>)"
+				},
+				accent: {
+					DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+					foreground: "hsl(var(--accent-foreground) / <alpha-value>)"
+				},
+				popover: {
+					DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+					foreground: "hsl(var(--popover-foreground) / <alpha-value>)"
+				},
+				card: {
+					DEFAULT: "hsl(var(--card) / <alpha-value>)",
+					foreground: "hsl(var(--card-foreground) / <alpha-value>)"
 				}
 			},
+			borderRadius: {
+				lg: "var(--radius)",
+				md: "calc(var(--radius) - 2px)",
+				sm: "calc(var(--radius) - 4px)"
+			},
 			fontFamily: {
-				sans: ['Roboto Slab', ...defaultTheme.fontFamily.sans]
+				sans: [...fontFamily.sans]
 			}
 		}
 	},
-	plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')]
 };
+
+export default config;
