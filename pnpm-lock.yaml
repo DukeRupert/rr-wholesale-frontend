@@ -29,6 +29,9 @@ dependencies:
   mode-watcher:
     specifier: ^0.2.1
     version: 0.2.1(svelte@4.2.8)
+  svelte-sonner:
+    specifier: ^0.3.18
+    version: 0.3.18(svelte@4.2.8)
   tailwind-merge:
     specifier: ^2.2.1
     version: 2.2.1
@@ -5872,6 +5875,14 @@ packages:
       svelte: 4.2.8
       tslib: 2.6.2
     dev: true
+
+  /svelte-sonner@0.3.18(svelte@4.2.8):
+    resolution: {integrity: sha512-DkpbeLB1yZ6CQ0vg/tpFUv2KGxdugODBjZYk9KWsxIAMOsnKg2VEyV2h1ycDztaEbiwoIGBObPvv+MG/4z1HSg==}
+    peerDependencies:
+      svelte: '>=3 <5'
+    dependencies:
+      svelte: 4.2.8
+    dev: false
 
   /svelte-stripe@1.1.4:
     resolution: {integrity: sha512-6ujNzguKGkqQ0cvz+kfNoRyNisTGaNzT1OQ8Rh4GbCXVut9X0exlWtk/yF5ZjzR5/epmXuaEOjWAKpe7larL4A==}

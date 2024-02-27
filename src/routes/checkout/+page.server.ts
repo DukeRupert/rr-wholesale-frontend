@@ -19,17 +19,13 @@ export const load: PageServerLoad = async function ({ locals, url }) {
 	};
 };
 
-function delay(time: number) {
-  return new Promise(resolve => setTimeout(resolve, time));
-}
-
 export const actions: Actions = {
 	completeCart: async ({ locals, cookies }) => {
 		const res = await medusa.carts.complete(locals);
 		console.log(res);
 		if (res === null) throw error(400, { message: 'Could not complete cart' });
-		console.log(res.type)
-		if(res.type === "order") medusa.carts.invalidateCart(locals, cookies)
+		console.log(res.type);
+		if (res.type === 'order') medusa.carts.invalidateCart(locals, cookies);
 		return { success: true };
 	},
 	updateShippingAddress: async ({ request, locals }) => {

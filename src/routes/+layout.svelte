@@ -4,7 +4,10 @@
 	import { page } from '$app/stores';
 	import Toaster from '$lib/components/toast/index.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
-	import { ModeWatcher } from "mode-watcher";
+	import { ModeWatcher } from 'mode-watcher';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { processing } from '$lib/stores';
+	import { LucideLoader } from 'lucide-svelte';
 
 	export let data: PageData;
 	const nakedPaths = [
@@ -20,14 +23,21 @@
 	$: user = data?.user;
 	$: cart = data?.cart;
 	$: count = cart?.items?.length || null;
-
-	function handleTest(e: any) {
-		console.log("success")
-	}
 </script>
 
 <!-- light/dark mode -->
 <ModeWatcher />
+<!-- processing dialog -->
+<Dialog.Root bind:open={$processing}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Processing request...</Dialog.Title>
+			<Dialog.Description>
+				<LucideLoader class="mt-6 h-8 w-8 mx-auto animate-spin" />
+			</Dialog.Description>
+		</Dialog.Header>
+	</Dialog.Content>
+</Dialog.Root>
 <Toaster />
 {#if naked}
 	<slot />

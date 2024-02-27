@@ -14,7 +14,6 @@ class ProductsResource extends BaseResource {
 			: {
 					limit,
 					offset,
-					expand: 'variants,variants.prices,variants.options',
 					currency_code: 'usd'
 			  };
 

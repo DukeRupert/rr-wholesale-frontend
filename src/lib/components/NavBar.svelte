@@ -66,8 +66,7 @@
 							{href}
 							class="inline-flex h-10 items-center {path === href
 								? 'border-b-2 border-accent'
-								: '0'} px-1 pt-1 text-sm font-medium"
-							>{label}</a
+								: '0'} px-1 pt-1 text-sm font-medium">{label}</a
 						>
 					{/each}
 				</div>
@@ -113,22 +112,16 @@
 						{href}
 						class="block border-l-4 {path === href
 							? 'border-accent'
-							: 'border-transparent'} py-2 pl-3 pr-4 text-base font-medium"
-						>{label}</a
+							: 'border-transparent'} py-2 pl-3 pr-4 text-base font-medium">{label}</a
 					>
 				{/each}
 			</div>
 			<div class="border-t pb-3 pt-4">
 				<div class="mt-3 space-y-1">
-					<a
-						href="/settings"
-						class="block px-4 py-2 text-base font-medium"
-						>Settings</a
-					>
+					<a href="/settings" class="block px-4 py-2 text-base font-medium">Settings</a>
 					<button
-						on:click={logout}
-						class="block w-full px-4 py-2 text-start text-base font-medium"
-						>Sign out</button
+						on:click={() => logout()}
+						class="block w-full px-4 py-2 text-start text-base font-medium">Sign out</button
 					>
 				</div>
 			</div>

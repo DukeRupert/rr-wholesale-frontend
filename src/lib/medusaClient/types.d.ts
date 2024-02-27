@@ -1,6 +1,6 @@
 export interface QueryOptions {
 	expand?: string;
-	region_id?: 'NA';
+	region_id?: 'US';
 	currency_code?: 'usd';
 }
 

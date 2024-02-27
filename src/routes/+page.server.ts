@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	let offset = parseInt(o) || 0;
 	// fetch products
 	let products: PricedProduct[] = [];
-	const res = await medusa.products.list(limit, offset, { expand: 'variants' });
+	const res = await medusa.products.list(limit, offset);
 	if (res !== null) {
 		const { products, limit, offset, count } = res;
 		return {

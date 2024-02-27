@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { X, ShoppingCart } from 'lucide-svelte';
-	import { createDialog, melt } from '@melt-ui/svelte';
+	import { X, ShoppingCart, Trash, LucideLoader, Frown } from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { invalidate } from '$app/navigation';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
-	import * as Select from "$lib/components/ui/select";
+	import * as Select from '$lib/components/ui/select';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
 	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
@@ -13,17 +13,47 @@
 	export let cart: Cart | null;
 	export let count: number | null;
 
-	$: cart = cart;
 	$: items = cart?.items || [];
 	$: total = cart?.subtotal ?? 0;
 
-	const {
-		elements: { trigger, portalled, overlay, content, title, description, close },
-		states: { open }
-	} = createDialog({ preventScroll: true });
+	let isOpen: boolean;
+	let processing = false;
+	let selected_quantity: number;
+
+	async function updateItem(line_item_id: string, quantity: number) {
+		console.log(`Update line item: ${line_item_id} to quantity: ${quantity}`);
+		processing = true;
+		const res = await fetch('api/cart/update', {
+			method: 'POST',
+			body: JSON.stringify({ line_item_id, quantity })
+		});
+		const { success } = await res.json();
+		if (success) {
+			invalidateAll();
+		} else {
+			console.log('error');
+		}
+		processing = false;
+	}
+
+	async function deleteItem(line_item_id: string) {
+		console.log(`Delete item: ${line_item_id}`);
+		processing = true;
+		const res = await fetch('api/cart/delete', {
+			method: 'POST',
+			body: JSON.stringify({ line_item_id, quantity })
+		});
+		const { success } = await res.json();
+		if (success) {
+			invalidateAll();
+		} else {
+			console.log('error');
+		}
+		processing = false;
+	}
 </script>
 
-<Sheet.Root>
+<Sheet.Root bind:open={isOpen}>
 	<Sheet.Trigger asChild let:builder>
 		<Button builders={[builder]} variant="outline"
 			><span class="sr-only">View cart</span>
@@ -41,303 +71,95 @@
 				Click the checkout button when you are ready to place an order.
 			</Sheet.Description>
 		</Sheet.Header>
-		<ul role="list" class="mt-4 divide-y divide-gray-200 border-t border-gray-200">
-			{#each items as item, i}
-				<li class="flex py-6">
-					<div class="h-24 w-24 my-auto">
-						<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
-							<img src={item.thumbnail} alt={item.description} class="rounded-md object-cover" />
-						</AspectRatio>
-					</div>
-					<div class="m-2 flex flex-1 flex-col sm:ml-6">
-						<div>
-							<div class="flex justify-between">
-								<a
-									data-sveltekit-reload
-									href={`/product/${item.variant.product.handle}?variant=${item.variant_id}`}
-									class="cursor-pointer text-sm"
-								>
-									<div class="font-medium text-gray-700 hover:text-gray-800">
-										{item.title}
+		<ul role="list" class="mt-4 divide-y">
+			{#if items && items.length > 0}
+				{#each items as item, i}
+					<li class="grid grid-cols-2 gap-2 py-6">
+						<div class="flex h-auto w-12 sm:w-16 my-auto">
+							<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
+								<img src={item.thumbnail} alt={item.description} class="rounded-md object-cover" />
+							</AspectRatio>
+						</div>
+						<div class="flex flex-col">
+							<div>
+								<div class="flex justify-between">
+									<a
+										data-sveltekit-reload
+										href={`/product/${item.variant.product.handle}?variant=${item.variant_id}`}
+										class="cursor-pointer text-sm"
+									>
+										<div class="font-medium">
+											{item.title}
+										</div>
+										<p class="mt-1 text-sm">
+											{item.description}
+										</p>
+									</a>
+									<div>
+										<p class="ml-4 text-sm font-medium">
+											{formatPrice(item.unit_price)}
+										</p>
+										<p class="ml-4 text-sm">
+											Qty: {item.quantity}
+										</p>
 									</div>
-									<p class="mt-1 text-sm text-gray-500">
-										{item.description}
-									</p>
-								</a>
-								<div>
-									<p class="ml-4 text-sm font-medium text-gray-900">
-										{formatPrice(item.unit_price)}
-									</p>
-									<p class="ml-4 text-sm text-gray-900 text-right">
-										Qty: {item.quantity}
-									</p>
 								</div>
 							</div>
-						</div>
-						<div class="mt-4 flex flex-1 items-end justify-between">
-							<form
-								action="/cart?/update"
-								method="post"
-								use:enhance={() => {
-									return async ({ result }) => {
-										if (result.type === 'success') invalidateAll();
-									};
-								}}
-							>
-								<select
+							<div class="mt-4 flex items-center">
+								<Select.Root
 									name="quantity"
-									class="text-sm font-medium text-gray-900 rounded-lg focus:ring-gray-700 focus:border-none"
-									on:change={async (e) => {
-										const form = e?.target?.closest('form');
-										const formData = new FormData(form);
-										const result = await fetch(form.action, {
-											method: 'POST',
-											body: formData
-										}).then((res) => res.json());
-										if (result.type === 'success') invalidateAll();
-									}}
+									selected={selected_quantity}
+									onSelectedChange={(v) => updateItem(item.id, v?.value)}
 								>
-									{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as qty}
-										<option value={qty} selected={qty === item.quantity}>{qty}</option>
-									{/each}
-								</select>
-								<input type="hidden" name="itemId" value={item.id} />
-							</form>
-							<form
-								action="/cart?/remove"
-								method="post"
-								use:enhance={() => {
-									return async ({ result }) => {
-										if (result.type === 'success') invalidateAll();
-									};
-								}}
-							>
-								<div class="ml-4">
-									<button
-										type="submit"
-										class="text-sm font-medium text-gray-500 hover:text-gray-400"
-									>
-										<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-											<path
-												fill-rule="evenodd"
-												d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
-												clip-rule="evenodd"
-											/>
-										</svg>
-									</button>
-								</div>
-								<input type="hidden" name="itemId" value={item.id} />
-							</form>
+									<Select.Trigger>
+										<Select.Value placeholder={item.quantity} />
+									</Select.Trigger>
+									<Select.Content>
+										{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as qty}
+											<Select.Item value={qty}>{qty}</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+
+								<Button
+									type="button"
+									size="icon"
+									variant="ghost"
+									disabled={processing}
+									on:click={() => deleteItem(item.id)}
+								>
+									<Trash class="h-5 w-5" />
+								</Button>
+							</div>
 						</div>
-					</div>
-				</li>
+					</li>
+				{/each}
+				<Sheet.Footer>
+					<Sheet.Close asChild let:builder>
+						<Button
+							href="/checkout"
+							builders={[builder]}
+							type="submit"
+							class="w-full"
+							disabled={processing}
+						>
+							{#if processing}
+								<LucideLoader class="h-6 w-6 animate-spin" />
+							{:else}
+								Checkout
+							{/if}
+						</Button>
+					</Sheet.Close>
+				</Sheet.Footer>
 			{:else}
-				<div class="my-6">Cart is empty</div>
-			{/each}
+				<div class="my-6 flex flex-col space-y-4 items-center">
+					<div><Frown class="h-8 w-8" /></div>
+					<p>Your cart is empty</p>
+					<Button type="button" variant="link" on:click={() => (isOpen = false)}
+						>Continue shopping</Button
+					>
+				</div>
+			{/if}
 		</ul>
-		<Sheet.Footer>
-			<Sheet.Close asChild let:builder>
-				<form action="/checkout">
-					<Button builders={[builder]} type="submit" class="w-full">Checkout</Button>
-				</form>
-			</Sheet.Close>
-		</Sheet.Footer>
 	</Sheet.Content>
 </Sheet.Root>
-
-<!-- {#if $open}
-	<div class="flow-root">
-		<button
-			{...$close}
-			use:close
-			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"
-		>
-			<span class="sr-only">Close cart</span>
-			<ShoppingCart class="h-6 w-6 flex-shrink-0" />
-			{#if count && count > 0}
-				<span class="ml-2 text-sm font-medium">{count}</span>
-				<span class="sr-only">items in cart, view bag</span>
-			{/if}
-		</button>
-	</div>
-{:else}
-	<div class="flow-root">
-		<button
-			use:melt={$trigger}
-			class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"
-		>
-			<span class="sr-only">View cart</span>
-			<ShoppingCart class="h-6 w-6 flex-shrink-0" />
-			{#if count && count > 0}
-				<span class="ml-2 text-sm font-medium">{count}</span>
-				<span class="sr-only">items in cart, view bag</span>
-			{/if}
-		</button>
-	</div>
-{/if}
-<div use:portalled>
-	{#if $open}
-		<div
-			use:melt={$overlay}
-			class="fixed inset-0 z-20 bg-black/50"
-			transition:fade={{ duration: 150 }}
-		/>
-		<div
-			use:melt={$content}
-			class="overflow-auto fixed right-0 top-0 z-50 w-full h-full pb-0 mb-0 sm:w-4/5 md:w-2/3 lg:w-2/3 xl:w-1/2 bg-white p-[25px] shadow-lg focus:outline-none"
-			transition:fly={{ x: '100%', duration: 300, opacity: 1 }}
-		>
-			<button use:melt={$close}>
-				<X class="text-gray-800 h-8 w-8" />
-			</button>
-			<div class="px-8 sm:px-12">
-				<h2
-					use:melt={$title}
-					class="mb-6 text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
-				>
-					Shopping Cart
-				</h2>
-				<ul role="list" class="divide-y divide-gray-200 border-t border-gray-200">
-					{#each items as item, i}
-						<li class="flex py-6">
-							<div class="h-24 w-24">
-								<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
-									<img
-										src={item.thumbnail}
-										alt={item.description}
-										class="rounded-md object-cover"
-									/>
-								</AspectRatio>
-							</div>
-							<div class="m-2 flex flex-1 flex-col sm:ml-6">
-								<div>
-									<div class="flex justify-between">
-										<a
-											data-sveltekit-reload
-											href={`/product/${item.variant.product.handle}?variant=${item.variant_id}`}
-											class="cursor-pointer text-sm"
-										>
-											<div class="font-medium text-gray-700 hover:text-gray-800">
-												{item.title}
-											</div>
-											<p class="mt-1 text-sm text-gray-500">
-												{item.description}
-											</p>
-										</a>
-										<div>
-											<p class="ml-4 text-sm font-medium text-gray-900">
-												{formatPrice(item.unit_price)}
-											</p>
-											<p class="ml-4 text-sm text-gray-900 text-right">
-												Qty: {item.quantity}
-											</p>
-										</div>
-									</div>
-								</div>
-								<div class="mt-4 flex flex-1 items-end justify-between">
-									<form
-										action="/cart?/update"
-										method="post"
-										use:enhance={() => {
-											return async ({ result }) => {
-												if (result.type === 'success') invalidateAll();
-											};
-										}}
-									>
-										<select
-											name="quantity"
-											class="text-sm font-medium text-gray-900 rounded-lg focus:ring-gray-700 focus:border-none"
-											on:change={async (e) => {
-												const form = e?.target?.closest('form');
-												const formData = new FormData(form);
-												const result = await fetch(form.action, {
-													method: 'POST',
-													body: formData
-												}).then((res) => res.json());
-												if (result.type === 'success') invalidateAll();
-											}}
-										>
-											{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as qty}
-												<option value={qty} selected={qty === item.quantity}>{qty}</option>
-											{/each}
-										</select>
-										<input type="hidden" name="itemId" value={item.id} />
-									</form>
-									<form
-										action="/cart?/remove"
-										method="post"
-										use:enhance={() => {
-											return async ({ result }) => {
-												if (result.type === 'success') invalidateAll();
-											};
-										}}
-									>
-										<div class="ml-4">
-											<button
-												type="submit"
-												class="text-sm font-medium text-gray-500 hover:text-gray-400"
-											>
-												<svg
-													class="h-5 w-5"
-													viewBox="0 0 20 20"
-													fill="currentColor"
-													aria-hidden="true"
-												>
-													<path
-														fill-rule="evenodd"
-														d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
-														clip-rule="evenodd"
-													/>
-												</svg>
-											</button>
-										</div>
-										<input type="hidden" name="itemId" value={item.id} />
-									</form>
-								</div>
-							</div>
-						</li>
-					{:else}
-						<div class="my-6">Cart is empty</div>
-					{/each}
-				</ul>
-				<section
-					aria-labelledby="summary-heading"
-					class="border-t border-gray-200 bg-white sticky bottom-0 py-6"
-				>
-					{#if items.length > 0}
-						<h2 id="summary-heading" class="sr-only">Order summary</h2>
-						<div>
-							<dl class="space-y-4">
-								<div class="flex items-center justify-between">
-									<dt class="ml-2 text-base font-medium text-gray-900">Subtotal</dt>
-									<dd class="ml-4 mr-2 text-base font-medium text-gray-900">
-										{formatPrice(total)}
-									</dd>
-								</div>
-							</dl>
-							<p class="ml-2 mt-1 text-sm text-gray-500">
-								Shipping and taxes will be calculated at checkout.
-							</p>
-						</div>
-						<form action="/checkout">
-							<button use:close type="submit" class="my-4 w-full btn">Checkout</button>
-						</form>
-					{/if}
-					<div class="mt-6 text-center text-sm">
-						<p>
-							or
-							<button
-								{...$close}
-								use:close
-								class="font-medium text-thunderbird-600 hover:text-thunderbird-500"
-							>
-								Continue Shopping
-								<span aria-hidden="true"> &rarr;</span>
-							</button>
-						</p>
-					</div>
-				</section>
-			</div>
-		</div>
-	{/if}
-</div> -->
