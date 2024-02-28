@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { X, ShoppingCart, Trash, LucideLoader, Frown } from 'lucide-svelte';
-	import { fade, fly } from 'svelte/transition';
-	import { invalidate } from '$app/navigation';
-	import { enhance } from '$app/forms';
+	import type { Cart } from '@medusajs/medusa/dist/models/cart';
+	import { ShoppingCart, Trash, LucideLoader, Frown } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
-	import * as Select from '$lib/components/ui/select';
+	import { toast } from 'svelte-sonner';
 	import * as Sheet from '$lib/components/ui/sheet';
+	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
-	import type { Cart } from '$lib/types/cart';
-	export let cart: Cart | null;
+	export let cart: Omit<Cart, 'refundable_amount' | 'refunded_total'> | null;
 	export let count: number | null;
 
 	$: items = cart?.items || [];
@@ -18,10 +16,8 @@
 
 	let isOpen: boolean;
 	let processing = false;
-	let selected_quantity: number;
 
 	async function updateItem(line_item_id: string, quantity: number) {
-		console.log(`Update line item: ${line_item_id} to quantity: ${quantity}`);
 		processing = true;
 		const res = await fetch('api/cart/update', {
 			method: 'POST',
@@ -30,8 +26,9 @@
 		const { success } = await res.json();
 		if (success) {
 			invalidateAll();
+			toast.success('Quantity updated');
 		} else {
-			console.log('error');
+			toast.error('Failed to update quantity');
 		}
 		processing = false;
 	}
@@ -41,7 +38,7 @@
 		processing = true;
 		const res = await fetch('api/cart/delete', {
 			method: 'POST',
-			body: JSON.stringify({ line_item_id, quantity })
+			body: JSON.stringify({ line_item_id })
 		});
 		const { success } = await res.json();
 		if (success) {
@@ -106,20 +103,15 @@
 								</div>
 							</div>
 							<div class="mt-4 flex items-center">
-								<Select.Root
+								<Input
+									type="number"
 									name="quantity"
-									selected={selected_quantity}
-									onSelectedChange={(v) => updateItem(item.id, v?.value)}
-								>
-									<Select.Trigger>
-										<Select.Value placeholder={item.quantity} />
-									</Select.Trigger>
-									<Select.Content>
-										{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as qty}
-											<Select.Item value={qty}>{qty}</Select.Item>
-										{/each}
-									</Select.Content>
-								</Select.Root>
+									id="quantity"
+									min="1"
+									value={item.quantity}
+									on:change={(v) => updateItem(item.id, parseInt(v.currentTarget.value))}
+									class="w-full max-w-[120px]"
+								/>
 
 								<Button
 									type="button"
@@ -136,13 +128,7 @@
 				{/each}
 				<Sheet.Footer>
 					<Sheet.Close asChild let:builder>
-						<Button
-							href="/checkout"
-							builders={[builder]}
-							type="submit"
-							class="w-full"
-							disabled={processing}
-						>
+						<Button href="/checkout" builders={[builder]} class="w-full">
 							{#if processing}
 								<LucideLoader class="h-6 w-6 animate-spin" />
 							{:else}

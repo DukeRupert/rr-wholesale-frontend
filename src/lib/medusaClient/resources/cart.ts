@@ -202,8 +202,6 @@ class CartResource extends BaseResource {
 	 * @throws {Error} If the API call fails with a non-200 status code.
 	 */
 	async retrieve(locals: App.Locals): Promise<StoreCartsRes | null> {
-		console.log('Retrieve cart');
-
 		// Validation - Early Exit
 		if (!locals.cartId) {
 			return null; // Cart ID is mandatory

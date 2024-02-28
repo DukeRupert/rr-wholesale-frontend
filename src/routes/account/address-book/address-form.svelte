@@ -5,28 +5,18 @@
 	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { shippingAddressSchema } from '$lib/validators/account';
 	import { createEventDispatcher } from 'svelte';
-	import { fly, type FlyParams } from 'svelte/transition';
-	import { quadOut } from 'svelte/easing';
 	import { AlertCircle } from 'lucide-svelte';
 	import Spinner from '$lib/components/elements/Spinner.svelte';
 
 	export let data: SuperValidated<Infer<typeof shippingAddressSchema>>;
-	export let processing: boolean;
-	// Form configuration
-	export let delayMs = 200;
-	export let timeoutMs = 8000;
-	export let flyInParams: FlyParams = {
-		x: -50,
-		duration: 250,
-		delay: 100,
-		easing: quadOut
-	};
+	let processing: boolean = false;
 
 	const dispatch = createEventDispatcher();
 
 	const { form, errors, constraints, delayed, enhance } = superForm(data, {
 		onUpdated({ form }) {
 			if (form.message) {
+				const type = form.message.type;
 				addToast({
 					data: {
 						type: form.message.type,
@@ -48,13 +38,11 @@
 		},
 		validators: zodClient(shippingAddressSchema),
 		invalidateAll: true,
-		taintedMessage: null,
-		delayMs: delayMs,
-		timeoutMs: timeoutMs
+		taintedMessage: null
 	});
 </script>
 
-<form in:fly={flyInParams} action="?/addAddress" method="POST" use:enhance>
+<form action="?/addAddress" method="POST" use:enhance>
 	<div class="max-w-lg mt-5 mb-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
 		<div class="sm:col-span-6">
 			<label for="first_name" class="label">First Name</label>

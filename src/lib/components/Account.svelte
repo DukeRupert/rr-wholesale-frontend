@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { User } from '$lib/types/user';
+	import type { ExtendedCustomer } from '$lib/types/app';
 	import Avatar from './elements/Avatar.svelte';
 	import { UserIcon } from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { goto } from '$app/navigation';
 
-	export let user: User;
+	export let user: ExtendedCustomer;
 
 	// Grab first letter of first and last name
 	$: initials = user?.first_name[0] + user?.last_name[0] || '';

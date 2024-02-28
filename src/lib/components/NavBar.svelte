@@ -8,10 +8,11 @@
 	import * as Collapsible from '$lib/components/ui/collapsible';
 	import Cart from './Cart.svelte';
 	import Account from './Account.svelte';
-	import type { User } from '$lib/types/user';
-	import type { Cart as ShoppingCart } from '$lib/types/cart';
-	export let user: User | null;
-	export let cart: ShoppingCart | null;
+	import type { ExtendedCustomer } from '$lib/types/app';
+	import type { Cart as MedusaCart } from "@medusajs/medusa/dist/models/cart"
+
+	export let user: ExtendedCustomer | null;
+	export let cart: Omit<MedusaCart, "refundable_amount" | "refunded_total"> | null;
 	export let count: number | null;
 
 	// Control whether the banner is displayed

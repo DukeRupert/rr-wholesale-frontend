@@ -2,12 +2,11 @@
 	import '../app.postcss';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
-	import Toaster from '$lib/components/toast/index.svelte';
+	// import Toaster from '$lib/components/toast/index.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
+	import LoadingDialogue from '$lib/components/LoadingDialogue.svelte';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { processing } from '$lib/stores';
-	import { LucideLoader } from 'lucide-svelte';
 
 	export let data: PageData;
 	const nakedPaths = [
@@ -25,20 +24,12 @@
 	$: count = cart?.items?.length || null;
 </script>
 
-<!-- light/dark mode -->
+<!-- enable light/dark mode -->
 <ModeWatcher />
-<!-- processing dialog -->
-<Dialog.Root bind:open={$processing}>
-	<Dialog.Content>
-		<Dialog.Header>
-			<Dialog.Title>Processing request...</Dialog.Title>
-			<Dialog.Description>
-				<LucideLoader class="mt-6 h-8 w-8 mx-auto animate-spin" />
-			</Dialog.Description>
-		</Dialog.Header>
-	</Dialog.Content>
-</Dialog.Root>
-<Toaster />
+<!-- visual indicator that background tasks are in progress -->
+<LoadingDialogue />
+<!-- a simple toast -->
+<Toaster richColors />
 {#if naked}
 	<slot />
 {:else}

@@ -1,32 +1,38 @@
 <script lang="ts">
-	import type { PricedProduct } from '@medusajs/medusa/dist/types/pricing';
+	import type { PricedProduct, PricedVariant } from '@medusajs/medusa/dist/types/pricing';
 	import { invalidateAll } from '$app/navigation';
-	import { enhance } from '$app/forms';
 	import { formatPrice } from '$lib/utilities';
-	import { addToast } from './toast/index.svelte';
+	import { toast } from 'svelte-sonner';
 	import { Plus } from 'lucide-svelte';
 	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import * as Table from '$lib/components/ui/table';
-	import { processing } from '$lib/stores';
+
 	export let products: PricedProduct[] = [];
 
 	let quantity: number = 0;
-	async function addItem(variant_id: string, quantity: number) {
-		console.log(`Update line item: ${variant_id} to quantity: ${quantity}`);
-		$processing = true;
-		const res = await fetch('api/cart/add', {
-			method: 'POST',
-			body: JSON.stringify({ variant_id, quantity })
-		});
-		const { success } = await res.json();
-		if (success) {
-			await invalidateAll();
+	let processing = false;
+
+	async function addItem(product: PricedProduct, variant: PricedVariant, quantity: number) {
+		processing = true;
+		
+		if (variant.id && quantity) {
+			const res = await fetch('api/cart/add', {
+				method: 'POST',
+				body: JSON.stringify({ variant_id: variant.id, quantity })
+			});
+			const { success } = await res.json();
+			if (success) {
+				await invalidateAll();
+			} else {
+				console.log('error');
+			}
+			toast.success(`${quantity} ${product.title} ${variant.title} added to cart`);
 		} else {
-			console.log('error');
+			toast.error('Variant does not exist.');
 		}
-		$processing = false;
+		processing = false;
 	}
 </script>
 
@@ -83,7 +89,8 @@
 								type="number"
 								name="quantity"
 								id="quantity"
-								on:change={(v) => (quantity = v.currentTarget.value)}
+								min=1
+								on:change={(v) => (quantity = parseInt(v.currentTarget.value))}
 								class="w-full max-w-[120px]"
 							/>
 
@@ -92,7 +99,8 @@
 								variant="outline"
 								aria-label="Add to cart"
 								class="mt-4 sm:mt-0 sm:ml-6 max-w-[120px]"
-								on:click={() => addItem(variant.id, quantity)}
+								disabled={processing}
+								on:click={() => addItem(product, variant, quantity)}
 								><Plus class="h-4 w-4 sm:hidden" /><span class="hidden sm:block">Add to cart</span
 								></Button
 							>

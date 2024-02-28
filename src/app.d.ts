@@ -1,12 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
-import type { Customer } from '@medusajs/medusa/dist/models/customer';
-import type { Cart } from '@medusajs/medusa/dist/models/cart';
-
-type ExtendedCustomerMetadata = Record<string, unknown> & { is_trusted?: boolean };
-interface ExtendedCustomer extends Customer {
-	metadata: ExtendedCustomerMetadata
-}
+import type { ExtendedCustomer } from "$lib/types/app";
+import type { Cart } from '@medusajs/medusa/dist/models/cart'
 
 declare global {
 	namespace App {
