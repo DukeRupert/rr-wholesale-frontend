@@ -64,7 +64,7 @@
 								class="py-2 px-3 mr-2 mt-12 rounded-md font-medium text-lg hover:bg-stone-200"
 								>Your Profile</a
 							>
-							<form action="/auth/login?/logout" method="POST">
+							<form action="/auth?/logout" method="POST">
 								<button
 									type="submit"
 									class="py-2 px-3 mr-2 rounded-md font-medium text-lg hover:bg-stone-200"
@@ -73,7 +73,7 @@
 							</form>
 						{:else}
 							<a
-								href="/auth/login"
+								href="/auth"
 								use:close
 								class="py-2 px-3 mr-2 mt-12 rounded-md font-medium text-lg hover:bg-stone-200"
 								>Sign In</a

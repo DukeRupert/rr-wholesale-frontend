@@ -10,7 +10,7 @@
 
 	export let data: PageData;
 	const nakedPaths = [
-		'/auth/login',
+		'/auth',
 		'/auth/contact-sales',
 		'/auth/forgot-password',
 		'/auth/reset-password',

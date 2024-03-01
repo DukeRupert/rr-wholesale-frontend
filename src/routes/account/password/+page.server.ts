@@ -1,39 +1,38 @@
 import type { PageServerLoad, Actions } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import {
-	updatePasswordSchema,
-} from '$lib/validators/account';
+import { passwordSchema } from './password-form.svelte';
 import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async function ({ url, locals }) {
 	if (!locals.user) throw redirect(307, '/auth');
     let rurl = url.searchParams.get('rurl') || '';
 
-	// Setup forms
-	const form = await superValidate<Infer<typeof updatePasswordSchema>>(
-		zod(updatePasswordSchema)
-	);
+	const form = await superValidate(zod(passwordSchema));
 
 	return {
-		user: locals.user,
 		form,
-        rurl
+		return_url: rurl
 	};
+
 };
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		console.log('Update Password action');
-		// Validator checks that newPassword === confirmPassword
-		const update_password_form = await superValidate(request, zod(updatePasswordSchema));
-		if (!update_password_form.valid)
-			return message(update_password_form, { type: 'error', text: 'Invalid form' });
-		const payload = { password: update_password_form.data.newPassword };
+		// handle form data
+		const form = await superValidate(request, zod(passwordSchema));
+		// server side validation
+		if (!form.valid)
+			return message(form, { type: 'error', text: 'Invalid form' });
+		// build payload
+		const payload = { password: form.data.newPassword };
+		// call medusa
 		const res = await medusa.customers.updateCustomer(locals, payload);
-		if (res === null) return message(update_password_form, { type: 'error', text: 'Server error' });
-		throw redirect(302, "/")
+		// handle error
+		if (res === null) return message(form, { type: 'error', text: 'Server error' });
+		// handle success
+			return message(form, { type: 'success', text: 'Password updated' });
 	}
 };

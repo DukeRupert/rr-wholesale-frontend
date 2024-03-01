@@ -1,34 +1,30 @@
 import type { PageServerLoad, Actions } from './$types';
-import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { redirect } from '@sveltejs/kit';
-import { contactSalesSchema } from '$lib/validators/auth';
+import { contactSchema } from './contact-form.svelte';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	let rurl = url.searchParams.get('rurl') || '';
-
 	// If logged in, redirect to return url or home
 	if (locals.user) {
-		throw redirect(302, `/${rurl}`);
+		throw redirect(302, '/');
 	}
 
-	const form = await superValidate<Infer<typeof contactSalesSchema>>(zod(contactSalesSchema));
+	const form = await superValidate(zod(contactSchema));
 
 	return {
-		rurl,
 		form
 	};
 };
 
 export const actions: Actions = {
 	default: async ({ request }) => {
-		console.log('Contact sales action');
-		const form = await superValidate(request, zod(contactSalesSchema));
-		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' }); // this shouldn't happen because of client-side validation
-		console.log('Form valid. Checking for bots');
-		// Todo: Connect to postmark
-		console.log('Sending message');
-		return { success: true, form}
-	},
+		// handle form data
+		const form = await superValidate(request, zod(contactSchema));
+		// server side validation
+		if (!form.valid) return message(form, { type: 'warning', text: 'Invalid form' }); // this shouldn't happen because of client-side validation
+		// Todo: Check for bots
+		// Todo: Connect to email provider
+		return message(form, { type: 'success', text: 'We will reach out to you soon!' });
+	}
 };

@@ -1,38 +1,37 @@
 import type { PageServerLoad, Actions } from './$types';
 import { redirect } from '@sveltejs/kit';
-import type { Infer } from 'sveltekit-superforms';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { forgotPostReq } from '$lib/validators/auth';
+import { forgotSchema } from './forgot-form.svelte';
 import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	let rurl = url.searchParams.get('rurl') || '';
-	let code = url.searchParams.get('code') || '';
-
 	// If logged in, redirect to return url or home
 	if (locals.user) {
-		throw redirect(302, `/${rurl}`);
+		throw redirect(302, `/`);
 	}
 
-	const form = await superValidate<Infer<typeof forgotPostReq>>(zod(forgotPostReq));
+	const form = await superValidate(zod(forgotSchema));
 
 	return {
-		rurl,
-		code,
 		form
 	};
 };
 
+
+
 export const actions: Actions = {
-	forgot: async ({ request }) => {
-		const form = await superValidate(request, zod(forgotPostReq));
-		if (!form.valid) return message(form, { type: 'error', text: 'Something went wrong' });
-		const res = await medusa.customers.generatePasswordToken(form.data.email);
-		if (res === null) return message(form, { type: 'error', text: 'Failed to send email' });
+	default: async ({ request }) => {
+		// handle form data
+		const form = await superValidate(request, zod(forgotSchema));
+		// server side validation
+		if (!form.valid) return message(form, { type: 'warning', text: 'Invalid form' });
+		// call medusa
+		await medusa.customers.generatePasswordToken(form.data.email);
+		// don't leak client info
 		return message(form, {
 			type: 'success',
-			text: 'A reset code has been sent to your email address'
+			text: 'Please check your email'
 		});
 	}
 };

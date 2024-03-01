@@ -13,7 +13,6 @@ class CustomerResource extends BaseResource {
 	public addresses = new AddressesResource(this.medusa);
 
 	async generatePasswordToken(email: string): Promise<boolean> {
-		console.log('Generate password token');
 		if (!email) return false;
 		try {
 			const payload: StorePostCustomersCustomerPasswordTokenReq = {
@@ -31,7 +30,6 @@ class CustomerResource extends BaseResource {
 	async resetPassword(
 		payload: StorePostCustomersResetPasswordReq
 	): Promise<StoreCustomersRes | null> {
-		console.log('Reset password');
 		const { token, email, password } = payload;
 		if (!token || !email || !password) return null;
 		try {
@@ -50,7 +48,6 @@ class CustomerResource extends BaseResource {
 		locals: App.Locals,
 		payload: StorePostCustomersCustomerReq
 	): Promise<StoreCustomersRes | null> {
-		console.log('Update customer record.');
 		const headers = { Cookie: `connect.sid=${locals.sid}` };
 
 		if (!payload) {
@@ -63,7 +60,15 @@ class CustomerResource extends BaseResource {
 			if (res.response.status !== 200) {
 				throw new Error(`Add address failed: API responded with ${res.response.status}`);
 			}
-
+			// update locals
+			const { first_name, last_name, email, phone } = res.customer;
+			if (locals.user) {
+				locals.user.first_name = first_name;
+				locals.user.last_name = last_name;
+				locals.user.email = email;
+				locals.user.phone = phone;
+			}
+			
 			return res;
 		} catch (error) {
 			console.error('Error: failed updateCustomer()', error);
@@ -75,9 +80,6 @@ class CustomerResource extends BaseResource {
 		locals: App.Locals,
 		payload: StoreGetCustomersCustomerOrdersParams
 	): Promise<StoreCustomersListOrdersRes | null> {
-		console.log("Retrieve a list of the logged-in customer's orders.");
-		
-
 		if (!payload) {
 			throw new Error('Missing address payload');
 		}

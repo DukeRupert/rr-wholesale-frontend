@@ -15,14 +15,14 @@
 	const logout = async () => {
 		console.log('logout');
 		const formData = new FormData(); // The POST request fails without a body
-		const res = await fetch('/auth/login?/logout', { method: 'POST', body: formData });
-		if (res.ok) goto('/auth/login');
+		const res = await fetch('/auth?/logout', { method: 'POST', body: formData });
+		if (res.ok) goto('/auth');
 	};
 </script>
 
 <DropdownMenu.Root>
 	{#if !user}
-		<a href="/auth/login">
+		<a href="/auth">
 			<button
 				type="button"
 				class="group -m-2 flex items-center p-2 bg-white hover:bg-black text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-thunderbird-500 rounded-md transition-colors duration-150 ease-in"

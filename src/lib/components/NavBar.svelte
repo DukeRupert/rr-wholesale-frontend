@@ -10,10 +10,13 @@
 	import Account from './Account.svelte';
 	import type { ExtendedCustomer } from '$lib/types/app';
 	import type { Cart as MedusaCart } from "@medusajs/medusa/dist/models/cart"
+	import { is_cart_open } from '$lib/stores';
 
 	export let user: ExtendedCustomer | null;
 	export let cart: Omit<MedusaCart, "refundable_amount" | "refunded_total"> | null;
 	export let count: number | null;
+
+	let is_open = false;
 
 	// Control whether the banner is displayed
 	const banner = {
@@ -33,18 +36,16 @@
 	const logout = async () => {
 		console.log('logout');
 		const formData = new FormData(); // The POST request fails without a body
-		const res = await fetch('/auth/login?/logout', { method: 'POST', body: formData });
-		if (res.ok) goto('/auth/login');
+		const res = await fetch('/auth?/logout', { method: 'POST', body: formData });
+		if (res.ok) goto('/auth');
 	};
 
-	let isOpen = false;
-
 	// Close the mobile menu when navigation
-	$: if ($navigating) isOpen = false;
+	$: if ($navigating) $is_cart_open = false;
 </script>
 
 <nav class="">
-	<Collapsible.Root bind:open={isOpen} class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+	<Collapsible.Root bind:open={is_open} class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<!-- <div use:melt={$root} class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"> -->
 		<div class="flex h-16 lg:h-24 justify-between">
 			<div class="flex">
@@ -94,7 +95,7 @@
 						asChild
 						let:builder
 						aria-controls="mobile-menu"
-						aria-expanded={isOpen}
+						aria-expanded={is_open}
 					>
 						<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
 							<span class="sr-only">Open main menu</span>

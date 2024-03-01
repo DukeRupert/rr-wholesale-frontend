@@ -1,3 +1,25 @@
+import { toast } from 'svelte-sonner';
+import type { MessageType } from '../app';
+
+export function handle_toast(m: MessageType) {
+	const { type, text } = m;
+	if (!text) return;
+	switch (type) {
+		case 'error':
+			toast.error(text);
+			break;
+		case 'warning':
+			toast.warning(text);
+			break;
+		case 'success':
+			toast.success(text);
+			break;
+		default:
+			toast(text);
+			break;
+	}
+}
+
 export function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }

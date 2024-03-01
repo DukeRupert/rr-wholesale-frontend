@@ -15,7 +15,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// If the user is not logged in and they are not trying to log in, redirect them to the login page.
 	if (!event.locals?.user && !event.url.pathname.startsWith('/auth')) {
 		const rurl = generate_return_url(event.url);
-		const url = `/auth/login?rurl=${rurl}`;
+		const url = rurl ? `/auth?rurl=${rurl}` : "/auth"
 		throw redirect(302, url);
 	}
 

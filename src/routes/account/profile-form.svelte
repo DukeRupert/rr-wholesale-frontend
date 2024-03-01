@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	import { z } from 'zod';
-	export const updateCustomerSchema = z.object({
+	export const customerSchema = z.object({
 		first_name: z
 			.string()
 			.min(2, 'Name must be at least 2 characters.')
@@ -12,7 +12,7 @@
 		email: z.string().email(),
 		phone: z.string().optional()
 	});
-	export type UpdateCustomerSchema = typeof updateCustomerSchema;
+	export type CustomerSchema = typeof customerSchema;
 </script>
 
 <script lang="ts">
@@ -20,19 +20,25 @@
 	import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
+	import { handle_toast } from '$lib/utilities';
 
-	export let data: SuperValidated<Infer<typeof updateCustomerSchema>>;
+	export let data: SuperValidated<Infer<CustomerSchema>>;
 
 	const form = superForm(data, {
-		validators: zodClient(updateCustomerSchema)
+		onUpdated({ form }) {
+			if (form.message) {
+				handle_toast(form.message);
+				return;
+			}
+		},
+		validators: zodClient(customerSchema),
+		invalidateAll: 'force'
 	});
 
-	const { form: formData, enhance } = form;
-
-	let processing = false;
+	const { form: formData, submitting, enhance } = form;
 </script>
 
-<form method="POST" class="space-y-8" id="profile-form" use:enhance>
+<form use:enhance method="POST" class="space-y-8" id="profile-form">
 	<Form.Field {form} name="first_name">
 		<Form.Control let:attrs>
 			<Form.Label>First name</Form.Label>
@@ -61,5 +67,5 @@
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
-	<Form.Button disabled={processing}>Update Profile</Form.Button>
+	<Form.Button disabled={$submitting}>Update Profile</Form.Button>
 </form>

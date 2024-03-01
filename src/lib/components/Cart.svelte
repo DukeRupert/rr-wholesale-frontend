@@ -1,36 +1,85 @@
 <script lang="ts">
 	import type { Cart } from '@medusajs/medusa/dist/models/cart';
 	import { ShoppingCart, Trash, LucideLoader, Frown } from 'lucide-svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
-	import { toast } from 'svelte-sonner';
+	import { handle_toast } from '$lib/utilities';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
+	import { is_cart_open } from '$lib/stores';
+
 	export let cart: Omit<Cart, 'refundable_amount' | 'refunded_total'> | null;
 	export let count: number | null;
 
 	$: items = cart?.items || [];
 	$: total = cart?.subtotal ?? 0;
 
-	let isOpen: boolean;
 	let processing = false;
+	let tainted = false;
+	interface UpdateItem {
+		id: string;
+		quantity: number;
+	}
+
+	let updates: UpdateItem[] = [];
+
+	function updateQuantity(id: string, quantity: number) {
+		tainted = true;
+		const existingIndex = updates.findIndex((item) => item.id === id);
+
+		if (existingIndex !== -1) {
+			// Update existing item
+			updates[existingIndex].quantity = quantity;
+		} else {
+			// Add new item
+			updates.push({ id, quantity });
+			updates = updates;
+		}
+	}
 
 	async function updateItem(line_item_id: string, quantity: number) {
-		processing = true;
 		const res = await fetch('api/cart/update', {
 			method: 'POST',
 			body: JSON.stringify({ line_item_id, quantity })
 		});
-		const { success } = await res.json();
-		if (success) {
-			invalidateAll();
-			toast.success('Quantity updated');
-		} else {
-			toast.error('Failed to update quantity');
+		const { success } = (await res.json()) as { success: boolean };
+		return success;
+	}
+
+	function allTrue(booleanArray: boolean[]): boolean {
+		for (const element of booleanArray) {
+			if (!element) {
+				return false;
+			}
 		}
+		return true;
+	}
+
+	async function updateAllItems() {
+		processing = true;
+		let results: boolean[] = [];
+		for (const update of updates) {
+			try {
+				let response = await updateItem(update.id, update.quantity);
+				results.push(response);
+			} catch (error) {
+				console.error(`Error updating item ${update.id}:`, error);
+				handle_toast({ type: 'error', text: 'Failed to update some items' });
+			}
+		}
+		let status = allTrue(results);
+		if (status) {
+			handle_toast({ type: 'success', text: 'Cart updated' });
+		} else {
+			handle_toast({ type: 'error', text: 'Failed to updates some items' });
+		}
+		// reset
 		processing = false;
+		tainted = false;
+		updates = [];
+		await invalidateAll();
 	}
 
 	async function deleteItem(line_item_id: string) {
@@ -50,7 +99,7 @@
 	}
 </script>
 
-<Sheet.Root bind:open={isOpen}>
+<Sheet.Root bind:open={$is_cart_open}>
 	<Sheet.Trigger asChild let:builder>
 		<Button builders={[builder]} variant="outline"
 			><span class="sr-only">View cart</span>
@@ -109,7 +158,7 @@
 									id="quantity"
 									min="1"
 									value={item.quantity}
-									on:change={(v) => updateItem(item.id, parseInt(v.currentTarget.value))}
+									on:change={(v) => updateQuantity(item.id, parseInt(v.currentTarget.value))}
 									class="w-full max-w-[120px]"
 								/>
 
@@ -127,21 +176,31 @@
 					</li>
 				{/each}
 				<Sheet.Footer>
-					<Sheet.Close asChild let:builder>
-						<Button href="/checkout" builders={[builder]} class="w-full">
+					{#if tainted}
+						<Button type="button" on:click={updateAllItems} class="w-full">
 							{#if processing}
 								<LucideLoader class="h-6 w-6 animate-spin" />
 							{:else}
-								Checkout
+								Update cart
 							{/if}
 						</Button>
-					</Sheet.Close>
+					{:else}
+						<Sheet.Close asChild let:builder>
+							<Button href="/checkout" builders={[builder]} class="w-full">
+								{#if processing}
+									<LucideLoader class="h-6 w-6 animate-spin" />
+								{:else}
+									Checkout
+								{/if}
+							</Button>
+						</Sheet.Close>
+					{/if}
 				</Sheet.Footer>
 			{:else}
 				<div class="my-6 flex flex-col space-y-4 items-center">
 					<div><Frown class="h-8 w-8" /></div>
 					<p>Your cart is empty</p>
-					<Button type="button" variant="link" on:click={() => (isOpen = false)}
+					<Button type="button" variant="link" on:click={() => ($is_cart_open = false)}
 						>Continue shopping</Button
 					>
 				</div>
