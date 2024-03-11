@@ -1,10 +1,8 @@
 import { json } from '@sveltejs/kit';
 import medusa from '$lib/medusa.js';
-import type { StoreCartsRes } from '@medusajs/medusa';
 import type { AddToCartParams } from '$lib/medusaClient/types.js';
 
 export async function POST({ request, locals, cookies }) {
-	console.log('Add cart item');
 	const data = await request.json();
 	const cart_id = locals?.cartId ?? '';
 	const variant_id = data?.variant_id ?? '';

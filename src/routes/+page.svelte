@@ -7,7 +7,7 @@
 
 <div class="max-w-xl">
 	<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Wholesale Products</h1>
-	<p class="mt-1 text-sm ">
+	<p class="mt-1 text-sm text-muted-foreground">
 		Please add the products you want to order to your cart and checkout.
 	</p>
 </div>

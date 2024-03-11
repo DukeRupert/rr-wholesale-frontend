@@ -19,7 +19,6 @@
 	};
 	
 	const deleteAddress = async (id: string) => {
-		console.log(`Delete address: ${id}`);
 		try {
 			processing = true;
 			let res = await fetch('/api/address/delete', {
@@ -41,6 +40,7 @@
 			}
 		} catch (err) {
 			console.log(err);
+			handle_toast({ type: 'error', text: 'Cannot communicate with the server.' });
 		} finally {
 			processing = false;
 		}
@@ -60,7 +60,7 @@
 			<p class="text-sm text-muted-foreground">Save addresses to speed up your checkout flow.</p>
 		</div>
 		<div class="mt-4 flex md:ml-4 md:mt-0">
-			<Button type="button" on:click={toggleCreate} variant="secondary"
+			<Button type="button" on:click={toggleCreate} variant="default"
 				>{#if create}<LucideMinus class="mr-2 h-4 w-4" />Cancel{:else}<LucidePlus
 						class="mr-2 h-4 w-4"
 					/>Add new{/if}</Button

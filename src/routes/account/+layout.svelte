@@ -18,13 +18,13 @@
 	];
 </script>
 
-<div class="block space-y-6 p-10 pb-16">
+<div class="max-w-xl lg:max-w-none">
 	<div class="space-y-0.5">
-		<h2 class="text-2xl font-bold tracking-tight">Settings</h2>
-		<p class="text-muted-foreground">Manage your account settings and set e-mail preferences.</p>
+		<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Settings</h1>
+		<p class="mt-1 text-sm text-muted-foreground">Manage your account settings and set e-mail preferences.</p>
 	</div>
 	<Separator class="my-6" />
-	<div class="grid grid-cols-5 gap-y-8">
+	<div class="pb-16 md:px-8 lg:px-12 grid grid-cols-5 gap-y-8">
 		<aside class="col-span-5 lg:col-span-1 lg:px-4">
 			<SidebarNav items={sidebarNavItems} />
 		</aside>

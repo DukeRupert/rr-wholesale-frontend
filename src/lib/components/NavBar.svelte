@@ -34,7 +34,6 @@
 	$: path = $page.route.id;
 
 	const logout = async () => {
-		console.log('logout');
 		const formData = new FormData(); // The POST request fails without a body
 		const res = await fetch('/auth?/logout', { method: 'POST', body: formData });
 		if (res.ok) goto('/auth');

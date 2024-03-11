@@ -15,6 +15,11 @@
 	let processing = false;
 
 	async function addItem(product: PricedProduct, variant: PricedVariant, quantity: number) {
+		try {
+			
+		} catch (error) {
+			
+		}
 		processing = true;
 		
 		if (variant.id && quantity) {

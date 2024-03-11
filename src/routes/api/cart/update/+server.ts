@@ -4,7 +4,6 @@ import type { StoreCartsRes } from '@medusajs/medusa';
 import type { UpdateLineItemParams, DeleteLineItemParams } from '$lib/medusaClient/types.js';
 
 export async function POST({ request, locals }) {
-	console.log('Update cart item');
 	const data = await request.json();
 	const cart_id = locals?.cartId ?? '';
 	const line_item_id = data?.line_item_id ?? '';

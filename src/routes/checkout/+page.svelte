@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { TruckIcon, HomeIcon } from 'lucide-svelte';
-	import ShippingAddressForm from './ShippingAddressForm.svelte';
-	import ShippingSelect from '$lib/components/ShippingSelect.svelte';
+	import { TruckIcon, HomeIcon, Loader } from 'lucide-svelte';
+	import ShippingAddressForm from './(components)/shipping-address-form.svelte';
+	import ShippingSelect from './(components)/shipping-select.svelte';
 	import AddressCard from '$lib/components/cards/AddressCard.svelte';
 	import CartSummary from './CartSummary.svelte';
-	import OrderSummary from './OrderSummary.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -22,19 +22,33 @@
 	import type { PricedShippingOption } from '@medusajs/medusa/dist/types/pricing';
 	import type { Cart } from '@medusajs/medusa/dist/models/cart';
 	import type { Address as MedusaAddress } from '@medusajs/medusa/dist/models/address';
-
-	onMount(async () => {
-		init = init_checkout();
-	});
+	import AddressBook from './(components)/address-book.svelte';
+	import { handle_toast } from '$lib/utilities';
+	import TrustedCheckout from './(components)/trusted-checkout.svelte'
 
 	export let data: PageData;
-	$: ({ user, cart, shipping_address_form } = data);
-	$: is_trusted = user?.metadata?.is_trusted ?? false;
-	$: console.log(`is_trusted: ${is_trusted}`);
-	$: console.log(cart);
-	let shipping_options: PricedShippingOption[] = [];
-	let contacts: ContactOption[] = [];
+	$:( { cart } = data);
 
+	const createContacts = (addresses: MedusaAddress[]): ContactOption[] => {
+		const contacts: ContactOption[] = [];
+
+		for (let address of addresses) {
+			contacts.push({
+				name: address.first_name + ' ' + address.last_name,
+				address: {
+					line1: address?.address_1 ?? '',
+					line2: address?.address_2 ?? '',
+					city: address?.city ?? '',
+					state: address?.province ?? '',
+					postal_code: address?.postal_code ?? '',
+					country: address?.country_code?.toUpperCase() ?? ''
+				}
+			});
+		}
+		return contacts;
+	};
+
+	// Stripe stuff
 	let init: Promise<void>;
 	let stripe: Stripe | null;
 	let client_secret: string = '';
@@ -42,26 +56,28 @@
 	let elements_options: StripeElementsOptions = {
 		mode: 'payment'
 	};
-	let order: any; // Order data
 	let error = null;
-	let success = false; // Order confirmed
 	let processing = false;
+	let contacts: ContactOption[] = []
+	let shipping_options: PricedShippingOption[] = [];
+
+	//
+	$: shipping_address_id = data.cart;
+	$: billing_address_id = data.cart;
+	$: shipping_method_id = data.cart?.shipping_methods[0]?.shipping_option_id ?? '';
+	$: cart_ready = shipping_address_id && billing_address_id && shipping_method_id ? true : false;
 
 	interface Initialize_Cart {
 		cart: Omit<Cart, 'refundable_amount' | 'refunded_total'>;
-		shipping_options: PricedShippingOption[];
+		// shipping_options: PricedShippingOption[];
 	}
 
-	const init_checkout = async () => {
-		console.log('init_checkout()');
+	const init_stripe_checkout = async () => {
+		console.log('init_stripe_checkout()');
 		processing = true;
 		try {
 			stripe = await loadStripe(PUBLIC_STRIPE_KEY);
-			let init_res = await fetch('/checkout/initialize-cart');
-			if (init_res.status !== 200) console.log('Error occured initializing cart');
-			const init_data = (await init_res.json()) as Initialize_Cart;
-			cart = init_data.cart;
-			let s = cart?.payment_session?.data?.client_secret ?? '';
+			let s = data.cart?.payment_session?.data?.client_secret ?? '';
 			if (typeof s === 'string' && s) client_secret = s;
 			console.log(`client_secret: ${client_secret}`);
 			elements_options.clientSecret = client_secret;
@@ -106,25 +122,6 @@
 		}
 	}
 
-	const createContacts = (addresses: MedusaAddress[]): ContactOption[] => {
-		const contacts: ContactOption[] = [];
-
-		for (let address of addresses) {
-			contacts.push({
-				name: address.first_name + ' ' + address.last_name,
-				address: {
-					line1: address?.address_1 ?? '',
-					line2: address?.address_2 ?? '',
-					city: address?.city ?? '',
-					state: address?.province ?? '',
-					postal_code: address?.postal_code ?? '',
-					country: address?.country_code?.toUpperCase() ?? ''
-				}
-			});
-		}
-		return contacts;
-	};
-
 	const paymentOptions: StripePaymentElementOptions = {
 		business: {
 			name: 'Rockabilly Roasting'
@@ -132,135 +129,49 @@
 	};
 
 	// Shipping address logic
+	let show_shipping_address_book = true;
 	let show_shipping_address_form = false;
-	async function handleShippingOptionClick(e: any) {
-		console.log('Option selected');
-		const shippingOptionId = e.detail.id as string;
-		await selectShippingOption(shippingOptionId);
+	let is_shipping_option_selected = false;
+
+	function handle_address_form_success() {
+		// const { cart: c } = e.detail;
+		// cart = c;
+		show_shipping_address_book = false;
+		show_shipping_address_form = false;
 	}
 
-	// Shipping Method
-	let isShippingMethodSelected = false;
-	async function fetchShippingOptions() {
-		console.log('fetching shipping options');
-		try {
-			shipping_options = await fetch('/checkout/get-shipping-options').then((res) => res.json());
-		} catch (err) {
-			console.log(err);
-		}
+	function handle_shipping_option_success(
+		e: CustomEvent<{ cart: Omit<Cart, 'refundable_amount' | 'refunded_total'> }>
+	) {
+		const { cart: c } = e.detail;
+		if (c) cart = c;
+		is_shipping_option_selected = true;
 	}
-	async function selectShippingOption(id: string) {
-		console.log(`Selecting shipping option: ${id}`);
-		try {
-			cart = await fetch('/checkout/select-shipping-option', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ option_id: id })
-			}).then((res) => res.json());
-			if (cart) isShippingMethodSelected = true;
-		} catch (err) {
-			console.log(err);
+
+	onMount(async () => {
+		if (!data.is_trusted) {
+			init = init_stripe_checkout();
 		}
-	}
+
+		// If shipping address exists close the tab
+		if (data.cart?.shipping_address_id) show_shipping_address_book = false;
+	});
 </script>
 
-{#if success}
-	<OrderSummary data={order} />
-{:else if !cart?.items}
+{#if !data.cart?.items}
 	<p>Your cart is empty.</p>
 {:else}
 	<div class="bg-white">
 		<!-- Background color split screen for large screens -->
 		<div class="fixed left-0 top-0 hidden h-full w-1/2 bg-white lg:block" aria-hidden="true"></div>
 		<div class="fixed right-0 top-0 hidden h-full w-1/2 bg-black lg:block" aria-hidden="true"></div>
-
 		<div
 			class="relative mx-auto grid max-w-7xl grid-cols-1 gap-x-16 lg:grid-cols-2 lg:px-8 lg:pt-16"
 		>
 			<h1 class="sr-only">Checkout</h1>
 			<CartSummary data={cart} />
-			{#if is_trusted}
-				<!-- No payment info required -->
-				<!-- Shipping & Billing -->
-				<section
-					aria-labelledby="payment-and-shipping-heading"
-					class="py-16 lg:col-start-1 lg:row-start-1 lg:mx-auto lg:w-full lg:max-w-lg lg:pb-24 lg:pt-0"
-				>
-					<h2 id="payment-and-shipping-heading" class="sr-only">Payment and shipping details</h2>
-					<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
-						<!-- Shipping Address -->
-						<div class="mt-10">
-							<div class="flex items-center space-x-2">
-								<HomeIcon class="block h-5 w-5 text-gray-500 dark:text-gray-400" />
-								<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
-							</div>
-							{#if cart.shipping_address && cart.shipping_address?.address_1 && !show_shipping_address_form}
-								<div class="mt-6">
-									<AddressCard data={cart.shipping_address} />
-								</div>
-								<button
-									on:click|preventDefault={() => (show_shipping_address_form = true)}
-									class="mt-6 text-sm text-thunderbird-500">Change address?</button
-								>
-							{:else}
-								<ShippingAddressForm
-									data={shipping_address_form}
-									shipping_addresses={data?.user?.shipping_addresses ?? []}
-									bind:processing
-									on:cancel={() => (show_shipping_address_form = false)}
-									on:addressUpdated={fetchShippingOptions}
-								/>
-							{/if}
-						</div>
-						<!-- Shipping Method -->
-						<div class="mt-10">
-							<div class="flex items-center space-x-2">
-								<TruckIcon class="block h-6 w-6 text-gray-500 dark:text-gray-400" />
-								<h3 class="text-lg font-medium text-gray-900">Shipping Method</h3>
-							</div>
-
-							<ShippingSelect data={shipping_options} on:select={handleShippingOptionClick} />
-							{#if !isShippingMethodSelected}
-								<p class="ml-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
-									Please select a shipping method.
-								</p>
-							{/if}
-						</div>
-						<!-- Confirm Order -->
-						<form
-							action="?/completeCart"
-							method="POST"
-							use:enhance={async ({ cancel }) => {
-								if (processing) cancel();
-								processing = true;
-								return async ({ result }) => {
-									if (result.status === 200) {
-										goto('/thank-you');
-									} else {
-										addToast({
-											data: {
-												type: 'error',
-												title: 'Error',
-												description:
-													'An error occured during checkout. Please contact tech support if this problem persists.'
-											}
-										});
-									}
-								};
-							}}
-						>
-							<div class="mt-10 flex justify-end border-t border-gray-200 pt-6">
-								<button
-									type="submit"
-									disabled={!isShippingMethodSelected}
-									class="btn disabled:opacity-80 disabled:pointer-events-none">Confirm order</button
-								>
-							</div>
-						</form>
-					</div>
-				</section>
+			{#if data.is_trusted && data.user}
+				<TrustedCheckout bind:data {processing} on:success={handle_shipping_option_success} />
 			{:else}
 				{#await init then}
 					<!-- Stripe -->
@@ -328,15 +239,19 @@
 								<h3 class="text-lg font-medium text-gray-900">Shipping Method</h3>
 							</div>
 
-							<ShippingSelect data={shipping_options} on:select={handleShippingOptionClick} />
-							{#if !isShippingMethodSelected}
+							<ShippingSelect
+								data={shipping_options}
+								{shipping_method_id}
+								on:success={() => (is_shipping_option_selected = true)}
+							/>
+							{#if !is_shipping_option_selected}
 								<p class="ml-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
 									Please select a shipping method.
 								</p>
 							{/if}
 						</div>
 
-						<button disabled={processing} type="submit" class="flex w-full mt-6 btn">Pay</button>
+						<Button disabled={processing} type="submit" variant="default">Pay</Button>
 					</form>
 				{/await}
 			{/if}

@@ -11,5 +11,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const res = await medusa.carts.addShippingMethod(locals, shipping_option_id);
 	if (res === null) throw error(500, 'Server error');
 	const { cart } = res;
-	return json(cart);
+	locals.cart = cart;
+	return json({ success: true, cart });
 };

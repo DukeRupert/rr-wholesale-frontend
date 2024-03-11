@@ -83,19 +83,23 @@
 	}
 
 	async function deleteItem(line_item_id: string) {
-		console.log(`Delete item: ${line_item_id}`);
-		processing = true;
-		const res = await fetch('api/cart/delete', {
-			method: 'POST',
-			body: JSON.stringify({ line_item_id })
-		});
-		const { success } = await res.json();
-		if (success) {
-			invalidateAll();
-		} else {
-			console.log('error');
+		try {
+			console.log(`Delete item: ${line_item_id}`);
+			processing = true;
+			const res = await fetch('api/cart/delete', {
+				method: 'POST',
+				body: JSON.stringify({ line_item_id })
+			});
+			const { success } = await res.json();
+			if (success) {
+				invalidateAll();
+			}
+		} catch (error) {
+			console.log(error);
+			handle_toast({ type: 'error', text: 'Failed to delete item' });
+		} finally {
+			processing = false;
 		}
-		processing = false;
 	}
 </script>
 

@@ -6,7 +6,7 @@ class AddressesResource extends BaseResource {
 		locals: App.Locals,
 		payload: StorePostCustomersCustomerAddressesReq
 	): Promise<StoreCustomersRes | null> {
-		console.log('Adding a new customer address.');
+		console.log('Add a new customer address.');
 		const headers = { Cookie: `connect.sid=${locals.sid}` };
 
 		if (!payload) {
@@ -28,7 +28,7 @@ class AddressesResource extends BaseResource {
 		}
 	}
 	async deleteAddress(locals: App.Locals, address_id: string): Promise<StoreCustomersRes | null> {
-		console.log('Adding a new customer address.');
+		console.log('delete customer address.');
 		const headers = { Cookie: `connect.sid=${locals.sid}` };
 
 		if (!address_id) {

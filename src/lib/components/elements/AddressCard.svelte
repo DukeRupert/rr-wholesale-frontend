@@ -2,7 +2,6 @@
 	import type { ShippingAddress } from '$lib/types/user';
 
 	export let address: ShippingAddress;
-	console.log(address);
 </script>
 
 <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow">

@@ -3,7 +3,7 @@
     import { formatPrice } from "$lib/utilities";
 
     export let data: Omit<Cart, "refundable_amount" | "refunded_total"> 
-    const { items, total, subtotal, tax_total, shipping_total } = data;
+    $: ({ items, total, subtotal, tax_total, shipping_total } = data);
 </script>
 
 <section

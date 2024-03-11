@@ -1,5 +1,6 @@
 import { toast } from 'svelte-sonner';
 import type { MessageType } from '../app';
+import type { Address } from '@medusajs/medusa/dist/models/address';
 
 export function handle_toast(m: MessageType) {
 	const { type, text } = m;
@@ -91,4 +92,16 @@ export function formatDate(date: string): string {
 export function fromISOtoDatetime(date: string): string {
 	const split = date.split('T');
 	return split[0];
+}
+
+// Prepare Address object to be an update payload by removing
+// extraneous fields that throw an error on the backend
+export function trim_address(address: Address): Partial<Address> {
+	let clone: Partial<Address> = Object.assign({}, address);
+	delete clone.id;
+	delete clone.customer_id;
+	delete clone.created_at;
+	delete clone.updated_at;
+	delete clone.deleted_at;
+	return clone;
 }

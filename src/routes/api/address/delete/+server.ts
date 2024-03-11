@@ -2,7 +2,6 @@ import { json } from '@sveltejs/kit';
 import medusa from '$lib/medusa.js';
 
 export async function POST({ request, locals }) {
-	console.log('Delete address');
 	// handle data
 	const data = await request.json();
 	const address_id = data?.address_id ?? '';
