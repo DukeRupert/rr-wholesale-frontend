@@ -9,7 +9,7 @@
 	Sign in to your account
 </h2>
 <div class="mt-10">
-	<ResetForm data={data.form} token={data.token} />
+	<ResetForm data={data.form} />
 
 	<p class="mt-10 text-center text-sm">
 		Clicked the wrong button?

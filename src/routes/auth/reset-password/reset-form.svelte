@@ -25,7 +25,6 @@
 	import { handle_toast } from '$lib/utilities';
 
 	export let data: SuperValidated<Infer<ResetSchema>>;
-	export let token: string;
 
 	const form = superForm(data, {
 		onUpdated({ form }) {
@@ -39,8 +38,6 @@
 
 	const { form: formData, submitting, enhance } = form;
 
-	// set token
-	$: $formData.token = token;
 </script>
 
 <form use:enhance method="POST" class="space-y-6" id="reset-form">

@@ -22,13 +22,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals, cookies }) => {
+	default: async ({ request, url }) => {
+		let token = url.searchParams.get('token') || '';
 		// handle form data
 		const form = await superValidate(request, zod(resetSchema));
 		// server side validation
 		if (!form.valid) return message(form, { type: 'warning', text: 'Invalid form' });
 		// build payload
-		const { token, email, password } = form.data;
+		const { email, password } = form.data;
 		const payload = {
 			token,
 			email,

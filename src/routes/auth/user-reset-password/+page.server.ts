@@ -11,30 +11,31 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		throw redirect(302, '/');
 	}
 
-	let token = url.searchParams.get('token') || '';
-
 	const form = await superValidate(zod(resetSchema));
 
 	return {
-		token,
 		form
 	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals, cookies }) => {
+	default: async ({ request, url }) => {
+		let token = url.searchParams.get('token') || '';
 		// handle form data
 		const form = await superValidate(request, zod(resetSchema));
 		// server side validation
 		if (!form.valid) return message(form, { type: 'warning', text: 'Invalid form' });
 		// build payload
-		const { token, email, password } = form.data;
+		const { password } = form.data;
 		const payload = {
 			token,
 			password
 		};
+		console.log(`Payload: `)
+		console.log(payload)
 		// call medusa
 		const res = await medusa.client.client.admin.users.resetPassword(payload)
+		console.log(res)
 		// handle error
 		if (res === null) return message(form, { type: 'error', text: 'Invalid credentials' });
 		return message(form, { type: 'success', text: 'Password updated' });
