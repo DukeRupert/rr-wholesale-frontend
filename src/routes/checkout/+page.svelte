@@ -1,11 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { TruckIcon, HomeIcon, Loader } from 'lucide-svelte';
-	import ShippingAddressForm from './(components)/shipping-address-form.svelte';
-	import ShippingSelect from './(components)/shipping-select.svelte';
-	import AddressCard from '$lib/components/cards/AddressCard.svelte';
-	import CartSummary from './CartSummary.svelte';
+	import { TruckIcon } from 'lucide-svelte';
+	import ShippingSelect from './(components)/trusted/shipping-select.svelte';
+	import CartSummary from './(components)/CartSummary.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import { goto } from '$app/navigation';
@@ -22,8 +20,6 @@
 	import type { PricedShippingOption } from '@medusajs/medusa/dist/types/pricing';
 	import type { Cart } from '@medusajs/medusa/dist/models/cart';
 	import type { Address as MedusaAddress } from '@medusajs/medusa/dist/models/address';
-	import AddressBook from './(components)/address-book.svelte';
-	import { handle_toast } from '$lib/utilities';
 	import TrustedCheckout from './(components)/trusted-checkout.svelte'
 
 	export let data: PageData;
@@ -82,7 +78,7 @@
 			console.log(`client_secret: ${client_secret}`);
 			elements_options.clientSecret = client_secret;
 
-			const shipping_option_res = await fetch('/checkout/get-shipping-options');
+			const shipping_option_res = await fetch('/api/checkout/get-shipping-options');
 			if (shipping_option_res.status !== 200) console.log('Error occured initializing cart');
 			shipping_options = (await shipping_option_res.json()) as PricedShippingOption[];
 

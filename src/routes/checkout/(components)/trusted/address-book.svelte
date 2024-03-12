@@ -7,18 +7,17 @@
 	import { createEventDispatcher } from 'svelte';
 	import { trim_address } from '$lib/utilities';
 	import { handle_toast } from '$lib/utilities';
-	import { flyAndScale } from '$lib/utils';
 
-	export let data: Address[] = [];
+	export let data: Address[];
 	let processing = false;
 
 	const dispatch = createEventDispatcher();
 
 	async function select_shipping_address(a: Address) {
-		processing = true;
-		const address = trim_address(a);
 		try {
-			const res = await fetch('/checkout/select-shipping-address', {
+			processing = true;
+			const address = trim_address(a);
+			const res = await fetch('/api/checkout/select-shipping-address', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -27,8 +26,8 @@
 			});
 			const { success } = await res.json();
 			if (success) {
+				dispatch('success')
 				handle_toast({ type: 'success', text: 'Shipping adddress saved' });
-				dispatch('success');
 			} else {
 				handle_toast({ type: 'error', text: 'Invalid address' });
 			}
@@ -52,7 +51,6 @@
 		<AddressCard data={address} {processing} on:select={handle_select} />
 	{/each}
 	<!-- Create new address -->
-
 	<Button
 		type="button"
 		variant="outline"

@@ -2,7 +2,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { error } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { addressSchema } from './(components)/shipping-address-form.svelte';
+import { addressSchema } from './(components)/trusted/shipping-address-form.svelte';
 import medusa from '$lib/medusa';
 
 export const load: PageServerLoad = async function ({ locals, url }) {

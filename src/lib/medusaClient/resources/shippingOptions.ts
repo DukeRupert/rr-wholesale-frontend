@@ -13,7 +13,6 @@ class ShippingOptionsResource extends BaseResource {
 	 * @throws {Error} If the API call fails.
 	 */
 	async listCartOptions(locals: App.Locals): Promise<StoreShippingOptionsListRes | null> {
-		console.log('Retrieve a list of shipping options available for a cart.');
 		if (!locals.cartId) throw new Error('Missing cartId');
 		try {
 			const res = await this.medusa.client.shippingOptions.listCartOptions(locals.cartId);

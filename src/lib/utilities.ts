@@ -25,11 +25,18 @@ export function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const formatPrice = (price: number) => {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD'
-	}).format(price / 100);
+export const formatPrice = (price: number | undefined | null) => {
+	if (price) {
+		return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: 'USD'
+		}).format(price / 100);
+	} else {
+		return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: 'USD'
+		}).format(0);
+	}
 };
 
 export function debounce<F extends Function>(func: F, wait: number): F {

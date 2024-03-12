@@ -1,35 +1,36 @@
 <script lang="ts">
 	import type { PageData } from '../$types';
-	import { TruckIcon, HomeIcon, Loader } from 'lucide-svelte';
+	import { TruckIcon, Loader } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import type { PricedShippingOption } from '@medusajs/medusa/dist/types/pricing';
+	import type { Cart } from '@medusajs/medusa/dist/models/cart';
 	import { Button } from '$lib/components/ui/button';
-	import AddressBook from './address-book.svelte';
-	import AddressCard from './address-card.svelte';
-	import ShippingSelect from './shipping-select.svelte';
-	import ShippingAddressForm from './shipping-address-form.svelte';
+	import ShippingAddress from './trusted/shipping-address.svelte';
+	import ShippingSelect from './trusted/shipping-select.svelte';
 	import { handle_toast } from '$lib/utilities';
 
 	export let data: PageData;
 	export let processing: boolean;
 
-	$: valid_shipping_address = data.cart?.shipping_address?.address_1 ?? '';
-	$: billing_address_id = data.cart;
-	$: shipping_method_id = data.cart?.shipping_methods[0]?.shipping_option_id ?? '';
-	$: cart_ready = valid_shipping_address && billing_address_id && shipping_method_id ? true : false;
+	function is_cart_ready_to_complete(d: PageData): boolean {
+		const { cart } = d;
+		const { shipping_methods, shipping_address } = cart;
+		if (!shipping_address?.address_1) {
+			return false;
+		}
+		if (!shipping_methods[0]?.shipping_option_id) {
+			return false;
+		}
+		return true;
+	}
+	let cart_ready = false;
 
-	// Shipping address logic
-	let show_shipping_address_book = true;
-	let show_shipping_address_form = false;
-	let is_shipping_option_selected = false;
-	let shipping_options: PricedShippingOption[] = [];
-
-	async function fetchShippingOptions() {
-		console.log('fetching shipping options');
+	async function fetchShippingOptions(): Promise<PricedShippingOption[]> {
 		try {
-			return await fetch('/checkout/get-shipping-options').then((res) => res.json());
+			return await fetch('/api/checkout/get-shipping-options').then((res) => res.json());
 		} catch (err) {
 			console.log(err);
 			return [];
@@ -37,17 +38,25 @@
 	}
 
 	async function handle_address_form_success() {
-		show_shipping_address_book = false;
-		show_shipping_address_form = false;
-		shipping_options = await fetchShippingOptions();
+		await invalidateAll();
+		await fetchShippingOptions();
+		cart_ready = is_cart_ready_to_complete(data);
+	}
+
+	async function handle_shipping_method_success(
+		e: CustomEvent<{ cart: Omit<Cart, 'refundable_amount' | 'refunded_total'> }>
+	) {
+		const { cart: c } = e.detail;
+		if (c) data.cart = c;
+		cart_ready = is_cart_ready_to_complete(data);
 	}
 
 	onMount(async () => {
 		// If shipping address exists close the tab
 		if (data.cart?.shipping_address?.address_1) {
-			shipping_options = await fetchShippingOptions();
-			show_shipping_address_book = false;
+			await fetchShippingOptions();
 		}
+		cart_ready = is_cart_ready_to_complete(data);
 	});
 </script>
 
@@ -60,62 +69,35 @@
 	<h2 id="payment-and-shipping-heading" class="sr-only">Payment and shipping details</h2>
 	<div class="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
 		<!-- Shipping Address -->
+		<ShippingAddress
+			form={data.form}
+			shipping_address={data?.cart?.shipping_address}
+			shipping_addresses={data?.user?.shipping_addresses}
+			on:success={handle_address_form_success}
+		/>
+		<!-- Shipping Method -->
 		<div class="mt-10">
 			<div class="flex items-center space-x-2">
-				<HomeIcon class="block h-5 w-5 text-gray-500 dark:text-gray-400" />
-				<h3 class="text-lg font-medium text-gray-900">Shipping address</h3>
+				<TruckIcon class="block h-6 w-6 " />
+				<h3 class="text-lg font-medium">Shipping Method</h3>
 			</div>
-			{#if show_shipping_address_book}
-				{#if show_shipping_address_form}
-					<ShippingAddressForm
-						data={data.form}
-						{processing}
-						on:success={handle_address_form_success}
-						on:cancel={async () => {
-							show_shipping_address_form = false;
-						}}
-					/>
-				{:else}
-					<AddressBook
-						data={data.user?.shipping_addresses}
-						on:success={() => (show_shipping_address_book = false)}
-						on:new={() => (show_shipping_address_form = true)}
-					/>
-				{/if}
-			{:else if valid_shipping_address && data.cart.shipping_address}
-				<div class="mt-6">
-					<AddressCard data={data.cart.shipping_address} {processing} is_selected={true}/>
-				</div>
-				<Button on:click={() => (show_shipping_address_book = true)} variant="outline" class="mt-6"
-					>Change address?</Button
-				>
-			{/if}
-		</div>
-		<!-- Shipping Method -->
-		{#if data.cart?.shipping_address_id}
-			<div class="mt-10">
-				<div class="flex items-center space-x-2">
-					<TruckIcon class="block h-6 w-6 text-gray-500 dark:text-gray-400" />
-					<h3 class="text-lg font-medium text-gray-900">Shipping Method</h3>
-				</div>
-				{#await shipping_options}
+			{#if browser}
+				{#await fetchShippingOptions()}
 					<div class="h-full w-full flex items-center justify-center p-4">
 						<Loader class="h-5 w-5 animate-spin" />
 					</div>
 				{:then options}
 					<ShippingSelect
 						data={options}
-						{shipping_method_id}
-						on:success
+						shipping_method_id={data.cart?.shipping_methods[0]?.shipping_option_id ?? ''}
+						on:success={handle_shipping_method_success}
 					/>
-					{#if !is_shipping_option_selected}
-						<p class="ml-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
-							Please select a shipping method.
-						</p>
+					{#if !data.cart?.shipping_methods[0]?.shipping_option_id}
+						<p class="ml-2 mt-2 text-sm">Please select a shipping method.</p>
 					{/if}
 				{/await}
-			</div>
-		{/if}
+			{/if}
+		</div>
 		<!-- Confirm Order -->
 		<form
 			action="?/completeCart"
@@ -125,7 +107,7 @@
 				processing = true;
 				return async ({ result }) => {
 					if (result.status === 200) {
-						goto('/thank-you', { invalidateAll : true});
+						goto('/thank-you', { invalidateAll: true });
 					} else {
 						handle_toast({
 							type: 'error',

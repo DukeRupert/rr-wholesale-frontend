@@ -13,7 +13,7 @@
 
 	async function selectShippingOption(id: string) {
 		try {
-			const res = await fetch('/checkout/select-shipping-option', {
+			const res = await fetch('/api/checkout/select-shipping-option', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
