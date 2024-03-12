@@ -5,8 +5,7 @@ import type {
 	StorePostCartsCartReq,
 	StoreCompleteCartRes,
 	StorePostCartsCartShippingMethodReq,
-	StorePostCartsCartPaymentSessionReq,
-	StorePostCartReq
+	StorePostCartsCartPaymentSessionReq
 } from '@medusajs/medusa';
 import type { Cookies } from '@sveltejs/kit';
 import type { AddToCartParams } from '../types';
@@ -15,7 +14,7 @@ class CartResource extends BaseResource {
 	public lineItems = new LineItemsResource(this.medusa);
 
 	invalidateCart(locals: App.Locals, cookies: Cookies): void {
-		cookies.set('cartId', '', {
+		cookies.set('cartid', '', {
 			path: '/',
 			maxAge: 0,
 			sameSite: 'strict',
@@ -125,8 +124,10 @@ class CartResource extends BaseResource {
 			// Ensure a cart exists
 			let cart = locals.cart;
 			if (!cart) {
+				console.log('No cart exists. Creating cart...')
 				const response = await this.create(locals, cookies);
 				if (!response) throw new Error('Cart creation failed');
+				console.log(response?.cart)
 				cart = response.cart;
 			}
 

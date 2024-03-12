@@ -4,10 +4,9 @@ import type { AddToCartParams } from '$lib/medusaClient/types.js';
 
 export async function POST({ request, locals, cookies }) {
 	const data = await request.json();
-	const cart_id = locals?.cartId ?? '';
 	const variant_id = data?.variant_id ?? '';
 	const quantity = parseInt(data?.quantity) ?? 1;
-	if (!cart_id || !variant_id) return json({ success: false });
+	if (!variant_id) return json({ success: false });
 
 	const params: AddToCartParams = {
 		variant_id,

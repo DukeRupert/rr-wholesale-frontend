@@ -12,6 +12,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// MEDUSA SESSION MIDDLEWARE
 	// Sets locals.user and locals.cart if they are found.
 	event = await medusa.handleRequest(event);
+
 	// If the user is not logged in and they are not trying to log in, redirect them to the login page.
 	if (!event.locals?.user && !event.url.pathname.startsWith('/auth')) {
 		const rurl = generate_return_url(event.url);

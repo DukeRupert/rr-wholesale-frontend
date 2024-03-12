@@ -2,7 +2,7 @@
 	import type { PricedProduct, PricedVariant } from '@medusajs/medusa/dist/types/pricing';
 	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
-	import { toast } from 'svelte-sonner';
+	import { handle_toast } from '$lib/utilities';
 	import { Plus } from 'lucide-svelte';
 	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
 	import { Input } from '$lib/components/ui/input';
@@ -16,28 +16,31 @@
 
 	async function addItem(product: PricedProduct, variant: PricedVariant, quantity: number) {
 		try {
-			
-		} catch (error) {
-			
-		}
-		processing = true;
-		
-		if (variant.id && quantity) {
-			const res = await fetch('api/cart/add', {
-				method: 'POST',
-				body: JSON.stringify({ variant_id: variant.id, quantity })
-			});
-			const { success } = await res.json();
-			if (success) {
-				await invalidateAll();
-			} else {
-				console.log('error');
+			processing = true;
+
+			if (variant.id && quantity) {
+				const res = await fetch('api/cart/add', {
+					method: 'POST',
+					body: JSON.stringify({ variant_id: variant.id, quantity })
+				});
+				const { success } = await res.json();
+				if (success) {
+					await invalidateAll();
+					handle_toast({
+						type: 'success',
+						text: `${quantity} ${product.title} ${variant.title} added to cart`
+					});
+				} else {
+					console.log(res);
+					handle_toast({ type: 'error', text: 'An error occured adding the item to the cart' });
+				}
 			}
-			toast.success(`${quantity} ${product.title} ${variant.title} added to cart`);
-		} else {
-			toast.error('Variant does not exist.');
+		} catch (error) {
+			console.log(error);
+			handle_toast({ type: 'error', text: 'An error occured adding the item to the cart' });
+		} finally {
+			processing = false;
 		}
-		processing = false;
 	}
 </script>
 
@@ -94,7 +97,7 @@
 								type="number"
 								name="quantity"
 								id="quantity"
-								min=1
+								min="1"
 								on:change={(v) => (quantity = parseInt(v.currentTarget.value))}
 								class="w-full max-w-[120px]"
 							/>

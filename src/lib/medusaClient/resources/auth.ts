@@ -1,6 +1,6 @@
 import BaseResource from './base';
 import cookie from 'cookie';
-import type { RequestEvent, Cookies } from '@sveltejs/kit';
+import type { Cookies } from '@sveltejs/kit';
 import type { StoreAuthRes } from '@medusajs/medusa';
 
 class AuthResource extends BaseResource {

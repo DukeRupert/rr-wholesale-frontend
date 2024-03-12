@@ -6,11 +6,14 @@ export interface Config {
 	apiKey?: string;
 	publishableApiKey?: string;
 	customHeaders?: Record<string, any>;
+	cookieSessionId?: string;
+	cookieCart: string;
+	cookieCartId: string;
 }
 
 const defaultConfig = {
 	baseUrl: 'http://localhost:9000',
-	maxRetries: 0
+	maxRetries: 0,
 };
 
 class Client {
