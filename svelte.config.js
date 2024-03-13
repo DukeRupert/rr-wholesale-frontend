@@ -11,7 +11,7 @@ const config = {
 		adapter: adapter({
 			images: {
 				sizes: [320, 640, 768, 1024, 1280, 1920, 2560],
-				formats: ['image/avif', 'image/webp', "image/jpeg"],
+				formats: ['image/avif', 'image/webp'],
 				minimumCacheTTL: 300
 			}
 		}),
