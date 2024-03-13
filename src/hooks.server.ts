@@ -1,14 +1,22 @@
+import {sequence} from '@sveltejs/kit/hooks';
+import * as Sentry from '@sentry/sveltekit';
 import type { Handle } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
 import medusa from '$lib/medusa';
 
+Sentry.init({
+    dsn: "https://05cd888fd3ddfee27ed510604d783d35@o4506440717893632.ingest.us.sentry.io/4506904725815296",
+    tracesSampleRate: 1,
+	allowUrls: ["rockabillyroasting.shop"]
+})
+
 function generate_return_url(url: URL): string {
-	const return_url = url.pathname + url.search;
-	const rurl = return_url.slice(1); // remove leading slash
-	return rurl;
+				const return_url = url.pathname + url.search;
+				const rurl = return_url.slice(1); // remove leading slash
+				return rurl;
 }
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, resolve }) => {
 	// MEDUSA SESSION MIDDLEWARE
 	// Sets locals.user and locals.cart if they are found.
 	event = await medusa.handleRequest(event);
@@ -39,4 +47,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 	);
 
 	return response;
-};
+});
+export const handleError = Sentry.handleErrorWithSentry();

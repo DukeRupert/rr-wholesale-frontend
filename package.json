@@ -19,6 +19,7 @@
 		"@melt-ui/svelte": "^0.73.0",
 		"@stripe/stripe-js": "^3.0.5",
 		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/adapter-vercel": "^5.1.1",
 		"@sveltejs/kit": "^1.27.4",
 		"@tailwindcss/forms": "^0.5.7",
 		"@tailwindcss/typography": "^0.5.10",
@@ -48,6 +49,7 @@
 	"type": "module",
 	"dependencies": {
 		"@medusajs/medusa-js": "^6.1.6",
+		"@sentry/sveltekit": "^7.106.1",
 		"@types/cookie": "^0.6.0",
 		"bits-ui": "^0.18.2",
 		"clsx": "^2.1.0",
