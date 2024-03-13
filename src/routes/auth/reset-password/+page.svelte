@@ -6,7 +6,7 @@
 </script>
 
 <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight">
-	Sign in to your account
+	Reset your password	
 </h2>
 <div class="mt-10">
 	<ResetForm data={data.form} />

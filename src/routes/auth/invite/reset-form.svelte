@@ -3,10 +3,8 @@
 
 	export const resetSchema = z
 		.object({
-			email: z.string().email(),
 			password: z.string().min(6),
 			confirmPassword: z.string().min(6),
-			token: z.string()
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: "Passwords don't match",
@@ -17,7 +15,6 @@
 </script>
 
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
 	import * as Form from '$lib/components/ui/form';
@@ -31,7 +28,8 @@
 		onUpdated({ form }) {
 			if (form.message) {
 				handle_toast(form.message);
-				if (form.message.type === 'success') goto('/');
+				const url = "https://admin.rockabillyroasting.shop/"
+				if (form.message.type === 'success') window.location.assign(url);
 			}
 		},
 		validators: zodClient(resetSchema)
@@ -42,14 +40,6 @@
 </script>
 
 <form use:enhance method="POST" class="space-y-6" id="reset-form">
-	<Form.Field {form} name="email">
-		<Form.Control let:attrs>
-			<Form.Label>Email</Form.Label>
-			<Input {...attrs} bind:value={$formData.email} />
-		</Form.Control>
-		<Form.FieldErrors />
-	</Form.Field>
-
 	<Form.Field {form} name="password">
 		<Form.Control let:attrs>
 			<Form.Label>Password</Form.Label>
