@@ -28,7 +28,6 @@
 		onUpdated({ form }) {
 			if (form.message) {
 				handle_toast(form.message);
-				return;
 			}
 		},
 		validators: zodClient(customerSchema),
