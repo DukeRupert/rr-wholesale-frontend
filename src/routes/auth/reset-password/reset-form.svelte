@@ -23,21 +23,24 @@
 	import * as Form from '$lib/components/ui/form';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { handle_toast } from '$lib/utilities';
+	import { tick } from 'svelte';
 
 	export let data: SuperValidated<Infer<ResetSchema>>;
 
 	const form = superForm(data, {
-		onUpdated({ form }) {
+		onUpdated: async ({ form }) => {
 			if (form.message) {
 				handle_toast(form.message);
-				if (form.message.type === 'success') goto('/');
+				if (form.message.type === 'success') {
+					await tick();
+					await goto('/');
+				}
 			}
 		},
 		validators: zodClient(resetSchema)
 	});
 
 	const { form: formData, submitting, enhance } = form;
-
 </script>
 
 <form use:enhance method="POST" class="space-y-6" id="reset-form">
@@ -66,6 +69,6 @@
 		<Form.Description>Must match the password you entered above.</Form.Description>
 		<Form.FieldErrors />
 	</Form.Field>
-	
+
 	<Form.Button class="w-full" disabled={$submitting}>Reset</Form.Button>
 </form>

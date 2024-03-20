@@ -23,17 +23,19 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import { handle_toast } from '$lib/utilities';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, tick } from 'svelte';
 
 	export let data: SuperValidated<Infer<AddressSchema>>;
 
 	const dispatch = createEventDispatcher();
 	const form = superForm(data, {
-		onUpdated({ form }) {
+		onUpdated: async ({ form }) => {
 			if (form.message) {
 				handle_toast(form.message);
-				if (form.message.type === 'success') dispatch('success');
-				return;
+				if (form.message.type === 'success') {
+					await tick();
+					dispatch('success');
+				}
 			}
 		},
 		validators: zodClient(addressSchema)

@@ -1,10 +1,9 @@
 <script lang="ts">
 	import LoginForm from './login-form.svelte';
 	import type { PageData } from './$types';
-	import { page } from '$app/stores';
 
 	export let data: PageData;
-	let return_url = $page.url.searchParams.get('rurl') || '';
+	export let return_url: string;
 </script>
 
 <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight">

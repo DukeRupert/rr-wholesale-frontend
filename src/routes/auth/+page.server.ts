@@ -29,7 +29,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const form = await superValidate(payload, zod(loginSchema));
 
 	return {
-		form
+		form,
+		rurl
 	};
 };
 

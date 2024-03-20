@@ -21,17 +21,21 @@
 	import { Input } from '$lib/components/ui/input';
 	import { handle_toast } from '$lib/utilities';
 	import { goto } from '$app/navigation';
+	import { tick } from 'svelte';
 
 	export let data: SuperValidated<Infer<PasswordSchema>>;
 	export let return_url: string;
 
 	const form = superForm(data, {
-		onUpdated({ form }) {
+		onUpdated: async ({ form }) => {
 			if (form.message) {
 				handle_toast(form.message);
 				return;
 			}
-			if (return_url !== '') goto(`/${return_url}`);
+			if (return_url && return_url !== '') {
+				await tick();
+				await goto(`/${return_url}`);
+			}
 		},
 		validators: zodClient(passwordSchema)
 	});
