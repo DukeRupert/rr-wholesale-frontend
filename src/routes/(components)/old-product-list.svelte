@@ -10,6 +10,7 @@
 	import * as Table from '$lib/components/ui/table';
 
 	export let products: PricedProduct[] = [];
+	console.log(products)
 
 	let quantity: number = 0;
 	let processing = false;
