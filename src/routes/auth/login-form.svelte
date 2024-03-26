@@ -32,8 +32,9 @@
 				handle_toast(form.message);
 				return;
 			}
-			await tick()
-			await goto(`/${return_url}`);
+			await tick();
+			if (return_url) await goto(`/${return_url}`);
+			await goto('/');
 		},
 		validators: zodClient(loginSchema)
 	});
