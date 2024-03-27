@@ -4,7 +4,7 @@
 
 	export const baseSchema = z.object({
 		variant_id: z.string().default(''),
-		quantity: z.number().default(1)
+		quantity: z.coerce.number().positive().default(1)
 	});
 
 	interface Option {
@@ -178,6 +178,7 @@
 							<Form.Label>Quantity</Form.Label>
 							<Input {...attrs} bind:value={$formData.quantity} />
 						</Form.Control>
+						<Form.FieldErrors />
 					</Form.Field>
 				</div>
 				<Form.Field {form} name="variant_id">
