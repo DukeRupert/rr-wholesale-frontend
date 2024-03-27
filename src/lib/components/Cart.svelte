@@ -9,6 +9,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
 	import { is_cart_open } from '$lib/stores';
+	import { CldImage } from 'svelte-cloudinary';
 
 	export let cart: Omit<Cart, 'refundable_amount' | 'refunded_total'> | null;
 	export let count: number | null;
@@ -16,6 +17,7 @@
 	$: items = cart?.items || [];
 	$: total = cart?.subtotal ?? 0;
 
+	const fallback_image = "https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png"
 	let processing = false;
 	let tainted = false;
 	interface UpdateItem {
@@ -127,7 +129,7 @@
 					<li class="grid grid-cols-2 gap-2 py-6">
 						<div class="flex h-auto w-12 sm:w-16 my-auto">
 							<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
-								<img src={item.thumbnail} alt={item.description} class="rounded-md object-cover" />
+								<CldImage src={item?.thumbnail ?? fallback_image} alt={item.description} height="120" width="120" class="rounded-md object-cover" />
 							</AspectRatio>
 						</div>
 						<div class="flex flex-col">
