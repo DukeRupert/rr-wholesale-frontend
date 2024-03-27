@@ -1,5 +1,4 @@
 import type { PageServerLoad } from './$types';
-import type { PricedProduct } from '@medusajs/medusa/dist/types/pricing';
 import { error } from '@sveltejs/kit';
 import medusa from '$lib/medusa';
 
@@ -10,13 +9,12 @@ export const load: PageServerLoad = async ({ url }) => {
 	let limit = parseInt(l) || 20;
 	let offset = parseInt(o) || 0;
 	// fetch products
-	let products: PricedProduct[] = [];
-	const res = await medusa.products.list(limit, offset);
+	const res = await medusa.products.list({limit, offset, currency_code: 'usd'});
 	if (res !== null) {
 		const { products, limit, offset, count } = res;
 		return {
 			products
 		};
 	}
-	if (!products || products.length < 1) throw error(500, 'No products found.');
+	throw error(500, 'No products found.');
 };

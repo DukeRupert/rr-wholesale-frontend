@@ -1,124 +1,69 @@
+<script lang="ts" context="module">
+    import type { PricedVariant } from '@medusajs/medusa/dist/types/pricing'
+
+	interface Option {
+		id: string;
+		option_id: string;
+		value: string;
+		// ... other properties
+	}
+
+	function getMatchingOptions(variants: PricedVariant[], option_id: string): Option[] {
+		const matchingOptions: Option[] = [];
+        // if(!variants || !variants?.options) return matchingOptions;
+
+		for (const variant of variants) {
+			for (const option of variant.options) {
+				if (option.option_id === option_id) {
+					matchingOptions.push(option);
+				}
+			}
+		}
+
+		return matchingOptions;
+	}
+</script>
+
 <script lang="ts">
 	import type { PageData } from './$types';
-	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-    import Breadcrumbs from '$lib/components/breadcrumbs.svelte';
+	import { browser } from '$app/environment';
+	import { CldImage } from 'svelte-cloudinary';
+	import Breadcrumbs from '$lib/components/breadcrumbs.svelte';
+	import * as Form from '$lib/components/ui/form/index.js';
+	import * as Select from '$lib/components/ui/select';
+	import SuperDebug, { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
 
 	export let data: PageData;
+	let { product, segments } = data;
+	console.log(product);
+
+	// Client API:
+	const form = superForm(data.form, {});
+
+	const { form: formData, enhance } = form;
+
+	const fallback_image =
+		'https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png';
 </script>
 
 <div class="mx-auto max-w-2xl lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8">
 	<!-- Product details -->
 	<div class="lg:max-w-lg lg:self-end">
-		<Breadcrumbs segments={data.segments} />
+		<Breadcrumbs {segments} />
 
 		<div class="mt-4">
 			<h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-				Everyday Ruck Snack
+				{product.title}
 			</h1>
 		</div>
 
 		<section aria-labelledby="information-heading" class="mt-4">
 			<h2 id="information-heading" class="sr-only">Product information</h2>
 
-			<div class="flex items-center">
-				<p class="text-lg text-gray-900 sm:text-xl">$220</p>
-
-				<div class="ml-4 border-l border-gray-300 pl-4">
-					<h2 class="sr-only">Reviews</h2>
-					<div class="flex items-center">
-						<div>
-							<div class="flex items-center">
-								<!-- Active: "text-yellow-400", Default: "text-gray-300" -->
-								<svg
-									class="text-yellow-400 h-5 w-5 flex-shrink-0"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									aria-hidden="true"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								<svg
-									class="text-yellow-400 h-5 w-5 flex-shrink-0"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									aria-hidden="true"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								<svg
-									class="text-yellow-400 h-5 w-5 flex-shrink-0"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									aria-hidden="true"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								<svg
-									class="text-yellow-400 h-5 w-5 flex-shrink-0"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									aria-hidden="true"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								<svg
-									class="text-gray-300 h-5 w-5 flex-shrink-0"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									aria-hidden="true"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-							</div>
-							<p class="sr-only">4 out of 5 stars</p>
-						</div>
-						<p class="ml-2 text-sm text-gray-500">1624 reviews</p>
-					</div>
-				</div>
-			</div>
-
 			<div class="mt-4 space-y-6">
 				<p class="text-base text-gray-500">
-					Don&#039;t compromise on snack-carrying capacity with this lightweight and spacious bag.
-					The drawstring top keeps all your favorite chips, crisps, fries, biscuits, crackers, and
-					cookies secure.
+					{product.description}
 				</p>
-			</div>
-
-			<div class="mt-6 flex items-center">
-				<svg
-					class="h-5 w-5 flex-shrink-0 text-green-500"
-					viewBox="0 0 20 20"
-					fill="currentColor"
-					aria-hidden="true"
-				>
-					<path
-						fill-rule="evenodd"
-						d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				<p class="ml-2 text-sm text-gray-500">In stock and ready to ship</p>
 			</div>
 		</section>
 	</div>
@@ -126,9 +71,13 @@
 	<!-- Product image -->
 	<div class="mt-10 lg:col-start-2 lg:row-span-2 lg:mt-0 lg:self-center">
 		<div class="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg">
-			<img
-				src="https://tailwindui.com/img/ecommerce-images/product-page-04-featured-product-shot.jpg"
-				alt="Model wearing light green backpack with black canvas straps and front zipper pouch."
+			<CldImage
+				src={product?.thumbnail ?? fallback_image}
+				alt={product?.title}
+				height="672"
+				width="672"
+				crop="fit"
+				sizes="(max-width: 768px) 80vw, 50vw"
 				class="h-full w-full object-cover object-center"
 			/>
 		</div>
@@ -139,82 +88,48 @@
 		<section aria-labelledby="options-heading">
 			<h2 id="options-heading" class="sr-only">Product options</h2>
 
-			<form>
+			<form method="POST" use:enhance>
 				<div class="sm:flex sm:justify-between">
-					<!-- Size selector -->
-					<fieldset>
-						<legend class="block text-sm font-medium text-gray-700">Size</legend>
-						<div class="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<!-- Active: "ring-2 ring-indigo-500" -->
-							<div
-								class="relative block cursor-pointer rounded-lg border border-gray-300 p-4 focus:outline-none"
-							>
-								<input
-									type="radio"
-									name="size-choice"
-									value="18L"
-									class="sr-only"
-									aria-labelledby="size-choice-0-label"
-									aria-describedby="size-choice-0-description"
-								/>
-								<p id="size-choice-0-label" class="text-base font-medium text-gray-900">18L</p>
-								<p id="size-choice-0-description" class="mt-1 text-sm text-gray-500">
-									Perfect for a reasonable amount of snacks.
-								</p>
-								<!--
-                    Active: "border", Not Active: "border-2"
-                    Checked: "border-indigo-500", Not Checked: "border-transparent"
-                  -->
-								<div
-									class="pointer-events-none absolute -inset-px rounded-lg border-2"
-									aria-hidden="true"
-								></div>
-							</div>
-							<!-- Active: "ring-2 ring-indigo-500" -->
-							<div
-								class="relative block cursor-pointer rounded-lg border border-gray-300 p-4 focus:outline-none"
-							>
-								<input
-									type="radio"
-									name="size-choice"
-									value="20L"
-									class="sr-only"
-									aria-labelledby="size-choice-1-label"
-									aria-describedby="size-choice-1-description"
-								/>
-								<p id="size-choice-1-label" class="text-base font-medium text-gray-900">20L</p>
-								<p id="size-choice-1-description" class="mt-1 text-sm text-gray-500">
-									Enough room for a serious amount of snacks.
-								</p>
-								<!--
-                    Active: "border", Not Active: "border-2"
-                    Checked: "border-indigo-500", Not Checked: "border-transparent"
-                  -->
-								<div
-									class="pointer-events-none absolute -inset-px rounded-lg border-2"
-									aria-hidden="true"
-								></div>
-							</div>
-						</div>
-					</fieldset>
+					{#if product?.options && product.options.length > 0}
+						{#each product.options as option}
+							<Form.Field {form} name={option.title}>
+								<Form.Control let:attrs>
+									<Form.Label>{option.title}</Form.Label>
+									<Select.Root
+										onSelectedChange={(v) => {
+											v && ($formData[option.title] = v.value);
+										}}
+									>
+										<Select.Trigger {...attrs}>
+											<Select.Value placeholder={`Select a ${option.title}`} />
+										</Select.Trigger>
+										<Select.Content>
+											{#each getMatchingOptions(product.variants, option.id) as o}
+												<Select.Item value={o.id} label={o.value} />
+											{/each}
+										</Select.Content>
+									</Select.Root>
+									<input hidden bind:value={$formData.email} name={attrs.name} />
+								</Form.Control>
+								<Form.Description>
+									You can manage email address in your <a href="/examples/forms">email settings</a>.
+								</Form.Description>
+								<Form.FieldErrors />
+							</Form.Field>
+							<!-- <Select.Root>
+								<Select.Trigger class="w-full">
+									<Select.Value placeholder="Theme" />
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Item value="light">Light</Select.Item>
+									<Select.Item value="dark">Dark</Select.Item>
+									<Select.Item value="system">System</Select.Item>
+								</Select.Content>
+							</Select.Root> -->
+						{/each}
+					{/if}
 				</div>
-				<div class="mt-4">
-					<a href="#" class="group inline-flex text-sm text-gray-500 hover:text-gray-700">
-						<span>What size should I buy?</span>
-						<svg
-							class="ml-2 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							aria-hidden="true"
-						>
-							<path
-								fill-rule="evenodd"
-								d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a.75.75 0 11-1.061-1.061 3 3 0 112.871 5.026v.345a.75.75 0 01-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 108.94 6.94zM10 15a1 1 0 100-2 1 1 0 000 2z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-					</a>
-				</div>
+
 				<div class="mt-10">
 					<button
 						type="submit"
@@ -242,6 +157,9 @@
 					</a>
 				</div>
 			</form>
+			{#if browser}
+				<SuperDebug data={$formData} />
+			{/if}
 		</section>
 	</div>
 </div>

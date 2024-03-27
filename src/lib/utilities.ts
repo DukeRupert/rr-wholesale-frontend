@@ -112,27 +112,3 @@ export function trim_address(address: Address): Partial<Address> {
 	delete clone.deleted_at;
 	return clone;
 }
-
-// Generate breadcrumbs
-export interface BreadcrumbItem {
-	label: string;
-	url: string;
-}
-
-export function generateBreadcrumbs(
-	segments: string[]
-): BreadcrumbItem[] {
-	const breadcrumbs: BreadcrumbItem[] = [];
-
-	let path = '';
-	for (const segment of segments) {
-		path += '/' + encodeURIComponent(segment);
-
-		breadcrumbs.push({
-			label: segment,
-			url: path
-		});
-	}
-
-	return breadcrumbs;
-}

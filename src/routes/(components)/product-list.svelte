@@ -3,18 +3,10 @@
 	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
 	import { handle_toast } from '$lib/utilities';
-	import { Plus } from 'lucide-svelte';
-	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
-	import { Input } from '$lib/components/ui/input';
-	import { Button } from '$lib/components/ui/button';
-	import * as Table from '$lib/components/ui/table';
-	import Image from '$lib/components/cloudinary-image.svelte';
 	import { CldImage } from 'svelte-cloudinary';
 
 	export let products: PricedProduct[] = [];
-	console.log(products);
 	const fallback_image = "https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png"
-	let quantity: number = 0;
 	let processing = false;
 
 	async function addItem(product: PricedProduct, variant: PricedVariant, quantity: number) {

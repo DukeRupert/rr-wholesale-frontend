@@ -1,26 +1,32 @@
 import BaseResource from './base';
-import type { StoreProductsListRes, StoreGetProductsParams } from '@medusajs/medusa';
-import type { QueryOptions } from '../types';
+import type {
+	StoreProductsRes,
+	StoreProductsListRes,
+	StoreGetProductsParams
+} from '@medusajs/medusa';
 
 class ProductsResource extends BaseResource {
-	async list(
-		limit: number = 20,
-		offset: number = 0,
-		options?: QueryOptions
-	): Promise<StoreProductsListRes | null> {
+	async list(options?: StoreGetProductsParams): Promise<StoreProductsListRes | null> {
 		// returns an array of product objects
 		let opts: StoreGetProductsParams = options
-			? { limit, offset, ...options }
-			: {
-					limit,
-					offset,
-					currency_code: 'usd'
-			  };
+			? { ...options }
+			: {};
 
 		try {
 			return await this.medusa.client.products.list(opts);
 		} catch (error) {
 			console.log('Error: failed call getProducts()');
+			return null;
+		}
+	}
+
+	async retrieve(id: string): Promise<StoreProductsRes | null> {
+		// Retrieve a Product's details
+		if (!id) return null;
+		try {
+			return await this.medusa.client.products.retrieve(id);
+		} catch (error) {
+			console.log('Error: failed call retrieveProduct()');
 			return null;
 		}
 	}
