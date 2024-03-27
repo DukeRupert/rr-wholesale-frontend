@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import Order from '$lib/components/Order.svelte';
+	import Order from './(components)/order.svelte';
 	import Pagination from '$lib/components/elements/Pagination.svelte';
 
 	export let data: PageData;

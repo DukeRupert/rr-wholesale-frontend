@@ -128,7 +128,7 @@
 				{#each items as item, i}
 					<li class="grid grid-cols-2 gap-2 py-6">
 						<div class="flex h-auto w-12 sm:w-16 my-auto">
-							<AspectRatio ratio={12 / 11} class="bg-muted cursor-pointer flex-shrink-0">
+							<AspectRatio ratio={1/1} class="bg-muted cursor-pointer flex-shrink-0 rounded-md">
 								<CldImage src={item?.thumbnail ?? fallback_image} alt={item.description} height="120" width="120" class="rounded-md object-cover" />
 							</AspectRatio>
 						</div>

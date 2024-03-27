@@ -2,12 +2,10 @@
 	import '../app.postcss';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
-	// import Toaster from '$lib/components/toast/index.svelte';
-	import NavBar from '$lib/components/NavBar.svelte';
-	import LoadingDialogue from '$lib/components/LoadingDialogue.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
-
+	import NavBar from '$lib/components/nav/navbar.svelte';
+	import LoadingDialogue from '$lib/components/loading-dialogue.svelte';
 	export let data: PageData;
 	const nakedPaths = [
 		'/auth',

@@ -1,16 +1,16 @@
 <script lang="ts">
+	import type { ExtendedCustomer } from '$lib/types/app';
+	import type { Cart as MedusaCart } from "@medusajs/medusa/dist/models/cart"
+	import { Menu } from 'lucide-svelte';
 	import { company } from '$lib/constants';
 	import { page, navigating } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Menu } from 'lucide-svelte';
-	import LightSwitch from './LightSwitch.svelte';
+	import { is_cart_open } from '$lib/stores';
 	import { Button } from '$lib/components/ui/button';
 	import * as Collapsible from '$lib/components/ui/collapsible';
-	import Cart from './Cart.svelte';
-	import Account from './Account.svelte';
-	import type { ExtendedCustomer } from '$lib/types/app';
-	import type { Cart as MedusaCart } from "@medusajs/medusa/dist/models/cart"
-	import { is_cart_open } from '$lib/stores';
+	import LightSwitch from './lightswitch.svelte';
+	import Cart from './cart.svelte';
+	import Account from './account.svelte';
 
 	export let user: ExtendedCustomer | null;
 	export let cart: Omit<MedusaCart, "refundable_amount" | "refunded_total"> | null;

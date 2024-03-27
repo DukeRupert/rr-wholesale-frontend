@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { ExtendedCustomer } from '$lib/types/app';
-	import Avatar from './elements/Avatar.svelte';
-	import { UserIcon } from 'lucide-svelte';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { goto } from '$app/navigation';
+	import { UserIcon } from 'lucide-svelte';
+	import Avatar from '$lib/components/elements/Avatar.svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	export let user: ExtendedCustomer;
 
