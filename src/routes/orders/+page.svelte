@@ -4,16 +4,17 @@
 	import Pagination from '$lib/components/elements/Pagination.svelte';
 
 	export let data: PageData;
-	$: ({ id, email, first_name, last_name, phone, billing_address_id, shipping_addresses, orders } =
-		data.user);
-	$: orders.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+	let { orders } = data.user;
+	$: sorted = orders.sort(
+		(a, b) => Date.parse(b.created_at.toString()) - Date.parse(a.created_at.toString())
+	);
 	$: currentPage = data?.currentPage || 1;
 	let opp = 10; // orders per page
 </script>
 
 <div class="max-w-xl">
-	<h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Order history</h1>
-	<p class="mt-1 text-sm text-gray-500">
+	<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Order history</h1>
+	<p class="mt-1 text-sm text-muted-foreground">
 		Check the status of recent orders, manage returns, and download invoices.
 	</p>
 </div>
@@ -22,8 +23,8 @@
 	<h2 id="recent-heading" class="sr-only">Recent orders</h2>
 
 	<div class="space-y-20">
-		{#if orders?.length}
-			{#each orders as order, i}
+		{#if sorted?.length}
+			{#each sorted as order, i}
 				{#if i >= currentPage * opp - opp && i < currentPage * opp}
 					<Order data={order} />
 				{/if}
