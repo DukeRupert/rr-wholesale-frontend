@@ -2,6 +2,7 @@ export interface QueryOptions {
 	expand?: string;
 	region_id?: 'US';
 	currency_code?: 'usd';
+	handle?: string;
 }
 
 export interface CreateLineItemParams {

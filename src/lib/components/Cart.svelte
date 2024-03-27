@@ -40,7 +40,7 @@
 	}
 
 	async function updateItem(line_item_id: string, quantity: number) {
-		const res = await fetch('api/cart/update', {
+		const res = await fetch('/api/cart/update', {
 			method: 'POST',
 			body: JSON.stringify({ line_item_id, quantity })
 		});
@@ -86,7 +86,7 @@
 		try {
 			console.log(`Delete item: ${line_item_id}`);
 			processing = true;
-			const res = await fetch('api/cart/delete', {
+			const res = await fetch('/api/cart/delete', {
 				method: 'POST',
 				body: JSON.stringify({ line_item_id })
 			});
