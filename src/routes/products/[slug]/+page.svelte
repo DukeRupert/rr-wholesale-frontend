@@ -1,5 +1,11 @@
 <script lang="ts" context="module">
-    import type { PricedVariant } from '@medusajs/medusa/dist/types/pricing'
+	import type { PricedVariant } from '@medusajs/medusa/dist/types/pricing';
+	import { z } from 'zod';
+
+	export const baseSchema = z.object({
+		variant_id: z.string().default(''),
+		quantity: z.number().default(1)
+	});
 
 	interface Option {
 		id: string;
@@ -10,37 +16,96 @@
 
 	function getMatchingOptions(variants: PricedVariant[], option_id: string): Option[] {
 		const matchingOptions: Option[] = [];
-        // if(!variants || !variants?.options) return matchingOptions;
 
 		for (const variant of variants) {
+			//@ts-ignore
 			for (const option of variant.options) {
 				if (option.option_id === option_id) {
-					matchingOptions.push(option);
+					if (matchingOptions.findIndex((val) => val.value === option.value) === -1)
+						matchingOptions.push(option);
 				}
 			}
 		}
 
 		return matchingOptions;
 	}
+
+	function hasTruthyValuesForKeys(obj: Record<string, string>, keys: string[]): boolean {
+		return keys.every((key) => obj.hasOwnProperty(key) && !!obj[key]);
+	}
+
+	function filterOutVariantsWithoutOptionId(
+		variants: PricedVariant[],
+		id: string
+	): PricedVariant[] {
+		return variants.filter((variant) => variant?.options.some((option) => option.value === id));
+	}
+
+	function filterVariantsByMultipleOptions(
+		variants: PricedVariant[],
+		optionIds: string[]
+	): PricedVariant[] {
+		let filteredVariants = variants; // Start with all variants
+
+		for (const optionId of optionIds) {
+			console.log(`filtering varaints by option_id: ${optionId}`);
+			filteredVariants = filterOutVariantsWithoutOptionId(filteredVariants, optionId);
+			console.log(filteredVariants);
+		}
+
+		return filteredVariants;
+	}
 </script>
 
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { browser } from '$app/environment';
+	import { Loader } from 'lucide-svelte';
 	import { CldImage } from 'svelte-cloudinary';
 	import Breadcrumbs from '$lib/components/breadcrumbs.svelte';
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Select from '$lib/components/ui/select';
-	import SuperDebug, { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
+	import { Input } from '$lib/components/ui/input';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { superForm } from 'sveltekit-superforms';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import SuperDebug from 'sveltekit-superforms';
+	import { handle_toast } from '$lib/utilities';
+	import { tick } from 'svelte';
 
 	export let data: PageData;
 	let { product, segments } = data;
-	console.log(product);
+	let { variants, options } = product;
+	let option_keys = options?.map((el) => el.title) ?? [];
 
 	// Client API:
-	const form = superForm(data.form, {});
+	const form = superForm(data.form, {
+		validators: zodClient(baseSchema),
+		onChange(event) {
+			if (event.target) {
+				// Form input event
+				console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
+			} else {
+				// Programmatic event
+				console.log('Fields updated:', event.paths);
+				if (hasTruthyValuesForKeys($formData, option_keys)) {
+					console.log('Time to find the variant!');
+					const opts = option_keys.map((o) => $formData[o]);
+					console.log(opts);
+					const [v] = filterVariantsByMultipleOptions(variants, opts);
+					if (v && v.id) $formData.variant_id = v.id;
+				}
+			}
+		},
+		onUpdated: async ({ form }) => {
+			if (form.message) {
+				handle_toast(form.message);
+				return;
+			}
+			await tick();
+		}
+	});
 
-	const { form: formData, enhance } = form;
+	const { form: formData, submitting, enhance } = form;
 
 	const fallback_image =
 		'https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png';
@@ -52,7 +117,7 @@
 		<Breadcrumbs {segments} />
 
 		<div class="mt-4">
-			<h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+			<h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
 				{product.title}
 			</h1>
 		</div>
@@ -61,8 +126,8 @@
 			<h2 id="information-heading" class="sr-only">Product information</h2>
 
 			<div class="mt-4 space-y-6">
-				<p class="text-base text-gray-500">
-					{product.description}
+				<p class="text-base text-muted-foreground">
+					{product?.description ?? ''}
 				</p>
 			</div>
 		</section>
@@ -87,12 +152,11 @@
 	<div class="mt-10 lg:col-start-1 lg:row-start-2 lg:max-w-lg lg:self-start">
 		<section aria-labelledby="options-heading">
 			<h2 id="options-heading" class="sr-only">Product options</h2>
-
-			<form method="POST" use:enhance>
-				<div class="sm:flex sm:justify-between">
-					{#if product?.options && product.options.length > 0}
-						{#each product.options as option}
-							<Form.Field {form} name={option.title}>
+			<form method="POST" name="product" use:enhance>
+				<div class="sm:flex sm:justify-between lg:flex-col lg:space-y-4">
+					{#if options && options.length > 0}
+						{#each options as option}
+							<Form.Field {form} name={option.title} class="mb-4 lg:mb-0">
 								<Form.Control let:attrs>
 									<Form.Label>{option.title}</Form.Label>
 									<Select.Root
@@ -104,62 +168,42 @@
 											<Select.Value placeholder={`Select a ${option.title}`} />
 										</Select.Trigger>
 										<Select.Content>
-											{#each getMatchingOptions(product.variants, option.id) as o}
-												<Select.Item value={o.id} label={o.value} />
+											{#each getMatchingOptions(variants, option.id) as o}
+												<Select.Item value={o.value} label={o.value} />
 											{/each}
 										</Select.Content>
 									</Select.Root>
-									<input hidden bind:value={$formData.email} name={attrs.name} />
 								</Form.Control>
-								<Form.Description>
-									You can manage email address in your <a href="/examples/forms">email settings</a>.
-								</Form.Description>
-								<Form.FieldErrors />
 							</Form.Field>
-							<!-- <Select.Root>
-								<Select.Trigger class="w-full">
-									<Select.Value placeholder="Theme" />
-								</Select.Trigger>
-								<Select.Content>
-									<Select.Item value="light">Light</Select.Item>
-									<Select.Item value="dark">Dark</Select.Item>
-									<Select.Item value="system">System</Select.Item>
-								</Select.Content>
-							</Select.Root> -->
 						{/each}
 					{/if}
+					<Form.Field {form} name="quantity">
+						<Form.Control let:attrs>
+							<Form.Label>Quantity</Form.Label>
+							<Input {...attrs} bind:value={$formData.quantity} />
+						</Form.Control>
+					</Form.Field>
 				</div>
-
+				<Form.Field {form} name="variant_id">
+					<Form.Control let:attrs>
+						<Input {...attrs} type="text" bind:value={$formData.variant_id} class="hidden" />
+					</Form.Control>
+				</Form.Field>
 				<div class="mt-10">
-					<button
+					<Form.Button
 						type="submit"
-						class="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
-						>Add to bag</button
+						variant="default"
+						disabled={!(!!$formData.variant_id && !!$formData.quantity) || $submitting}
+						class="w-full"
+					>
+						{#if $submitting}
+							<Loader class="h-5 w-5 animate-spin" />
+						{:else}
+							Add to cart
+						{/if}</Form.Button
 					>
 				</div>
-				<div class="mt-6 text-center">
-					<a href="#" class="group inline-flex text-base font-medium">
-						<svg
-							class="mr-2 h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							aria-hidden="true"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-							/>
-						</svg>
-						<span class="text-gray-500 hover:text-gray-700">Lifetime Guarantee</span>
-					</a>
-				</div>
 			</form>
-			{#if browser}
-				<SuperDebug data={$formData} />
-			{/if}
 		</section>
 	</div>
 </div>
