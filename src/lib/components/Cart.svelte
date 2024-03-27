@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Cart } from '@medusajs/medusa/dist/models/cart';
 	import { ShoppingCart, Trash, LucideLoader, Frown } from 'lucide-svelte';
-	import { invalidate, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { formatPrice } from '$lib/utilities';
 	import { handle_toast } from '$lib/utilities';
 	import * as Sheet from '$lib/components/ui/sheet';
@@ -179,7 +179,18 @@
 						</div>
 					</li>
 				{/each}
-				<Sheet.Footer>
+				<Sheet.Footer class="flex-col sm:flex-col space-y-4 sm:space-x-0">
+					<div class="mt-6">
+						<dl class="space-y-4">
+							<div class="flex items-center justify-between">
+								<dt class="text-base font-medium">Subtotal</dt>
+								<dd class="ml-4 text-base font-medium">{formatPrice(total)}</dd>
+							</div>
+						</dl>
+						<p class="mt-1 text-sm text-muted-foreground">
+							Shipping and taxes will be calculated at checkout.
+						</p>
+					</div>
 					{#if tainted}
 						<Button type="button" on:click={updateAllItems} class="w-full">
 							{#if processing}
