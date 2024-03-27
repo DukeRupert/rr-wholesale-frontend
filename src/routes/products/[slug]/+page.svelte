@@ -65,10 +65,8 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import { Input } from '$lib/components/ui/input';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import SuperDebug from 'sveltekit-superforms';
 	import { handle_toast } from '$lib/utilities';
 	import { tick } from 'svelte';
 
@@ -88,9 +86,7 @@
 				// Programmatic event
 				console.log('Fields updated:', event.paths);
 				if (hasTruthyValuesForKeys($formData, option_keys)) {
-					console.log('Time to find the variant!');
 					const opts = option_keys.map((o) => $formData[o]);
-					console.log(opts);
 					const [v] = filterVariantsByMultipleOptions(variants, opts);
 					if (v && v.id) $formData.variant_id = v.id;
 				}
@@ -152,7 +148,7 @@
 	<div class="mt-10 lg:col-start-1 lg:row-start-2 lg:max-w-lg lg:self-start">
 		<section aria-labelledby="options-heading">
 			<h2 id="options-heading" class="sr-only">Product options</h2>
-			<form method="POST" name="product" use:enhance>
+			<form method="POST" use:enhance>
 				<div class="sm:flex sm:justify-between lg:flex-col lg:space-y-4">
 					{#if options && options.length > 0}
 						{#each options as option}

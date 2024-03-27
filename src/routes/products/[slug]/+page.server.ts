@@ -30,7 +30,7 @@ export const load = (async ({ params, url }) => {
 	// combine with base schema
 	const schema = Object.assign(baseSchema);
 	// create form
-	const form = await superValidate(zod(schema));
+	const form = await superValidate(zod(baseSchema));
 	return {
 		product: res.products[0],
 		segments,
