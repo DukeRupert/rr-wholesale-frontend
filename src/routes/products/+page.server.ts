@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	let limit = parseInt(l) || 20;
 	let offset = parseInt(o) || 0;
 	// fetch products
-	const res = await medusa.products.list({limit, offset, currency_code: 'usd'});
+	const res = await medusa.products.list({limit, offset, region_id: "na"});
 	if (res !== null) {
 		const { products, limit, offset, count } = res;
 		return {
