@@ -116,7 +116,7 @@
 			{/if}</Button
 		>
 	</Sheet.Trigger>
-	<Sheet.Content side="right">
+	<Sheet.Content side="right" class="overflow-y-auto">
 		<Sheet.Header>
 			<Sheet.Title>Cart</Sheet.Title>
 			<Sheet.Description>
