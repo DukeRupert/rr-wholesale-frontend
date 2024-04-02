@@ -48,12 +48,25 @@
 		let filteredVariants = variants; // Start with all variants
 
 		for (const optionId of optionIds) {
-			console.log(`filtering varaints by option_id: ${optionId}`);
 			filteredVariants = filterOutVariantsWithoutOptionId(filteredVariants, optionId);
-			console.log(filteredVariants);
 		}
 
 		return filteredVariants;
+	}
+
+	interface Image {
+		url: string;
+	}
+
+	function find_variant_image(title: string, images: Image[], fallback: string): string {
+		let name = '';
+		name = title.replace(' ', '-');
+		if (title === 'Decaf') {
+			name = 'Cascadia';
+		}
+		let img = images.find((el) => el.url.includes(name));
+		if (!img) return fallback;
+		return img.url;
 	}
 </script>
 
@@ -72,7 +85,7 @@
 
 	export let data: PageData;
 	let { product, segments } = data;
-	let { variants, options } = product;
+	let { variants, options, images } = product;
 	let option_keys = options?.map((el) => el.title) ?? [];
 
 	// Client API:
@@ -103,8 +116,8 @@
 
 	const { form: formData, submitting, enhance } = form;
 
-	const fallback_image =
-		'https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png';
+	const fallback_image = product?.thumbnail ?? 'https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png';
+	let main_image = product?.thumbnail ?? fallback_image;
 </script>
 
 <div class="mx-auto max-w-2xl lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8">
@@ -133,7 +146,7 @@
 	<div class="mt-10 lg:col-start-2 lg:row-span-2 lg:mt-0 lg:self-center">
 		<div class="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg">
 			<CldImage
-				src={product?.thumbnail ?? fallback_image}
+				src={main_image}
 				alt={product?.title}
 				height="672"
 				width="672"
@@ -142,6 +155,40 @@
 				class="h-full w-full object-cover object-center"
 			/>
 		</div>
+		<!-- Image selector -->
+		{#if images}
+			<div class="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
+				<div class="grid grid-cols-4 gap-6" aria-orientation="horizontal" role="tablist">
+					{#each images as image}
+						<button
+							id="tabs-1-tab-1"
+							class="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4"
+							aria-controls="tabs-1-panel-1"
+							role="tab"
+							type="button"
+							on:click={() => {if(image?.url) main_image = image.url}}
+						>
+							<span class="sr-only">Angled view</span>
+							<span class="absolute inset-0 overflow-hidden rounded-md">
+								<CldImage
+									src={image?.url ?? fallback_image}
+									height="672"
+									width="672"
+									crop="thumb"
+									sizes="(max-width: 768px) 20vw, 10vw"
+									class="h-full w-full object-cover object-center"
+								/>
+							</span>
+							<!-- Selected: "ring-indigo-500", Not Selected: "ring-transparent" -->
+							<span
+								class="ring-transparent pointer-events-none absolute inset-0 rounded-md ring-2 ring-offset-2"
+								aria-hidden="true"
+							></span>
+						</button>
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Product form -->
@@ -158,6 +205,7 @@
 									<Select.Root
 										onSelectedChange={(v) => {
 											v && ($formData[option.title] = v.value);
+											main_image = find_variant_image(v.value, images, fallback_image);
 										}}
 									>
 										<Select.Trigger {...attrs}>

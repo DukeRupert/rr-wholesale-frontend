@@ -15,7 +15,7 @@ export const load = (async ({ params, url }) => {
 	const res = await medusa.products.list({
 		handle: slug,
 		currency_code: 'usd',
-		expand: 'variants,variants.options,options'
+		expand: 'images,variants,variants.options,options'
 	});
 
 	if (res === null) throw error(500, 'A server error has occured.');
