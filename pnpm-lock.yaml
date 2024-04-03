@@ -125,8 +125,8 @@ devDependencies:
     specifier: ^0.3.19
     version: 0.3.19(svelte@4.2.12)
   svelte-stripe:
-    specifier: ^1.1.4
-    version: 1.1.4
+    specifier: ^1.1.7
+    version: 1.1.7(svelte@4.2.12)
   sveltekit-superforms:
     specifier: ^2.9.0
     version: 2.9.0(@sveltejs/kit@2.5.4)(@types/json-schema@7.0.15)(esbuild-runner@2.2.2)(esbuild@0.20.2)(svelte@4.2.12)
@@ -6077,6 +6077,7 @@ packages:
 
   /reflect-metadata@0.2.1:
     resolution: {integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw==}
+    deprecated: This version has a critical bug in fallback handling. Please upgrade to reflect-metadata@0.2.2 or newer.
 
   /regenerator-runtime@0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
@@ -6663,10 +6664,13 @@ packages:
       svelte: 4.2.12
     dev: true
 
-  /svelte-stripe@1.1.4:
-    resolution: {integrity: sha512-6ujNzguKGkqQ0cvz+kfNoRyNisTGaNzT1OQ8Rh4GbCXVut9X0exlWtk/yF5ZjzR5/epmXuaEOjWAKpe7larL4A==}
+  /svelte-stripe@1.1.7(svelte@4.2.12):
+    resolution: {integrity: sha512-4t5xipNzwenv/z4OwSVEobyIcYTUUjl7H0kAAYMW59EGhaIF37VL+NfIqbxHzy7pEdva0WlL8xx65/03ppcG7g==}
+    peerDependencies:
+      svelte: ^3 || ^4
     dependencies:
       '@stripe/stripe-js': 2.4.0
+      svelte: 4.2.12
     dev: true
 
   /svelte@4.2.12:

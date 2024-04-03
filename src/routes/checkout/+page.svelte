@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { TruckIcon } from 'lucide-svelte';
+	import { TruckIcon, NotebookText, Notebook } from 'lucide-svelte';
 	import ShippingSelect from './(components)/trusted/shipping-select.svelte';
 	import CartSummary from './(components)/CartSummary.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { addToast } from '$lib/components/toast/index.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -23,7 +24,8 @@
 	import TrustedCheckout from './(components)/trusted-checkout.svelte'
 
 	export let data: PageData;
-	$:( { cart } = data);
+	let { cart } = data;
+	$: console.log(cart)
 
 	const createContacts = (addresses: MedusaAddress[]): ContactOption[] => {
 		const contacts: ContactOption[] = [];
@@ -57,16 +59,7 @@
 	let contacts: ContactOption[] = []
 	let shipping_options: PricedShippingOption[] = [];
 
-	//
-	$: shipping_address_id = data.cart;
-	$: billing_address_id = data.cart;
 	$: shipping_method_id = data.cart?.shipping_methods[0]?.shipping_option_id ?? '';
-	$: cart_ready = shipping_address_id && billing_address_id && shipping_method_id ? true : false;
-
-	interface Initialize_Cart {
-		cart: Omit<Cart, 'refundable_amount' | 'refunded_total'>;
-		// shipping_options: PricedShippingOption[];
-	}
 
 	const init_stripe_checkout = async () => {
 		console.log('init_stripe_checkout()');
@@ -144,6 +137,16 @@
 		is_shipping_option_selected = true;
 	}
 
+	function is_cart_ready_to_complete(d: PageData): boolean {
+		const { cart } = d;
+		const { shipping_methods } = cart;
+		if (!shipping_methods[0]?.shipping_option_id) {
+			return false;
+		}
+		return true;
+	}
+	$: cart_ready = is_cart_ready_to_complete(data);
+
 	onMount(async () => {
 		if (!data.is_trusted) {
 			init = init_stripe_checkout();
@@ -174,6 +177,7 @@
 					<form
 						method="POST"
 						action="/checkout?/completeCart"
+						class="p-2"
 						use:enhance={async ({ cancel }) => {
 							// avoid processing duplicates
 							if (processing) cancel();
@@ -247,7 +251,15 @@
 							{/if}
 						</div>
 
-						<Button disabled={processing} type="submit" variant="default" class="mt-4">Pay</Button>
+						<!-- Order Notes -->
+						<div class="mt-10">
+							<div class="flex items-center space-x-2">
+								<NotebookText class="block h-6 w-6" />
+								<h3 class="text-lg font-medium">Notes</h3>
+							</div>
+							<Textarea class="mt-4" placeholder="Type your message here." />
+						</div>
+						<Button disabled={processing || !cart_ready} type="submit" variant="default" class="mt-4">Pay</Button>
 					</form>
 				{/await}
 			{/if}
