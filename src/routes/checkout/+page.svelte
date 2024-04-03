@@ -247,7 +247,7 @@
 							{/if}
 						</div>
 
-						<Button disabled={processing} type="submit" variant="default">Pay</Button>
+						<Button disabled={processing} type="submit" variant="default" class="mt-4">Pay</Button>
 					</form>
 				{/await}
 			{/if}
