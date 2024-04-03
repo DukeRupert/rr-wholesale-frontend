@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from '../$types';
-	import { TruckIcon, Loader } from 'lucide-svelte';
+	import { TruckIcon, Loader, NotebookText } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -8,12 +8,19 @@
 	import type { PricedShippingOption } from '@medusajs/medusa/dist/types/pricing';
 	import type { Cart } from '@medusajs/medusa/dist/models/cart';
 	import { Button } from '$lib/components/ui/button';
+	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import ShippingAddress from './trusted/shipping-address.svelte';
 	import ShippingSelect from './trusted/shipping-select.svelte';
 	import { handle_toast } from '$lib/utilities';
 
 	export let data: PageData;
 	export let processing: boolean;
+	let { cart } = data;
+
+	// Add note to cart. If the metadata field is null then it is initialized
+	// in the onMount function
+	let note = ""
+	$: cart.metadata.note = note
 
 	function is_cart_ready_to_complete(d: PageData): boolean {
 		const { cart } = d;
@@ -98,6 +105,14 @@
 				{/await}
 			{/if}
 		</div>
+		<!-- Order Notes -->
+						<div class="mt-10">
+							<div class="flex items-center space-x-2">
+								<NotebookText class="block h-6 w-6" />
+								<h3 class="text-lg font-medium">Notes</h3>
+							</div>
+							<Textarea bind:value={note} class="mt-4" placeholder="Type your message here." />
+						</div>
 		<!-- Confirm Order -->
 		<form
 			action="?/completeCart"

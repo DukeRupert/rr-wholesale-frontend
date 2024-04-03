@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { TruckIcon, NotebookText, Notebook } from 'lucide-svelte';
+	import { TruckIcon, NotebookText } from 'lucide-svelte';
 	import ShippingSelect from './(components)/trusted/shipping-select.svelte';
 	import CartSummary from './(components)/CartSummary.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -26,6 +26,11 @@
 	export let data: PageData;
 	let { cart } = data;
 	$: console.log(cart)
+
+	// Add note to cart. If the metadata field is null then it is initialized
+	// in the onMount function
+	let note = ""
+	$: cart.metadata.note = note
 
 	const createContacts = (addresses: MedusaAddress[]): ContactOption[] => {
 		const contacts: ContactOption[] = [];
@@ -145,6 +150,7 @@
 		}
 		return true;
 	}
+
 	$: cart_ready = is_cart_ready_to_complete(data);
 
 	onMount(async () => {
@@ -154,6 +160,11 @@
 
 		// If shipping address exists close the tab
 		if (data.cart?.shipping_address_id) show_shipping_address_book = false;
+
+		// Check if metadata is null, initialize it
+		if(!cart.metadata) {
+			cart.metadata = { note: ""}
+		}
 	});
 </script>
 
@@ -257,7 +268,7 @@
 								<NotebookText class="block h-6 w-6" />
 								<h3 class="text-lg font-medium">Notes</h3>
 							</div>
-							<Textarea class="mt-4" placeholder="Type your message here." />
+							<Textarea bind:value={note} class="mt-4" placeholder="Type your message here." />
 						</div>
 						<Button disabled={processing || !cart_ready} type="submit" variant="default" class="mt-4">Pay</Button>
 					</form>
