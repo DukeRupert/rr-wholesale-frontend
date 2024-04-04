@@ -9,11 +9,6 @@ export const load: PageServerLoad = async function ({ locals, url }) {
 	let { cart, user } = locals;
 	const form = await superValidate(zod(addressSchema));
 
-	// Add note to cart if it doesn't exist
-	if (cart && cart.metadata) {
-		console.log(cart.metadata)
-	}
-
 	// Payment session selection
 	const createPaymentSessionsResponse = await medusa.carts.createPaymentSessions(locals);
 	if (createPaymentSessionsResponse === null)
@@ -28,6 +23,11 @@ export const load: PageServerLoad = async function ({ locals, url }) {
 		throw error(400, { message: 'Could not select payment provider' });
 	cart = setPaymentSessionResponse.cart;
 
+	// Add note to cart if it doesn't exist
+	if (cart && cart.metadata === null) {
+		cart.metadata = {}
+	}
+	
 	return {
 		user,
 		is_trusted,

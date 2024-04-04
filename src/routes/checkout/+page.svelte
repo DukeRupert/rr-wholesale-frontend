@@ -142,7 +142,7 @@
 		is_shipping_option_selected = true;
 	}
 
-	function is_cart_ready_to_complete(d: PageData): boolean {
+	function check_shipping_option_selected(d: PageData): boolean {
 		const { cart } = d;
 		const { shipping_methods } = cart;
 		if (!shipping_methods[0]?.shipping_option_id) {
@@ -150,8 +150,6 @@
 		}
 		return true;
 	}
-
-	$: cart_ready = is_cart_ready_to_complete(data);
 
 	onMount(async () => {
 		if (!data.is_trusted) {
@@ -165,6 +163,9 @@
 		if(!cart.metadata) {
 			cart.metadata = { note: ""}
 		}
+
+		// Check if shipping has already been selected
+		is_shipping_option_selected = check_shipping_option_selected(data)
 	});
 </script>
 
@@ -270,7 +271,7 @@
 							</div>
 							<Textarea bind:value={note} class="mt-4" placeholder="Type your message here." />
 						</div>
-						<Button disabled={processing || !cart_ready} type="submit" variant="default" class="mt-4">Pay</Button>
+						<Button disabled={processing || !is_shipping_option_selected} type="submit" variant="default" class="mt-4">Pay</Button>
 					</form>
 				{/await}
 			{/if}
