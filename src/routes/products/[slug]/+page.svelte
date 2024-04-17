@@ -116,7 +116,9 @@
 
 	const { form: formData, submitting, enhance } = form;
 
-	const fallback_image = product?.thumbnail ?? 'https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png';
+	const fallback_image =
+		product?.thumbnail ??
+		'https://res.cloudinary.com/rr-wholesale/image/upload/v1710875912/RockabillyRoasting/cropped-RockabillyLogo_m8iqgy.png';
 	let main_image = product?.thumbnail ?? fallback_image;
 </script>
 
@@ -166,7 +168,9 @@
 							aria-controls="tabs-1-panel-1"
 							role="tab"
 							type="button"
-							on:click={() => {if(image?.url) main_image = image.url}}
+							on:click={() => {
+								if (image?.url) main_image = image.url;
+							}}
 						>
 							<span class="sr-only">Angled view</span>
 							<span class="absolute inset-0 overflow-hidden rounded-md">
@@ -223,9 +227,14 @@
 					{/if}
 					<Form.Field {form} name="quantity">
 						<Form.Control let:attrs>
-							<Form.Label>Quantity</Form.Label>
+							<Form.Label
+								>Quantity</Form.Label
+							>
 							<Input {...attrs} bind:value={$formData.quantity} />
 						</Form.Control>
+						<Form.Description>
+			The number of bags.
+		</Form.Description>
 						<Form.FieldErrors />
 					</Form.Field>
 				</div>
