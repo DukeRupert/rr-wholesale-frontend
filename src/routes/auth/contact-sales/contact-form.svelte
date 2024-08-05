@@ -8,10 +8,10 @@
 			.refine((val) => val.length > 0, {
 				message: 'Email is required'
 			}),
-		first_name: z.string().min(1),
-		last_name: z.string().min(1),
-		password: z.string().optional().default(''),
-		message: z.string().optional().default('')
+		first_name: z.string().min(1).max(200),
+		last_name: z.string().min(1).max(200),
+		business_name: z.string().min(1).max(200),
+		phone: z.string().min(1).max(15)
 	});
 
 	export type ContactSchema = typeof contactSchema;
@@ -40,6 +40,31 @@
 </script>
 
 <form use:enhance method="POST" class="space-y-6" id="login-form">
+
+	<Form.Field {form} name="first_name">
+		<Form.Control let:attrs>
+			<Form.Label>First name</Form.Label>
+			<Input {...attrs} bind:value={$formData.first_name} />
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+
+	<Form.Field {form} name="last_name">
+		<Form.Control let:attrs>
+			<Form.Label>Last name</Form.Label>
+			<Input {...attrs} bind:value={$formData.last_name} />
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+
+	<Form.Field {form} name="business_name">
+		<Form.Control let:attrs>
+			<Form.Label>Business name</Form.Label>
+			<Input {...attrs} bind:value={$formData.business_name} />
+		</Form.Control>
+		<Form.FieldErrors />
+	</Form.Field>
+
 	<Form.Field {form} name="email">
 		<Form.Control let:attrs>
 			<Form.Label>Email</Form.Label>
@@ -48,10 +73,10 @@
 		<Form.FieldErrors />
 	</Form.Field>
 
-	<Form.Field {form} name="password">
+	<Form.Field {form} name="phone">
 		<Form.Control let:attrs>
-			<Form.Label>Password</Form.Label>
-			<Input {...attrs} bind:value={$formData.password} type="password" />
+			<Form.Label>Phone number</Form.Label>
+			<Input {...attrs} bind:value={$formData.phone} />
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
