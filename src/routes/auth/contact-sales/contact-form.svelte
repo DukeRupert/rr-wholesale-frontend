@@ -80,5 +80,5 @@
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
-	<Form.Button class="w-full" disabled={$submitting}>Sign in</Form.Button>
+	<Form.Button class="w-full" disabled={$submitting}>Send</Form.Button>
 </form>
